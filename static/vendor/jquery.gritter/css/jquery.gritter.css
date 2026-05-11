@@ -1,0 +1,110 @@
+/* the norm */
+#gritter-notice-wrapper {
+	position:fixed;
+	top:20px;
+	right:20px;
+	width:301px;
+	z-index:9999;
+	cursor:pointer;
+}
+#gritter-notice-wrapper.top-left {
+    left: 20px;
+    right: auto;
+}
+#gritter-notice-wrapper.bottom-right {
+    top: auto;
+    left: auto;
+    bottom: 20px;
+    right: 20px;
+}
+#gritter-notice-wrapper.bottom-left {
+    top: auto;
+    right: auto;
+    bottom: 20px;
+    left: 20px;
+}
+.gritter-item-wrapper {
+	position:relative;
+	margin:0 0 10px 0;
+	opacity:1;
+	transform: translateY(30px);
+	opacity: 0;
+	overflow: hidden;
+	transition: transform .4s ease, opacity .4s ease, height .6s ease .1s;
+	background:url('../images/ie-spacer.gif'); /* ie7/8 fix */ 
+	background: rgba(0,0,0,.8);
+	border-radius: 2px;
+	display: -ms-flexbox;
+    display: flex;
+    align-items: center;
+    font-weight: 700;
+}
+.gritter-success {
+    background: rgba(3, 166, 121, 0.9);
+    box-shadow: 0 0 10px rgb(3, 166, 121);
+}
+.gritter-error {
+    background: rgba(202, 46, 46, 0.9);
+    box-shadow: 0 0 10px rgb(202, 46, 46);
+}
+.gritter-item-wrapper.show {
+	transform: translateY(0px);
+	opacity: 1;
+}
+.gritter-item-wrapper.hide {
+	transform: translateY(30px);
+	opacity: 0;
+}
+.gritter-top {
+	height:10px;
+}
+.gritter-bottom {
+	height:8px;
+	margin:0;
+}
+.gritter-item {
+	display: block;
+    color: #eee;
+    padding: 15px;
+    font-size: 16px;
+    font-family: Open Sans;
+    font-weight: 400;
+}
+.gritter-item p {
+	padding:0;
+	margin:0;
+	word-wrap:break-word;
+}
+.gritter-item p strong.name {
+    text-transform: capitalize;
+}
+.gritter-title {
+	font-size:14px;
+	font-weight:bold;
+	padding:0 0 7px 0;
+	display:block;
+	text-shadow:1px 1px 0 #000; /* Not supported by IE :( */
+}
+.gritter-image {
+	width:48px;
+	height:48px;
+	float:left;
+}
+.gritter-with-image,
+.gritter-without-image {
+	padding:0;
+}
+.gritter-with-image {
+	width:220px;
+	float:right;
+}
+/* for the light (white) version of the gritter notice */
+.gritter-light .gritter-item,
+.gritter-light .gritter-bottom,
+.gritter-light .gritter-top {
+    background-image: url(../images/gritter-light.png);
+    color: #222;
+}
+.gritter-light .gritter-title {
+    text-shadow: none;
+}

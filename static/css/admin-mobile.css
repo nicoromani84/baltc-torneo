@@ -1,0 +1,572 @@
+/*
+** =====================================================
+** ADMIN MOBILE RESPONSIVE — agregar al final de style.css
+** =====================================================
+*/
+
+/* --- LAYOUT BASE ADMIN --- */
+.page-content {
+    display: block !important;
+}
+.content-inner {
+    width: 100%;
+    min-width: 0;
+}
+
+/* --- HEADER PAGE (el viejo header con navbar, ya reemplazado por admin-navbar) --- */
+header.header {
+    display: none; /* Ocultar el header viejo — ya está el admin-navbar en header.php */
+}
+
+/* --- PADDING GENERAL DEL CONTENT --- */
+#reservas .container-fluid {
+    padding-left: 12px;
+    padding-right: 12px;
+}
+
+/* --- PAGE HEADER (título + botones) --- */
+@media (max-width: 575.98px) {
+    div[style*="padding:20px 24px"] {
+        padding: 14px 12px !important;
+    }
+    div[style*="padding:20px 24px"] h2 {
+        font-size: 17px !important;
+    }
+    #btn-inscripciones {
+        font-size: 12px;
+        padding: 5px 10px;
+    }
+    #btn-inscripciones strong {
+        display: none; /* "Abiertas" / "Cerradas" muy largo en mobile, solo queda el ícono+label corto */
+    }
+}
+
+/* --- FILTROS / BUSCADOR --- */
+.form-row.mb-3 {
+    flex-direction: column;
+    gap: 8px;
+}
+@media (max-width: 767.98px) {
+    .form-row.mb-3 {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 12px !important;
+    }
+    .form-row.mb-3 .col-md-4 {
+        flex: 0 0 100%;
+        max-width: 100%;
+        padding: 0;
+    }
+    .form-row.mb-3 .col-md-2 {
+        flex: 0 0 calc(50% - 4px);
+        max-width: calc(50% - 4px);
+        padding: 0;
+    }
+    .form-row.mb-3 .col-md-4.text-right {
+        flex: 0 0 100%;
+        max-width: 100%;
+        text-align: left !important;
+        padding: 0;
+    }
+    #buscar-jugador,
+    #filtro-categoria,
+    #filtro-gender {
+        font-size: 15px;
+        height: 40px;
+    }
+}
+
+/* --- TABLA DE JUGADORES: card mobile --- */
+@media (max-width: 767.98px) {
+    /* Ocultar tabla clásica, mostrar cards */
+    #jugadoresTable thead {
+        display: none;
+    }
+    #jugadoresTable,
+    #jugadoresTable tbody {
+        display: block;
+        width: 100%;
+    }
+    #jugadoresTable tr.jugador-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        background: #fff;
+        border: 1px solid #e8ecf0;
+        border-radius: 10px;
+        margin-bottom: 10px;
+        padding: 10px 12px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        gap: 4px;
+        position: relative;
+    }
+    /* Nombre — fila completa */
+    #jugadoresTable tr.jugador-row td:nth-child(1) {
+        display: block;
+        width: 100%;
+        font-weight: 700;
+        font-size: 14px;
+        color: #1a1a2e;
+        padding: 0 0 2px 0;
+        border: none;
+    }
+    /* DNI */
+    #jugadoresTable tr.jugador-row td:nth-child(2) {
+        display: inline-block;
+        font-size: 12px;
+        color: #666;
+        padding: 0;
+        border: none;
+    }
+    #jugadoresTable tr.jugador-row td:nth-child(2)::before {
+        content: "DNI ";
+        font-weight: 600;
+        color: #999;
+        font-size: 11px;
+    }
+    /* Email */
+    #jugadoresTable tr.jugador-row td:nth-child(3) {
+        display: block;
+        width: 100%;
+        font-size: 12px;
+        color: #888;
+        padding: 0;
+        border: none;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    /* Género badge */
+    #jugadoresTable tr.jugador-row td:nth-child(4) {
+        display: inline-block;
+        padding: 0;
+        border: none;
+    }
+    /* Categoría badge */
+    #jugadoresTable tr.jugador-row td:nth-child(5) {
+        display: inline-block;
+        padding: 0 0 0 6px;
+        border: none;
+    }
+    /* Botones: posición absoluta arriba a la derecha */
+    #jugadoresTable tr.jugador-row td:nth-child(6) {
+        display: flex;
+        gap: 6px;
+        padding: 0;
+        border: none;
+        position: absolute;
+        top: 10px;
+        right: 10px;
+    }
+    #jugadoresTable tr.jugador-row td:nth-child(6) .btn {
+        padding: 5px 8px;
+        font-size: 13px;
+        border-radius: 6px;
+    }
+}
+
+/* --- FORMULARIO NUEVO/EDITAR JUGADOR --- */
+@media (max-width: 767.98px) {
+    #form-jugador .card-body {
+        padding: 14px 12px;
+    }
+    /* form-row con col-md-* → stack vertical */
+    #form-editar-fields .form-row,
+    #form-nuevo-fields .form-row {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+    }
+    #form-editar-fields .form-row > [class*="col-md-"],
+    #form-nuevo-fields .form-row > [class*="col-md-"] {
+        max-width: 100%;
+        flex: 0 0 100%;
+        padding-left: 0;
+        padding-right: 0;
+    }
+    #form-editar-fields .form-group,
+    #form-nuevo-fields .form-group {
+        margin-bottom: 10px;
+    }
+    /* Género y Categoría lado a lado en mobile */
+    #form-editar-fields .col-md-1,
+    #form-editar-fields .col-md-2 {
+        flex: 0 0 50% !important;
+        max-width: 50% !important;
+        display: inline-block;
+    }
+    /* Botones full-width */
+    #btn-guardar-jugador,
+    #btn-cancelar-jugador,
+    #btn-cancelar-jugador-nuevo,
+    #btn-cancelar-jugador-nuevo2,
+    #btn-inscribir-partner {
+        width: 100%;
+        margin-bottom: 6px;
+        padding: 10px;
+        font-size: 15px;
+    }
+}
+
+/* --- BUSCADOR AUTOCOMPLETE (partner) --- */
+@media (max-width: 767.98px) {
+    #buscar-partner {
+        font-size: 15px;
+        height: 44px;
+    }
+    #autocomplete-partner .ac-item {
+        padding: 12px 14px !important;
+    }
+    #autocomplete-partner .ac-item span:first-child {
+        font-size: 14px !important;
+    }
+}
+
+/* --- PARTNER SELECCIONADO --- */
+@media (max-width: 575.98px) {
+    #partner-seleccionado .alert {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    #btn-cambiar-partner {
+        align-self: flex-end;
+    }
+}
+
+/* --- MODAL AJUSTE --- */
+@media (max-width: 575.98px) {
+    .modal-dialog {
+        margin: 10px;
+    }
+    .modal-lg {
+        max-width: calc(100% - 20px);
+    }
+}
+
+/* --- CONTENIDO GENERAL: padding lateral --- */
+@media (max-width: 575.98px) {
+    .container-fluid {
+        padding-left: 10px !important;
+        padding-right: 10px !important;
+    }
+}
+
+/* --- BADGE HELPERS --- */
+@media (max-width: 767.98px) {
+    .badge {
+        font-size: 11px;
+        padding: 3px 7px;
+    }
+}
+
+/* --- OCULTAR sidemodal en mobile --- */
+@media (max-width: 767.98px) {
+    #sidemodal,
+    #overlay {
+        display: none !important;
+    }
+}
+
+/* --- FIX: form-row con Bootstrap 4 en mobile --- */
+@media (max-width: 767.98px) {
+    .form-row {
+        margin-left: 0;
+        margin-right: 0;
+    }
+}
+
+/*
+** =====================================================
+** ADMIN PARTIDOS — acordeones responsive
+** =====================================================
+*/
+@media (max-width: 767.98px) {
+
+    /* Header del acordeón: más compacto */
+    .partidos-admin {
+        padding: 12px !important;
+    }
+    .partidos-header {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 10px;
+        margin-bottom: 14px !important;
+    }
+    .partidos-header h2 {
+        font-size: 17px !important;
+    }
+    .partidos-header > div {
+        width: 100%;
+        display: flex;
+        gap: 8px;
+    }
+    .partidos-header > div .btn {
+        flex: 1;
+        font-size: 13px;
+        padding: 8px 6px;
+    }
+
+    /* Tabla → cards */
+    .partido-acordeon .table thead {
+        display: none;
+    }
+    .partido-acordeon .table,
+    .partido-acordeon .table tbody {
+        display: block;
+        width: 100%;
+    }
+    .partido-acordeon .table tr.partido-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-template-areas:
+            "ronda   fecha"
+            "j1      j1"
+            "score   score"
+            "j2      j2"
+            "ganador ganador"
+            "acciones acciones";
+        background: #fff;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        margin-bottom: 8px;
+        padding: 10px 12px;
+        gap: 4px 8px;
+        position: relative;
+    }
+    .partido-acordeon .table tr.partido-row td {
+        border: none;
+        padding: 0;
+        font-size: 13px;
+    }
+
+    /* Ronda — col izquierda fila 1 */
+    .partido-acordeon .table tr.partido-row td:nth-child(1) {
+        grid-area: ronda;
+        align-self: center;
+    }
+    /* Fecha — col derecha fila 1 */
+    .partido-acordeon .table tr.partido-row td:nth-child(2) {
+        grid-area: fecha;
+        text-align: right;
+        align-self: center;
+        font-size: 12px;
+    }
+    /* Jugador 1 */
+    .partido-acordeon .table tr.partido-row td:nth-child(3) {
+        grid-area: j1;
+        font-weight: 600;
+        font-size: 13px;
+    }
+    .partido-acordeon .table tr.partido-row td:nth-child(3)::before {
+        content: "J1 ";
+        font-size: 10px;
+        font-weight: 700;
+        color: #aaa;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    /* Score */
+    .partido-acordeon .table tr.partido-row td:nth-child(4) {
+        grid-area: score;
+        text-align: center;
+        color: #1a6fad;
+        font-size: 14px;
+    }
+    /* Jugador 2 */
+    .partido-acordeon .table tr.partido-row td:nth-child(5) {
+        grid-area: j2;
+        font-weight: 600;
+        font-size: 13px;
+    }
+    .partido-acordeon .table tr.partido-row td:nth-child(5)::before {
+        content: "J2 ";
+        font-size: 10px;
+        font-weight: 700;
+        color: #aaa;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    /* Ganador */
+    .partido-acordeon .table tr.partido-row td:nth-child(6) {
+        grid-area: ganador;
+        font-size: 12px;
+        border-top: 1px solid #f0f0f0;
+        padding-top: 4px !important;
+        margin-top: 2px;
+    }
+    /* Botones acciones */
+    .partido-acordeon .table tr.partido-row td:nth-child(7) {
+        grid-area: acciones;
+        display: flex;
+        gap: 8px;
+        border-top: 1px solid #f0f0f0;
+        padding-top: 6px !important;
+        margin-top: 2px;
+    }
+    .partido-acordeon .table tr.partido-row td:nth-child(7) .btn {
+        flex: 1;
+        font-size: 13px;
+        padding: 7px 6px;
+        text-align: center;
+    }
+
+    /* Buscador de partidos */
+    #buscar-partido {
+        font-size: 15px;
+    }
+}
+
+/*
+** =====================================================
+** ADMIN SORTEO — responsive
+** =====================================================
+*/
+@media (max-width: 767.98px) {
+    /* lista drag&drop: items más compactos */
+    .sorteo-item,
+    [class*="sortable"] li,
+    .ui-sortable li {
+        padding: 10px 12px !important;
+        font-size: 14px !important;
+    }
+    /* botones de sorteo full-width */
+    #btn-sortear,
+    #btn-confirmar,
+    #btn-volver-sortear {
+        width: 100% !important;
+        margin-bottom: 8px !important;
+        font-size: 16px !important;
+    }
+}
+
+/*
+** =====================================================
+** ADMIN DRAWS — tabs responsive
+** =====================================================
+*/
+@media (max-width: 767.98px) {
+    /* tabs scrolleables en mobile */
+    .nav-tabs {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+    .nav-tabs::-webkit-scrollbar {
+        display: none;
+    }
+    .nav-tabs .nav-link {
+        white-space: nowrap;
+        font-size: 13px;
+        padding: 8px 12px;
+    }
+    /* draw bracket scroll horizontal */
+    .draw-bracket-wrap,
+    [class*="bracket"] {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+/*
+** =====================================================
+** GRITTER NOTIFICATIONS — mobile fix
+** =====================================================
+*/
+@media (max-width: 575.98px) {
+    #gritter-notice-wrapper {
+        width: calc(100% - 20px) !important;
+        right: 10px !important;
+        left: 10px !important;
+    }
+}
+
+/*
+** =====================================================
+** CLASES SEMÁNTICAS NUEVAS (dashboard.php)
+** =====================================================
+*/
+
+/* Page Header */
+.admin-page-header {
+    padding: 16px 24px;
+    background: #fff;
+    border-bottom: 1px solid #dee2e6;
+}
+.admin-page-header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+.admin-page-title {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+    color: #1a1a2e;
+}
+.admin-page-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 575.98px) {
+    .admin-page-header {
+        padding: 12px 12px;
+    }
+    .admin-page-title {
+        font-size: 16px;
+    }
+    .admin-page-actions .btn {
+        font-size: 13px;
+        padding: 6px 10px;
+    }
+}
+
+/* Filtros row */
+.admin-filtros-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+    align-items: center;
+}
+.admin-filtro-buscar {
+    flex: 1 1 220px;
+    min-width: 0;
+}
+.admin-filtro-cat {
+    flex: 0 0 auto;
+    min-width: 180px;
+}
+.admin-filtro-gen {
+    flex: 0 0 140px;
+}
+.admin-filtro-contador {
+    flex: 1 1 auto;
+    text-align: right;
+}
+
+@media (max-width: 575.98px) {
+    .admin-filtro-buscar {
+        flex: 0 0 100%;
+    }
+    .admin-filtro-cat,
+    .admin-filtro-gen {
+        flex: 1 1 calc(50% - 4px);
+    }
+    .admin-filtro-contador {
+        flex: 0 0 100%;
+        text-align: left;
+    }
+    .admin-filtros-row .form-control {
+        font-size: 15px;
+        height: 42px;
+    }
+}
