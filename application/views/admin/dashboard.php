@@ -11,7 +11,8 @@
 						<i class="fas <?=$inscripciones_abiertas ? 'fa-lock-open' : 'fa-lock'?>"></i>
 						Inscripciones: <strong><?=$inscripciones_abiertas ? 'Abiertas' : 'Cerradas'?></strong>
 					</button>
-                	<button class="btn btn-primary btn-sm" id="add"><i class="fas fa-plus"></i> Nuevo jugador</button>
+                	<?php if(empty($readonly)): ?><button class="btn btn-primary btn-sm" id="add"><i class="fas fa-plus"></i> Nuevo jugador</button><?php endif; ?>
+                	<button class="btn btn-success btn-sm" id="btn-descargar-excel"><i class="fas fa-download"></i> Descargar Excel</button>
                 </div>
             </div>
         </div>
@@ -110,9 +111,9 @@
                     <div class="admin-filtro-cat">
                         <select id="filtro-categoria" class="form-control">
                             <option value="">Todas las categorías</option>
-                            <option value="1">1ra</option>
-                            <option value="2">2da</option>
-                            <option value="3">3ra</option>
+                            <?php foreach($categories as $cat): ?>
+                            <option value="<?=$cat->id?>"><?=htmlspecialchars($cat->name)?></option>
+                            <?php endforeach; ?>
                         </select>
                     </div>
                     <div class="admin-filtro-gen">
@@ -152,6 +153,7 @@
                             <td><?=$j->gender == 'M' ? '<span class="badge badge-primary">M</span>' : '<span class="badge badge-danger">F</span>'?></td>
                             <td><span class="badge badge-info"><?=$j->categoria?></span></td>
                             <td nowrap>
+                                <?php if(empty($readonly)): ?>
                                 <button class="btn btn-xs btn-warning btn-editar-jugador"
                                     data-id="<?=$j->id?>"
                                     data-reserva="<?=$j->reserva_id?>"
@@ -168,6 +170,7 @@
                                     data-name="<?=strtolower($j->name)?>">
                                     <i class="fas fa-trash"></i>
                                 </button>
+                                <?php endif; ?>
                             </td>
                         </tr>
                         <?php endforeach; ?>
@@ -399,6 +402,22 @@ $(function() {
 			success: function(res){ if(res.action) location.reload(); }
 		});
 	});
+
+	// Descargar Excel
+	$('#btn-descargar-excel').on('click', function(){
+		var form = $('<form>', {
+			method: 'POST',
+			action: adminurl + '/descargarExcelJugadores'
+		}).append($('<input>', {
+			type: 'hidden',
+			name: 'X-Auth-Token',
+			value: token
+		}));
+		$('body').append(form);
+		form.submit();
+		form.remove();
+	});
+
     $(window).scroll(function(){
         if($(window).scrollTop() > $('header.header').innerHeight() + $('header.page-header').innerHeight()) {
             $('#sidemodal').addClass('fixed');

@@ -65,10 +65,14 @@ class Reservation extends CI_Model {
 
 	// Obtiene la categoría en la que juega un usuario
 	public function getCategoryByPlayer($user_id) {
+		// Si el jugador tiene una categoría "2nd chance", tiene prioridad
 		$q = $this->db->query(
 			"SELECT r.category FROM reservations r
 			JOIN reservations_partners rp ON rp.reservation_id = r.id
-			WHERE rp.partner_id = ? LIMIT 1",
+			JOIN category c ON c.id = r.category
+			WHERE rp.partner_id = ?
+			ORDER BY CASE WHEN c.name LIKE '%2nd chance%' THEN 0 ELSE 1 END ASC
+			LIMIT 1",
 			array(intval($user_id))
 		);
 		if($q && $q->num_rows() > 0) {

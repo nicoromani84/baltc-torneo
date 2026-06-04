@@ -31,6 +31,38 @@
 			<?php foreach($partidos as $p): ?>
 			<div class="mipartido-card">
 				<div class="mipartido-ronda"><?=$p->ronda?> — <?=$p->categoria?></div>
+				<?php if(!empty($p->deadline)): ?>
+				<div class="mipartido-deadline"><i class="fas fa-clock"></i> Jugarlo antes del <strong><?=date('d/m/Y', strtotime($p->deadline))?></strong></div>
+				<div class="mipartido-fecha-wrap" id="fecha-wrap-<?=$p->id?>">
+					<?php if(!empty($p->fecha)): ?>
+					<div class="mipartido-fecha-acordada" id="fecha-acordada-<?=$p->id?>">
+						<i class="fas fa-calendar-check"></i>
+						<span>Acordado: <strong><?=date('d/m/Y', strtotime($p->fecha))?><?=!empty($p->hora) ? ' a las ' . date('H:i', strtotime($p->hora)) : ''?></strong></span>
+						<button class="mipartido-fecha-edit" data-id="<?=$p->id?>"><i class="fas fa-pencil-alt"></i></button>
+					</div>
+					<?php else: ?>
+					<button class="mipartido-fecha-trigger" data-id="<?=$p->id?>">
+						<i class="fas fa-calendar-plus"></i> ¿Ya coordinaste con tu rival? Agrega la fecha acá
+					</button>
+					<?php endif; ?>
+					<div class="mipartido-fecha-form" id="fecha-form-<?=$p->id?>" style="display:none"
+						data-deadline="<?=$p->deadline?>"
+						data-id="<?=$p->id?>">
+						<div class="mipartido-fecha-hint"><i class="fas fa-pencil-alt"></i> Tocá los campos para cambiar fecha u hora</div>
+						<div class="mipartido-fecha-inputs">
+							<input type="date" class="fecha-input-date" max="<?=$p->deadline?>">
+							<input type="time" class="fecha-input-time" value="10:00">
+						</div>
+						<div class="mipartido-fecha-confirm" id="fecha-confirm-<?=$p->id?>" style="display:none">
+							<span class="fecha-confirm-label"></span>
+							<div class="mipartido-fecha-btns">
+								<button class="btn-fecha-ok"><i class="fas fa-check"></i> Confirmar</button>
+								<button class="btn-fecha-cancel"><i class="fas fa-times"></i></button>
+							</div>
+						</div>
+					</div>
+				</div>
+				<?php endif; ?>
 				<div class="mipartido-vs">
 					<div class="mipartido-jugador yo">
 						<div class="mipartido-nombre"><?=strtolower($p->yo)?></div>
@@ -38,7 +70,23 @@
 					</div>
 					<div class="mipartido-separador">vs</div>
 					<div class="mipartido-jugador rival">
-						<div class="mipartido-nombre"><?=strtolower($p->rival)?></div>
+						<div class="mipartido-nombre">
+							<?php if(!empty($p->rival_wa)):
+								$partes = explode(',', $p->yo);
+								$apellido = ucfirst(strtolower(trim($partes[0])));
+								$nombre   = isset($partes[1]) ? ucfirst(strtolower(trim($partes[1]))) : '';
+								$nombre_friendly = $nombre ? $nombre . ' ' . $apellido : $apellido;
+								$wa_msg = 'Hola soy ' . $nombre_friendly . ', cuando podes jugar el partido del torneo interno?';
+								$wa_phone = preg_replace('/[^0-9]/', '', $p->rival_wa);
+								$wa_url = 'https://wa.me/' . $wa_phone . '?text=' . rawurlencode($wa_msg);
+							?>
+							<a href="<?=$wa_url?>" class="rival-wa-nombre" title="Escribirle por WhatsApp">
+								<?=strtolower($p->rival)?> <i class="fab fa-whatsapp rival-wa-icon"></i>
+							</a>
+							<?php else: ?>
+							<?=strtolower($p->rival)?>
+							<?php endif; ?>
+						</div>
 						<small>rival</small>
 					</div>
 				</div>
@@ -124,7 +172,109 @@
 	letter-spacing: 0.5px;
 	color: #a5d051;
 	font-weight: 700;
-	margin-bottom: 15px;
+	margin-bottom: 6px;
+}
+.mipartido-deadline {
+	font-size: 12px;
+	color: rgba(255,200,80,0.9);
+	margin-bottom: 8px;
+}
+.mipartido-deadline i { margin-right: 4px; }
+.mipartido-fecha-wrap { margin-bottom: 14px; }
+.mipartido-fecha-trigger {
+	background: none;
+	border: 1px dashed rgba(165,208,81,0.4);
+	color: rgba(165,208,81,0.8);
+	border-radius: 8px;
+	padding: 8px 14px;
+	font-size: 12px;
+	width: 100%;
+	cursor: pointer;
+	text-align: left;
+	transition: all 0.2s;
+}
+.mipartido-fecha-trigger:hover { border-color: #a5d051; color: #a5d051; background: rgba(165,208,81,0.07); }
+.mipartido-fecha-trigger i { margin-right: 6px; }
+.mipartido-fecha-acordada {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	background: rgba(165,208,81,0.1);
+	border: 1px solid rgba(165,208,81,0.3);
+	border-radius: 8px;
+	padding: 8px 12px;
+	font-size: 13px;
+	color: rgba(255,255,255,0.85);
+}
+.mipartido-fecha-acordada i { color: #a5d051; }
+.mipartido-fecha-acordada span { flex: 1; }
+.mipartido-fecha-edit {
+	background: none;
+	border: none;
+	color: rgba(255,255,255,0.4);
+	cursor: pointer;
+	padding: 2px 4px;
+	font-size: 11px;
+}
+.mipartido-fecha-edit:hover { color: #a5d051; }
+.mipartido-fecha-form { margin-top: 6px; }
+.mipartido-fecha-hint {
+	font-size: 11px;
+	color: rgba(255,255,255,0.45);
+	margin-bottom: 6px;
+	letter-spacing: 0.2px;
+}
+.mipartido-fecha-hint i { margin-right: 4px; color: rgba(165,208,81,0.6); }
+.mipartido-fecha-inputs {
+	display: flex;
+	gap: 8px;
+	margin-bottom: 8px;
+}
+.fecha-input-date, .fecha-input-time {
+	flex: 1;
+	background: rgba(255,255,255,0.08);
+	border: 1.5px solid rgba(165,208,81,0.6);
+	border-radius: 6px;
+	color: #fff;
+	padding: 9px 10px;
+	font-size: 13px;
+	cursor: pointer;
+}
+.fecha-input-date:focus, .fecha-input-time:focus {
+	outline: none;
+	border-color: #a5d051;
+	background: rgba(165,208,81,0.1);
+}
+.mipartido-fecha-confirm {
+	background: rgba(0,0,0,0.3);
+	border: 1px solid rgba(165,208,81,0.3);
+	border-radius: 8px;
+	padding: 10px 12px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 10px;
+}
+.fecha-confirm-label { font-size: 13px; color: rgba(255,255,255,0.85); flex: 1; }
+.mipartido-fecha-btns { display: flex; gap: 8px; }
+.btn-fecha-ok {
+	background: #a5d051;
+	color: #1a1a2e;
+	border: none;
+	border-radius: 6px;
+	padding: 6px 14px;
+	font-size: 12px;
+	font-weight: 700;
+	cursor: pointer;
+}
+.btn-fecha-cancel {
+	background: rgba(255,255,255,0.1);
+	color: rgba(255,255,255,0.6);
+	border: none;
+	border-radius: 6px;
+	padding: 6px 10px;
+	font-size: 12px;
+	cursor: pointer;
 }
 .mipartido-vs {
 	display: flex;
@@ -146,6 +296,9 @@
 }
 .mipartido-jugador small { color: rgba(255,255,255,0.4); font-size: 11px; }
 .mipartido-jugador.yo .mipartido-nombre { color: #a5d051; }
+.rival-wa-nombre { color: #fff; text-decoration: none; }
+.rival-wa-nombre:hover { color: #25D366; }
+.rival-wa-icon { color: #25D366; margin-left: 4px; font-size: 20px; vertical-align: middle; }
 .mipartido-separador {
 	font-size: 13px;
 	color: rgba(255,255,255,0.4);
@@ -299,6 +452,97 @@ $(function(){
 				} else {
 					alert(res.msg || 'Error al guardar.');
 					$btn.prop('disabled', false).html('<i class="fas fa-check"></i> Confirmar — Gané yo');
+				}
+			}
+		});
+	});
+
+	// Fecha acordada
+	var MESES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+
+	function formatFechaLabel(fecha, hora) {
+		var d = new Date(fecha + 'T00:00:00');
+		var label = d.getDate() + ' de ' + MESES[d.getMonth()];
+		if(hora) label += ' a las ' + hora.substr(0,5);
+		return label;
+	}
+
+	function abrirFechaForm(id) {
+		$('#fecha-form-' + id).slideDown(150);
+		var $f = $('#fecha-form-' + id);
+		var deadline = $f.data('deadline');
+		var hoy = new Date();
+		var hoyStr = hoy.getFullYear() + '-' + String(hoy.getMonth()+1).padStart(2,'0') + '-' + String(hoy.getDate()).padStart(2,'0');
+		$f.find('.fecha-input-date').attr('max', deadline).val(hoyStr);
+		$f.find('.fecha-input-time').val('10:00');
+		var label = formatFechaLabel(hoyStr, '10:00');
+		$('#fecha-confirm-' + id).find('.fecha-confirm-label').text('Confirmar: ' + label);
+		$('#fecha-confirm-' + id).show();
+	}
+
+	$(document).on('click', '.mipartido-fecha-trigger, .mipartido-fecha-edit', function(){
+		var id = $(this).data('id');
+		$('.mipartido-fecha-trigger[data-id="'+id+'"]').hide();
+		$('.mipartido-fecha-acordada[id="fecha-acordada-'+id+'"]').hide();
+		abrirFechaForm(id);
+	});
+
+	$(document).on('change', '.fecha-input-date, .fecha-input-time', function(){
+		var $form = $(this).closest('.mipartido-fecha-form');
+		var id = $form.data('id');
+		var fecha = $form.find('.fecha-input-date').val();
+		var hora  = $form.find('.fecha-input-time').val();
+		if(!fecha) { $('#fecha-confirm-' + id).hide(); return; }
+		var label = formatFechaLabel(fecha, hora);
+		$('#fecha-confirm-' + id).find('.fecha-confirm-label').text('Confirmar: ' + label);
+		$('#fecha-confirm-' + id).slideDown(150);
+	});
+
+	$(document).on('click', '.btn-fecha-cancel', function(){
+		var $form = $(this).closest('.mipartido-fecha-form');
+		var id = $form.data('id');
+		$form.slideUp(150);
+		$('#fecha-confirm-' + id).hide();
+		if($('#fecha-acordada-' + id).length) {
+			$('#fecha-acordada-' + id).show();
+		} else {
+			$('.mipartido-fecha-trigger[data-id="'+id+'"]').show();
+		}
+	});
+
+	$(document).on('click', '.btn-fecha-ok', function(){
+		var $btn = $(this);
+		var $form = $btn.closest('.mipartido-fecha-form');
+		var id    = $form.data('id');
+		var fecha = $form.find('.fecha-input-date').val();
+		var hora  = $form.find('.fecha-input-time').val();
+		if(!fecha) return;
+		$btn.prop('disabled', true);
+		$.ajax({
+			url: baseurl + 'mipartido/guardarFechaAcordada',
+			type: 'POST',
+			data: { id: id, fecha: fecha, hora: hora },
+			headers: { 'X-Auth-Token': token },
+			success: function(res) {
+				$btn.prop('disabled', false);
+				if(res.action) {
+					$form.slideUp(150);
+					var label = formatFechaLabel(fecha, hora);
+					var $wrap = $('#fecha-acordada-' + id);
+					if($wrap.length) {
+						$wrap.find('strong').text(label.replace(' a las ', ' a las '));
+						$wrap.show();
+					} else {
+						$('.mipartido-fecha-trigger[data-id="'+id+'"]').replaceWith(
+							'<div class="mipartido-fecha-acordada" id="fecha-acordada-'+id+'">'
+							+ '<i class="fas fa-calendar-check"></i>'
+							+ '<span>Acordado: <strong>'+label+'</strong></span>'
+							+ '<button class="mipartido-fecha-edit" data-id="'+id+'"><i class="fas fa-pencil-alt"></i></button>'
+							+ '</div>'
+						);
+					}
+				} else {
+					alert(res.msg || 'Error al guardar.');
 				}
 			}
 		});

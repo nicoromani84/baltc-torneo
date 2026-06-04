@@ -4,11 +4,13 @@
 
 	<div class="partidos-header">
 		<h2><i class="fas fa-tennis-ball"></i> Gestión de Partidos</h2>
+		<?php if(empty($readonly)): ?>
 		<div style="display:flex;gap:8px;">
 			<button class="btn btn-warning" id="btn-recordatorio">
 				<i class="fas fa-calendar"></i> Programar masivamente
 			</button>
 		</div>
+		<?php endif; ?>
 	</div>
 
 	<!-- MODAL RECORDATORIO -->
@@ -169,6 +171,7 @@
 
 			<div class="form-group">
 				<button class="btn btn-primary" id="btn-guardar-partido">Guardar</button>
+				<button class="btn btn-danger" id="btn-wo-partido" type="button">W.O.</button>
 				<button class="btn btn-secondary" id="btn-cancelar-partido">Cancelar</button>
 			</div>
 		</div>
@@ -244,11 +247,11 @@
 					<tr class="partido-row" data-j1="<?=strtolower($m->jugador1)?>" data-j2="<?=strtolower($m->jugador2)?>">
 						<td><span class="badge badge-light"><?=$m->ronda?></span></td>
 						<td>
-							<?php if(!empty($m->fecha)): ?>
+							<?php if(!empty($m->fecha) && $m->fecha !== '0000-00-00'): ?>
 							<small><?=date('d/m', strtotime($m->fecha))?></small><br>
 							<small class="text-muted"><?=!empty($m->hora) ? substr($m->hora,0,5) : ''?></small>
 							<?php else: ?><small class="text-muted">—</small><?php endif; ?>
-							<?php if(!empty($m->deadline)): ?>
+							<?php if(!empty($m->deadline) && !$m->ganador_id): ?>
 							<br><span style="display:inline-block;background:#fff3cd;color:#856404;border:1px solid #ffc107;border-radius:4px;font-size:10px;font-weight:600;padding:1px 6px;margin-top:3px;">
 								<i class="fas fa-clock"></i> <?=date('d/m', strtotime($m->deadline))?>
 							</span>
@@ -275,7 +278,9 @@
 								data-j1="<?=$m->jugador1_id?>"
 								data-j2="<?=$m->jugador2_id?>"
 								data-score="<?=$m->score?>"
-								data-ganador="<?=$m->ganador_id?>">
+								data-ganador="<?=$m->ganador_id?>"
+								data-fecha="<?=$m->fecha?>"
+								data-hora="<?=$m->hora?>">
 								<i class="fas fa-edit"></i>
 							</button>
 							<button class="btn btn-sm btn-danger btn-borrar" data-id="<?=$m->id?>">
@@ -441,6 +446,40 @@ $(function(){
 
 	$('#btn-cancelar-partido').on('click', function(){
 		$('#form-partido').slideUp();
+	});
+
+	$('#btn-wo-partido').on('click', function(){
+		var id = $('#partido-id').val();
+		var ganador = $('#partido-ganador').val();
+		var ganadorNombre = $('#partido-ganador option:selected').text();
+		if(!id) { alert('Primero seleccioná el partido a editar.'); return; }
+		if(!ganador) {
+			$('#ganador-warning').show();
+			$('#partido-ganador').addClass('border-warning').focus();
+			return;
+		}
+		if(!confirm('¿Confirmás W.O. a favor de "' + ganadorNombre + '"?\n\nEsto guardará el resultado como W.O.')) return;
+		$.ajax({
+			url: baseurl + 'admin/editPartido',
+			type: 'POST',
+			data: {
+				id: id,
+				category: $('#partido-category').val(),
+				gender: $('#partido-gender').val(),
+				ronda: $('#partido-ronda').val(),
+				jugador1_id: $('#partido-j1').val(),
+				jugador2_id: $('#partido-j2').val(),
+				score: 'W.O.',
+				ganador_id: ganador,
+				fecha: $('#partido-fecha').val(),
+				hora: $('#partido-hora').val()
+			},
+			headers: { 'X-Auth-Token': token },
+			success: function(res){
+				if(res.action) { location.reload(); }
+				else { alert(res.msg || 'Error al guardar.'); }
+			}
+		});
 	});
 
 	$(document).on('click', '.btn-editar', function(){

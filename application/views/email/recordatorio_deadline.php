@@ -42,14 +42,18 @@
 						<td style="padding:8px 0; font-weight:700; color:#333; border-top:1px solid #dee2e6; text-transform:capitalize;"><?=ucwords(strtolower($rival))?></td>
 					</tr>
 					<tr>
-						<td style="padding:8px 0; color:#888; font-size:13px; text-transform:uppercase; letter-spacing:0.5px; border-top:1px solid #dee2e6;">Fecha</td>
+						<td style="padding:8px 0; color:#888; font-size:13px; text-transform:uppercase; letter-spacing:0.5px; border-top:1px solid #dee2e6;">Fecha límite</td>
 						<td style="padding:8px 0; font-weight:800; color:#c0392b; font-size:15px; border-top:1px solid #dee2e6;"><?=$deadline?></td>
 					</tr>
 				</table>
 			</div>
 
 			<p style="color:#555; font-size:14px; background:#fff8e1; border-left:4px solid #f0ad4e; padding:12px 16px; border-radius:4px;">
-				En caso de no poder jugar el día programado recordá coordinar con tu rival para jugar antes de esta fecha.
+				Tenés hasta esta fecha para jugarlo. Ponete en contacto con tu rival para coordinarlo antes del deadline.
+			</p>
+
+			<p style="color:#555; font-size:14px; background:#f0f4ff; border-left:4px solid #4a90d9; padding:12px 16px; border-radius:4px;">
+				💡 Si tu partido se juega con luz artificial (a partir de las 18hs) coordiná la reserva de cancha con Secretaría con anticipación.
 			</p>
 
 			<p style="color:#666; font-size:14px;">Seguí el torneo en <a href="https://www.baltc.net/torneo" style="color:#7a9e3a;">baltc.net/torneo</a></p>

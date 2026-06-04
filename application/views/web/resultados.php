@@ -58,7 +58,7 @@
 							<?=strtolower($p->jugador2)?>
 						</span>
 					</div>
-					<?php if(!empty($p->fecha)): ?>
+					<?php if(!empty($p->fecha) && $p->fecha !== '0000-00-00'): ?>
 					<div class="resultado-fecha-prog"><i class="fas fa-calendar-alt"></i> <?=date('d/m', strtotime($p->fecha))?><?=$p->hora ? ' — ' . substr($p->hora,0,5) : ''?></div>
 					<?php endif; ?>
 				<?php if(!$p->ganador_id): ?>

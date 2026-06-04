@@ -181,6 +181,9 @@
 	border-right: 2px solid #dee2e6;
 	margin: 2px 0;
 }
+@media (max-width: 768px) {
+	#btn-pdf { display: none !important; }
+}
 </style>
 
 <script>
@@ -188,6 +191,7 @@ $(function(){
 	var baseurl = '<?=base_url()?>';
 	var token = '<?=$token?>';
 	var RONDAS = ['1ra Ronda','2da Ronda','Cuartos de Final','Semifinal','Final'];
+	var currentPartidos = [], currentSembrados = {};
 
 	// Click en pestañas
 	$(document).on('click', '.draws-tab', function(){
@@ -275,6 +279,8 @@ $(function(){
 				var genNombre = gen == 'M' ? 'Caballeros' : 'Damas';
 				$('#draw-titulo-activo').text('Draw ' + catNombre + ' — ' + genNombre).show();
 				$('#btn-pdf').show();
+				currentPartidos = res.partidos;
+				currentSembrados = res.sembrados || {};
 				renderDraw(res.partidos, res.sembrados || {});
 				$('#draw-container').show();
 			}
@@ -382,86 +388,171 @@ $(function(){
 		$('#draw-bracket').html(html);
 	}
 
-	// PDF DOWNLOAD
+	// Genera HTML del bracket clásico (izquierda→derecha) con inline styles para PDF
+	function renderBracketForPDF(partidos, sembrados) {
+		sembrados = sembrados || {};
+
+		// Primera letra de cada palabra en mayúscula
+		function tc(str) {
+			if(!str) return 'BYE';
+			return str.toLowerCase().replace(/\b\w/g, function(l){ return l.toUpperCase(); });
+		}
+
+		var rondaInicioIdx = 0;
+		for(var i = 0; i < RONDAS.length; i++) {
+			if(partidos.some(function(p){ return p.ronda === RONDAS[i]; })) { rondaInicioIdx = i; break; }
+		}
+		var primeraRonda = RONDAS[rondaInicioIdx];
+		var totalPrimera = partidos.filter(function(p){ return p.ronda === primeraRonda; }).length;
+		var rondasCount = RONDAS.length - rondaInicioIdx;
+
+		var byRonda = {};
+		for(var r = 0; r < rondasCount; r++) {
+			var rn = RONDAS[rondaInicioIdx + r];
+			byRonda[rn] = new Array(Math.ceil(Math.max(1, totalPrimera / Math.pow(2, r)))).fill(null);
+		}
+		partidos.forEach(function(p) {
+			if(byRonda[p.ronda] !== undefined) {
+				var pos = (p.bracket_pos !== null && p.bracket_pos !== undefined) ? parseInt(p.bracket_pos) : 0;
+				if(pos < byRonda[p.ronda].length) byRonda[p.ronda][pos] = p;
+			}
+		});
+
+		var rondasOrden = Object.keys(byRonda);
+		var numRondas = rondasOrden.length;
+		var containerW = 720;
+		var connW = 14;
+		// Primera columna 1.8x más ancha que las siguientes
+		var totalConns = connW * (numRondas - 1);
+		var unitW = Math.floor((containerW - totalConns) / (numRondas + 0.8));
+		var firstColW = Math.floor(unitW * 1.8);
+
+		function colWidth(idx) { return idx === 0 ? firstColW : unitW; }
+		function colFs(idx)    { return idx === 0 ? 11 : 10; }
+
+		var html = '<div style="display:flex;align-items:stretch;background:#fff;font-family:Arial,Helvetica,sans-serif;width:' + containerW + 'px;box-sizing:border-box;">';
+
+		rondasOrden.forEach(function(ronda, idx) {
+			var slots = byRonda[ronda];
+			var cw = colWidth(idx);
+			var fs = colFs(idx);
+			html += '<div style="width:' + cw + 'px;flex-shrink:0;display:flex;flex-direction:column;">';
+			html += '<div style="text-align:center;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;color:#6c757d;padding:5px 4px;background:#f1f3f5;border:1px solid #dee2e6;border-bottom:none;margin:0 3px;">' + ronda + '</div>';
+			html += '<div style="display:flex;flex-direction:column;justify-content:space-around;flex:1;padding:5px 3px;gap:5px;">';
+
+			slots.forEach(function(p) {
+				if(!p) {
+					html += '<div style="border:1px solid #dee2e6;border-radius:4px;overflow:hidden;">';
+					html += '<div style="padding:4px 7px;font-size:' + fs + 'px;color:#ced4da;font-style:italic;min-height:26px;display:flex;align-items:center;">Por definir</div>';
+					html += '<div style="padding:4px 7px;font-size:' + fs + 'px;color:#ced4da;font-style:italic;border-top:1px solid #f0f0f0;min-height:26px;display:flex;align-items:center;">Por definir</div>';
+					html += '</div>';
+					return;
+				}
+				var jugado = p.ganador_id != null;
+				html += '<div style="border:1px solid ' + (jugado ? '#a5d051' : '#dee2e6') + ';border-radius:4px;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,0.05);">';
+				[[p.jugador1_id, p.jugador1, p.ganador_id == p.jugador1_id],
+				 [p.jugador2_id, p.jugador2, p.ganador_id == p.jugador2_id]].forEach(function(pl, pi) {
+					var pid = pl[0], pname = pl[1], isWin = jugado && pl[2];
+					var bg = isWin ? '#f0fae0' : '#fff';
+					var col = !jugado ? '#333' : (isWin ? '#2d6a00' : '#adb5bd');
+					var dec = jugado && !isWin ? 'line-through' : 'none';
+					var fw = isWin ? '700' : 'normal';
+					var seed = sembrados[pid] ? '<span style="color:#a5d051;font-weight:800;font-size:8px;margin-right:2px">[' + sembrados[pid] + ']</span>' : '';
+					var name = tc(pname);
+					var bt = pi === 1 ? 'border-top:1px solid #f0f0f0;' : '';
+					html += '<div style="padding:4px 7px;font-size:' + fs + 'px;background:' + bg + ';color:' + col + ';text-decoration:' + dec + ';font-weight:' + fw + ';min-height:26px;display:flex;align-items:center;' + bt + 'white-space:nowrap;overflow:hidden;">';
+					html += seed + '<span style="overflow:hidden;text-overflow:ellipsis;text-decoration:' + dec + ';">' + name + '</span></div>';
+				});
+				if(p.score && p.score !== 'BYE') {
+					html += '<div style="text-align:center;font-size:8px;color:#6c757d;background:#f8f9fa;padding:2px 5px;border-top:1px solid #f0f0f0;font-weight:600;">' + p.score + '</div>';
+				}
+				html += '</div>';
+			});
+
+			html += '</div></div>';
+
+			// Conector entre rondas
+			if(idx < rondasOrden.length - 1) {
+				var cnt = slots.length;
+				html += '<div style="width:' + connW + 'px;flex-shrink:0;display:flex;flex-direction:column;justify-content:space-around;padding:5px 0;">';
+				for(var ci = 0; ci < cnt; ci++) {
+					html += '<div style="flex:1;border-right:1px solid #dee2e6;margin:1px 0;"></div>';
+				}
+				html += '</div>';
+			}
+		});
+
+		html += '</div>';
+		return html;
+	}
+
+	// PDF DOWNLOAD — A4 portrait, alta calidad, bracket clásico izquierda→derecha
 	$('#btn-pdf').on('click', function(){
 		var cat = $('#draws-category').val();
 		var gen = $('#draws-gender').val();
 		var catNombre = $('#draws-category option:selected').text();
 		var genNombre = gen == 'M' ? 'Caballeros' : 'Damas';
 
-		// Use html2canvas + jsPDF
-		// Capturar el bracket interno completo (no el wrapper con overflow)
-		var wrapper = document.getElementById('draw-bracket');
-		var element = wrapper.querySelector('.draw-bracket') || wrapper;
-		var fullWidth = element.scrollWidth;
-		var fullHeight = element.scrollHeight;
-		html2canvas(element, { 
-			scale: 1.5, 
-			backgroundColor: '#ffffff', 
+		if(!currentPartidos || !currentPartidos.length) { alert('No hay draw cargado.'); return; }
+
+		var $tmp = $('<div>').css({ position: 'fixed', left: '-9999px', top: 0, zIndex: -1, background: '#fff' }).appendTo('body');
+		$tmp.html(renderBracketForPDF(currentPartidos, currentSembrados));
+
+		html2canvas($tmp[0].firstElementChild, {
+			scale: 3,
+			backgroundColor: '#ffffff',
 			useCORS: true,
-			scrollX: 0,
-			scrollY: 0,
-			width: fullWidth,
-			height: fullHeight,
-			windowWidth: fullWidth + 100
+			logging: false
 		}).then(function(canvas) {
+			$tmp.remove();
 			var imgData = canvas.toDataURL('image/png');
-			var pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+			var pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
 			var pageW = pdf.internal.pageSize.getWidth();
 			var pageH = pdf.internal.pageSize.getHeight();
 
-			// Header background
-			pdf.setFillColor(255, 255, 255);
-			pdf.rect(0, 0, pageW, 40, 'F');
-
-			// Logo
 			var logoImg = new Image();
 			logoImg.crossOrigin = 'anonymous';
 			logoImg.src = 'https://www.baltc.net/torneo/static/img/logo.png';
-			logoImg.onload = function() {
-				// Logo - mantener proporcion
-				var logoAspect = logoImg.naturalWidth / logoImg.naturalHeight;
-				var logoH = 30;
-				var logoW = logoH * logoAspect;
-				pdf.addImage(logoImg, 'PNG', 6, 5, logoW, logoH);
 
-				// Title
-				pdf.setTextColor(26, 26, 46);
-				pdf.setFontSize(18);
-				pdf.setFont('helvetica', 'bold');
-				pdf.text('TORNEO INTERNO DE SINGLES — BALTC', logoW + 12, 18);
-
-				// Subtitle
-				pdf.setFontSize(11);
-				pdf.setFont('helvetica', 'normal');
-				pdf.setTextColor(80, 80, 80);
-				pdf.text('Categoría ' + catNombre + ' — ' + genNombre + '   |   Inicio: 19 de Mayo 2026', logoW + 12, 30);
-
-				// Green accent line
-				pdf.setDrawColor(165, 208, 81);
-				pdf.setLineWidth(1.5);
-				pdf.line(0, 40, pageW, 40);
-
-				// Bracket image — fit entirely within page
-				var maxW = pageW - 20;
-				var maxH = pageH - 52;
-				var ratio = canvas.width / canvas.height;
-				var imgW = maxW;
-				var imgH = imgW / ratio;
-				if(imgH > maxH) {
-					imgH = maxH;
-					imgW = imgH * ratio;
+			var finalizarPDF = function(conLogo) {
+				var headerH = 32;
+				if(conLogo) {
+					var la = logoImg.naturalWidth / logoImg.naturalHeight;
+					var lh = 20, lw = lh * la;
+					pdf.addImage(logoImg, 'PNG', 6, 5, lw, lh);
+					pdf.setTextColor(26, 26, 46);
+					pdf.setFontSize(13);
+					pdf.setFont('helvetica', 'bold');
+					pdf.text('TORNEO INTERNO DE SINGLES — BALTC', lw + 10, 13);
+					pdf.setFontSize(9);
+					pdf.setFont('helvetica', 'normal');
+					pdf.setTextColor(80, 80, 80);
+					pdf.text('Categoría ' + catNombre + ' — ' + genNombre, lw + 10, 22);
+				} else {
+					pdf.setFontSize(13);
+					pdf.setFont('helvetica', 'bold');
+					pdf.setTextColor(26, 26, 46);
+					pdf.text('TORNEO INTERNO BALTC — ' + catNombre + ' ' + genNombre, pageW/2, 16, { align: 'center' });
 				}
-				var xOffset = (pageW - imgW) / 2;
-				pdf.addImage(imgData, 'PNG', xOffset, 44, imgW, imgH);
+				pdf.setDrawColor(165, 208, 81);
+				pdf.setLineWidth(1.2);
+				pdf.line(0, headerH, pageW, headerH);
 
-				// Footer
-				pdf.setFontSize(8);
-				pdf.setTextColor(150, 150, 150);
-				pdf.text('Buenos Aires Lawn Tennis Club — baltc.net/torneo', pageW/2, pageH - 5, { align: 'center' });
+				var availW = pageW - 16;
+				var availH = pageH - headerH - 14;
+				var ratio = canvas.width / canvas.height;
+				var imgW = availW, imgH = imgW / ratio;
+				if(imgH > availH) { imgH = availH; imgW = imgH * ratio; }
+				pdf.addImage(imgData, 'PNG', (pageW - imgW) / 2, headerH + 4, imgW, imgH);
 
+				pdf.setFontSize(7);
+				pdf.setTextColor(150);
+				pdf.text('Buenos Aires Lawn Tennis Club — baltc.net/torneo', pageW/2, pageH - 4, { align: 'center' });
 				pdf.save('Draw_' + catNombre + '_' + genNombre + '_BALTC.pdf');
 			};
+
+			logoImg.onload = function() { finalizarPDF(true); };
+			logoImg.onerror = function() { finalizarPDF(false); };
 		});
 	});
 });

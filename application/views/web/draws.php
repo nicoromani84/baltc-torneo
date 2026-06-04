@@ -459,11 +459,36 @@ $(function(){
 	var miCat = '<?=$mi_category?>';
 	var miGen = '<?=$mi_gender?>';
 	var miPartnerId = '<?=$mi_partner_id?>';
-	if(miCat && miGen && miCat !== '' && miGen !== '') {
-		$('#draws-category').val(miCat);
-		$('#draws-gender').val(miGen);
-		cargarDraw(miCat, miGen);
-	}
+	var disponibles = {};
+
+	$.ajax({
+		url: baseurl + 'draws/getDrawsDisponibles',
+		type: 'POST',
+		headers: { 'X-Auth-Token': token },
+		success: function(res) {
+			if(res.draws) {
+				res.draws.forEach(function(d){ disponibles[d.category+'_'+d.gender] = true; });
+			}
+			var initialGen = (miGen && miGen !== '') ? miGen : 'M';
+			$('#draws-gender').val(initialGen);
+			var toLoad = null;
+			if(miCat && miGen && disponibles[miCat+'_'+miGen]) {
+				toLoad = { cat: miCat, gen: miGen };
+			} else if(res.draws && res.draws.length) {
+				var fallback = (miGen && miGen !== '') ? res.draws.find(function(d){ return d.gender === miGen; }) : null;
+				if(!fallback) fallback = res.draws[0];
+				if(fallback) {
+					toLoad = { cat: fallback.category, gen: fallback.gender };
+					$('#draws-gender').val(toLoad.gen);
+				}
+			}
+			if(toLoad) {
+				$('#draws-category').val(toLoad.cat);
+				cargarDraw(toLoad.cat, toLoad.gen);
+			}
+		}
+	});
+
 	$('#draws-category, #draws-gender').on('change', function(){
 		var cat = $('#draws-category').val();
 		var gen = $('#draws-gender').val();

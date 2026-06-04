@@ -33,6 +33,7 @@ class Admin extends CI_Controller {
 		$d['titulo'] 	= 'Admin Dashboard';
 		$d['token']		= $this->protect->eToken();
 		$d['section']	= 'admin-dashboard';
+		$d['readonly']   = $this->Administrator->isReadOnly();
 		$d['jugadores']  = $this->Administrator->getJugadores();
 		$d['reservations'] = array();
 		$d['categories'] = $this->Administrator->getAllCategories();
@@ -82,8 +83,9 @@ class Admin extends CI_Controller {
 				'admin' =>
 					array(
 						'isLogged' 	=> true,
-						'id'				=> $u->id,
-						'name'				=> $u->username
+						'id'			=> $u->id,
+						'name'			=> $u->username,
+						'role'			=> isset($u->role) ? $u->role : 'admin'
 					)
 			);
 			$this->session->set_userdata($s);
@@ -396,6 +398,7 @@ class Admin extends CI_Controller {
 		$d['titulo']    = 'Partidos';
 		$d['token']     = $this->protect->eToken();
 		$d['section']   = 'admin-partidos';
+		$d['readonly']  = $this->Administrator->isReadOnly();
 		$d['matches']   = $this->Partido_model->getAll();
 		$d['categories'] = $this->Reservation->getCategories();
 		$d['inscriptos'] = $this->Administrator->getInscriptos();
@@ -502,6 +505,7 @@ class Admin extends CI_Controller {
 		$d['titulo']    = 'Draw';
 		$d['token']     = $this->protect->eToken();
 		$d['section']   = 'admin-draws';
+		$d['readonly']  = $this->Administrator->isReadOnly();
 		$d['categories'] = $this->Reservation->getCategories();
 		$this->load->view('admin/header', $d);
 		$this->load->view('admin/draws');
@@ -629,9 +633,26 @@ class Admin extends CI_Controller {
 	public function addJugador() {
 		$this->protect->setAjax();
 		$this->protect->setRequest('POST');
+		if($this->Administrator->isReadOnly()) $this->protect->ajaxDie(array('action'=>false,'msg'=>'Sin permisos.'));
 		$post = $this->input->post();
 		if(empty($post['name']) || empty($post['dni']) || empty($post['category'])) {
 			$this->protect->ajaxDie(array('action' => false, 'msg' => 'Faltan datos obligatorios.'));
+		}
+		// Si el DNI ya existe, inscribir al jugador existente en lugar de crear duplicado
+		$existente = $this->User->check($post['dni']);
+		if($existente) {
+			// Verificar que no esté ya en esta categoría específica
+			$ya = $this->db->select('r.id')->from('reservations r')
+				->join('reservations_partners rp','rp.reservation_id = r.id')
+				->where('rp.partner_id', $existente->id)
+				->where('r.category', intval($post['category']))->get();
+			if($ya->num_rows() > 0) {
+				$this->protect->ajaxDie(array('action'=>false,'msg'=>strtolower($existente->name).' ya está en esta categoría.'));
+			}
+			$this->db->insert('reservations', array('category' => intval($post['category'])));
+			$reserva_id = $this->db->insert_id();
+			$this->db->insert('reservations_partners', array('partner_id'=>$existente->id,'reservation_id'=>$reserva_id));
+			$this->protect->ajaxDie(array('action'=>true,'msg'=>'Jugador existente inscripto en la nueva categoría.'));
 		}
 		$id = $this->Administrator->addJugador($post);
 		$this->protect->ajaxDie(array('action' => $id > 0));
@@ -640,6 +661,7 @@ class Admin extends CI_Controller {
 	public function editJugador() {
 		$this->protect->setAjax();
 		$this->protect->setRequest('POST');
+		if($this->Administrator->isReadOnly()) $this->protect->ajaxDie(array('action'=>false,'msg'=>'Sin permisos.'));
 		$post = $this->input->post();
 		$ok = $this->Administrator->editJugador(intval($post['id']), intval($post['reserva_id']), $post);
 		$this->protect->ajaxDie(array('action' => $ok));
@@ -648,6 +670,7 @@ class Admin extends CI_Controller {
 	public function deleteJugador() {
 		$this->protect->setAjax();
 		$this->protect->setRequest('POST');
+		if($this->Administrator->isReadOnly()) $this->protect->ajaxDie(array('action'=>false,'msg'=>'Sin permisos.'));
 		$id = intval($this->input->post('id'));
 		$reserva_id = intval($this->input->post('reserva_id'));
 		$ok = $this->Administrator->deleteJugador($id, $reserva_id);
@@ -657,6 +680,7 @@ class Admin extends CI_Controller {
 	public function sorteo() {
 		$this->protect->setRequest('GET');
 		if (!$this->Administrator->isLogged()) redirect(base_url('/admin'));
+		if ($this->Administrator->isReadOnly()) redirect(base_url('/admin'));
 		$d['titulo']    = 'Sorteo';
 		$d['token']     = $this->protect->eToken();
 		$d['section']   = 'admin-sorteo';
@@ -680,6 +704,7 @@ class Admin extends CI_Controller {
 	public function confirmarSorteo() {
 		$this->protect->setAjax();
 		$this->protect->setRequest('POST');
+		if($this->Administrator->isReadOnly()) $this->protect->ajaxDie(array('action'=>false,'msg'=>'Sin permisos.'));
 		$category = intval($this->input->post('category'));
 		$gender   = $this->input->post('gender', true);
 		$jugadores = json_decode($this->input->post('jugadores'), true);
@@ -939,5 +964,446 @@ class Admin extends CI_Controller {
 		    ->subject($subject)
 		    ->message($body)
 		    ->send(); // EMAILS DESHABILITADOS
+	}
+
+	private function _getEmailTemplates() {
+		return array(
+			'bienvenida' => array(
+				'nombre' => '🎾 Bienvenida al torneo',
+				'asunto' => '¡Bienvenido al Torneo Interno de Singles - Open BALTC!',
+			),
+		);
+	}
+
+	public function getEmailTemplates() {
+		$this->protect->setAjax();
+		$this->protect->setRequest('POST');
+		if(!$this->Administrator->isLogged()) $this->protect->ajaxDie(array('action'=>false));
+		$list = array();
+		foreach($this->_getEmailTemplates() as $id => $t) {
+			$list[] = array('id' => $id, 'nombre' => $t['nombre'], 'asunto' => $t['asunto']);
+		}
+		$this->protect->ajaxDie(array('action'=>true, 'templates'=>$list));
+	}
+
+	public function previewEmailTemplate() {
+		$this->protect->setAjax();
+		$this->protect->setRequest('POST');
+		if(!$this->Administrator->isLogged()) $this->protect->ajaxDie(array('action'=>false));
+		$template_id = $this->input->post('template_id', true);
+		$templates = $this->_getEmailTemplates();
+		if(!isset($templates[$template_id])) $this->protect->ajaxDie(array('action'=>false, 'msg'=>'Template no encontrado.'));
+		$data = array('nombre' => 'Jugador de Prueba');
+		$html = $this->load->view('email/' . $template_id . '.php', $data, true);
+		$this->protect->ajaxDie(array('action'=>true, 'html'=>$html, 'asunto'=>$templates[$template_id]['asunto']));
+	}
+
+	public function enviarInvitacion2ndChance() {
+		$this->protect->setAjax();
+		$this->protect->setRequest('POST');
+		if(!$this->Administrator->isLogged()) $this->protect->ajaxDie(array('action'=>false));
+
+		$secret     = 'baltc_2ndchance_2026';
+		$orden_rondas = array('1ra Ronda','2da Ronda','Cuartos de Final','Semifinal','Final');
+
+		// Obtener combos category+gender con partidos jugados
+		$combos = $this->db->query("
+			SELECT DISTINCT m.category, c.name AS cat_name, m.gender
+			FROM matches m
+			JOIN category c ON c.id = m.category
+			WHERE c.name NOT LIKE '%2nd chance%' AND m.ganador_id IS NOT NULL
+			ORDER BY m.category ASC, m.gender ASC
+		")->result();
+
+		$this->load->library('email');
+		$enviados = 0;
+		$lista    = array();
+
+		foreach($combos as $combo) {
+			// Ronda inicial de esta categoría+género
+			$ronda_inicial = null;
+			foreach($orden_rondas as $ronda) {
+				$r = $this->db->query(
+					"SELECT COUNT(*) AS cnt FROM matches WHERE category=? AND gender=? AND ronda=? AND ganador_id IS NOT NULL AND score!='BYE'",
+					array($combo->category, $combo->gender, $ronda)
+				)->row();
+				if($r->cnt > 0) { $ronda_inicial = $ronda; break; }
+			}
+			if(!$ronda_inicial) continue;
+
+			// Categoría 2nd chance correspondiente
+			$cat_2nd = $this->db->where('name', $combo->cat_name . ' 2nd chance')->get('category')->row();
+			if(!$cat_2nd) continue;
+
+			// Perdedores de esa ronda inicial
+			$losers = $this->db->query("
+				SELECT CASE WHEN m.ganador_id=m.jugador1_id THEN m.jugador2_id ELSE m.jugador1_id END AS loser_id
+				FROM matches m
+				WHERE m.category=? AND m.gender=? AND m.ronda=? AND m.ganador_id IS NOT NULL AND m.score!='BYE'
+			", array($combo->category, $combo->gender, $ronda_inicial))->result();
+
+			foreach($losers as $l) {
+				$partner = $this->User->getById($l->loser_id);
+				if(!$partner || !filter_var($partner->email, FILTER_VALIDATE_EMAIL)) continue;
+
+				$token = md5($partner->id . ':' . $cat_2nd->id . ':' . $secret);
+				$link  = base_url('invitacion/aceptar2ndchance') . '?pid=' . $partner->id . '&cid=' . $cat_2nd->id . '&t=' . $token;
+
+				$data = array(
+					'nombre'        => $partner->name,
+					'categoria'     => $combo->cat_name,
+					'ronda_inicial' => $ronda_inicial,
+					'link_inscripcion' => $link,
+				);
+				$body = $this->load->view('email/invitacion_2ndchance.php', $data, true);
+				$this->email->initialize(array());
+				$this->email
+					->from('secretaria@baltc.net', 'Secretaría BALTC')
+					->to($partner->email)
+					->subject('¿Querés seguir en el torneo? — 2nd Chance BALTC')
+					->message($body)
+					->send();
+
+				$enviados++;
+				$lista[] = array('nombre' => $partner->name, 'email' => $partner->email, 'categoria' => $combo->cat_name . ' 2nd chance');
+			}
+		}
+
+		$this->protect->ajaxDie(array('action' => true, 'enviados' => $enviados, 'lista' => $lista));
+	}
+
+	public function preview2ndChance() {
+		$this->protect->setAjax();
+		$this->protect->setRequest('POST');
+		if(!$this->Administrator->isLogged()) $this->protect->ajaxDie(array('action'=>false));
+
+		$orden_rondas = array('1ra Ronda','2da Ronda','Cuartos de Final','Semifinal','Final');
+		$combos = $this->db->query("
+			SELECT DISTINCT m.category, c.name AS cat_name, m.gender
+			FROM matches m
+			JOIN category c ON c.id = m.category
+			WHERE c.name NOT LIKE '%2nd chance%' AND m.ganador_id IS NOT NULL
+			ORDER BY m.category ASC, m.gender ASC
+		")->result();
+
+		$lista = array();
+		foreach($combos as $combo) {
+			$ronda_inicial = null;
+			foreach($orden_rondas as $ronda) {
+				$r = $this->db->query(
+					"SELECT COUNT(*) AS cnt FROM matches WHERE category=? AND gender=? AND ronda=? AND ganador_id IS NOT NULL AND score!='BYE'",
+					array($combo->category, $combo->gender, $ronda)
+				)->row();
+				if($r->cnt > 0) { $ronda_inicial = $ronda; break; }
+			}
+			if(!$ronda_inicial) continue;
+			$cat_2nd = $this->db->where('name', $combo->cat_name . ' 2nd chance')->get('category')->row();
+			if(!$cat_2nd) continue;
+
+			$losers = $this->db->query("
+				SELECT CASE WHEN m.ganador_id=m.jugador1_id THEN m.jugador2_id ELSE m.jugador1_id END AS loser_id
+				FROM matches m
+				WHERE m.category=? AND m.gender=? AND m.ronda=? AND m.ganador_id IS NOT NULL AND m.score!='BYE'
+			", array($combo->category, $combo->gender, $ronda_inicial))->result();
+
+			$gen = $combo->gender === 'M' ? 'Caballeros' : 'Damas';
+			foreach($losers as $l) {
+				$partner = $this->User->getById($l->loser_id);
+				if(!$partner || !filter_var($partner->email, FILTER_VALIDATE_EMAIL)) continue;
+				$lista[] = array('nombre' => $partner->name, 'email' => $partner->email, 'categoria' => $combo->cat_name . ' 2nd chance — ' . $gen);
+			}
+		}
+		$this->protect->ajaxDie(array('action'=>true, 'total'=>count($lista), 'lista'=>$lista));
+	}
+
+	public function preview2ndChanceEmail() {
+		$this->protect->setAjax();
+		$this->protect->setRequest('POST');
+		if(!$this->Administrator->isLogged()) $this->protect->ajaxDie(array('action'=>false));
+		$data = array(
+			'nombre'           => 'ROMANI, NICOLAS',
+			'categoria'        => '1ra',
+			'ronda_inicial'    => '2da Ronda',
+			'link_inscripcion' => base_url('invitacion/aceptar2ndchance') . '?pid=0&cid=0&t=preview',
+		);
+		$html = $this->load->view('email/invitacion_2ndchance.php', $data, true);
+		$this->protect->ajaxDie(array('action'=>true, 'html'=>$html));
+	}
+
+	public function enviarInvitacion2ndChanceIndividual() {
+		$this->protect->setAjax();
+		$this->protect->setRequest('POST');
+		if(!$this->Administrator->isLogged()) $this->protect->ajaxDie(array('action'=>false));
+
+		$partner_id = intval($this->input->post('partner_id'));
+		$secret     = 'baltc_2ndchance_2026';
+		$orden_rondas = array('1ra Ronda','2da Ronda','Cuartos de Final','Semifinal','Final');
+
+		$partner = $this->User->getById($partner_id);
+		if(!$partner) $this->protect->ajaxDie(array('action'=>false,'msg'=>'Jugador no encontrado.'));
+		if(!filter_var($partner->email, FILTER_VALIDATE_EMAIL)) $this->protect->ajaxDie(array('action'=>false,'msg'=>'El jugador no tiene email válido.'));
+
+		// Buscar su categoría original (no 2nd chance) y ronda inicial
+		$reserva = $this->db->query("
+			SELECT r.category, c.name AS cat_name
+			FROM reservations r
+			JOIN reservations_partners rp ON rp.reservation_id = r.id
+			JOIN category c ON c.id = r.category
+			WHERE rp.partner_id = ? AND c.name NOT LIKE '%2nd chance%'
+			LIMIT 1
+		", array($partner_id))->row();
+
+		if(!$reserva) $this->protect->ajaxDie(array('action'=>false,'msg'=>'El jugador no tiene categoría original asignada.'));
+
+		$ronda_inicial = null;
+		foreach($orden_rondas as $ronda) {
+			$r = $this->db->query(
+				"SELECT COUNT(*) AS cnt FROM matches WHERE category=? AND ronda=? AND ganador_id IS NOT NULL AND score!='BYE'",
+				array($reserva->category, $ronda)
+			)->row();
+			if($r->cnt > 0) { $ronda_inicial = $ronda; break; }
+		}
+		if(!$ronda_inicial) $this->protect->ajaxDie(array('action'=>false,'msg'=>'No se encontró ronda inicial jugada para su categoría.'));
+
+		$cat_2nd = $this->db->where('name', $reserva->cat_name . ' 2nd chance')->get('category')->row();
+		if(!$cat_2nd) $this->protect->ajaxDie(array('action'=>false,'msg'=>'No existe la categoría "' . $reserva->cat_name . ' 2nd chance".'));
+
+		$token = md5($partner_id . ':' . $cat_2nd->id . ':' . $secret);
+		$link  = base_url('invitacion/aceptar2ndchance') . '?pid=' . $partner_id . '&cid=' . $cat_2nd->id . '&t=' . $token;
+
+		$data = array(
+			'nombre'           => $partner->name,
+			'categoria'        => $reserva->cat_name,
+			'ronda_inicial'    => $ronda_inicial,
+			'link_inscripcion' => $link,
+		);
+		$body = $this->load->view('email/invitacion_2ndchance.php', $data, true);
+		$this->load->library('email');
+		$this->email->initialize(array());
+		$this->email
+			->from('secretaria@baltc.net', 'Secretaría BALTC')
+			->to($partner->email)
+			->subject('¿Querés seguir en el torneo? — 2nd Chance BALTC')
+			->message($body)
+			->send();
+
+		$this->protect->ajaxDie(array('action'=>true, 'msg'=>'Mail enviado a ' . $partner->email));
+	}
+
+	public function get2ndChanceInscriptos() {
+		$this->protect->setAjax();
+		$this->protect->setRequest('POST');
+		if(!$this->Administrator->isLogged()) $this->protect->ajaxDie(array('action'=>false));
+		$rows = $this->db->query("
+			SELECT p.id, p.name, p.gender, r.id AS reserva_id, c.id AS cat_id, c.name AS categoria
+			FROM reservations r
+			JOIN reservations_partners rp ON rp.reservation_id = r.id
+			JOIN partners p ON p.id = rp.partner_id
+			JOIN category c ON c.id = r.category
+			WHERE c.name LIKE '%2nd chance%'
+			ORDER BY c.name ASC, p.name ASC
+		")->result();
+		$this->protect->ajaxDie(array('action'=>true, 'inscriptos'=> $rows ?: array()));
+	}
+
+	public function mails() {
+		$this->protect->setRequest('GET');
+		if (!$this->Administrator->isLogged()) redirect(base_url('/admin'));
+		$d['titulo']    = 'Envío de Mails';
+		$d['token']     = $this->protect->eToken();
+		$d['section']   = 'admin-mails';
+		$d['readonly']  = $this->Administrator->isReadOnly();
+		$d['categories'] = $this->Administrator->getAllCategories();
+		$this->load->view('admin/header', $d);
+		$this->load->view('admin/mails');
+		$this->load->view('admin/footer');
+	}
+
+	public function getDestinatariosNotificacion() {
+		$this->protect->setAjax();
+		$this->protect->setRequest('POST');
+		if(!$this->Administrator->isLogged()) $this->protect->ajaxDie(array('action'=>false));
+		$tipo       = $this->input->post('tipo', true);
+		$category   = intval($this->input->post('category'));
+		$partner_id = intval($this->input->post('partner_id'));
+		$jugadores  = array();
+		if($tipo === 'todos') {
+			$jugadores = $this->Administrator->getJugadores();
+		} elseif($tipo === 'categoria' && $category) {
+			$jugadores = $this->Administrator->getJugadoresByCategory($category);
+		} elseif($tipo === 'individual' && $partner_id) {
+			$j = $this->User->getById($partner_id);
+			if($j) $jugadores = array($j);
+		} elseif($tipo === '2ndchance') {
+			$rows = $this->db->query("
+				SELECT DISTINCT p.id, p.name, p.email, c.name as categoria
+				FROM reservations r
+				JOIN reservations_partners rp ON rp.reservation_id = r.id
+				JOIN partners p ON p.id = rp.partner_id
+				JOIN category c ON c.id = r.category
+				WHERE c.name LIKE '%2nd chance%'
+				ORDER BY p.name ASC
+			")->result();
+			$jugadores = $rows;
+		}
+		$destinatarios = array();
+		$seen = array();
+		foreach($jugadores as $j) {
+			if(in_array($j->id, $seen)) continue;
+			if(!filter_var($j->email, FILTER_VALIDATE_EMAIL)) continue;
+			$seen[] = $j->id;
+			$destinatarios[] = array(
+				'id'       => $j->id,
+				'name'     => $j->name,
+				'email'    => $j->email,
+				'categoria'=> isset($j->categoria) ? $j->categoria : '',
+			);
+		}
+		$this->protect->ajaxDie(array('action'=>true, 'total'=>count($destinatarios), 'destinatarios'=>$destinatarios));
+	}
+
+	public function guardarPendientes2ndChance() {
+		$this->protect->setAjax();
+		$this->protect->setRequest('POST');
+		if(!$this->Administrator->isLogged()) $this->protect->ajaxDie(array('action'=>false));
+
+		$destinatarios = json_decode($this->input->post('destinatarios'), true);
+		if(!is_array($destinatarios) || empty($destinatarios)) {
+			$this->protect->ajaxDie(array('action'=>false, 'msg'=>'Sin destinatarios.'));
+		}
+
+		// Limpiar pendientes anteriores
+		$this->db->delete('mail_pendientes_2ndchance');
+
+		// Guardar nuevos pendientes
+		foreach($destinatarios as $d) {
+			$this->db->insert('mail_pendientes_2ndchance', array(
+				'partner_id' => intval($d['id']),
+				'partner_name' => $d['name'],
+				'partner_email' => $d['email'],
+				'categoria' => $d['categoria']
+			));
+		}
+
+		$this->protect->ajaxDie(array('action'=>true, 'total'=>count($destinatarios)));
+	}
+
+	public function enviarNotificacion() {
+		$this->protect->setAjax();
+		$this->protect->setRequest('POST');
+		if(!$this->Administrator->isLogged()) $this->protect->ajaxDie(array('action'=>false));
+		$tipo        = $this->input->post('tipo', true);
+		$category    = intval($this->input->post('category'));
+		$partner_id  = intval($this->input->post('partner_id'));
+		$template_id = $this->input->post('template_id', true);
+		$templates   = $this->_getEmailTemplates();
+		if(empty($template_id) || !isset($templates[$template_id])) {
+			$this->protect->ajaxDie(array('action'=>false, 'msg'=>'Template no válido.'));
+		}
+		$asunto = $templates[$template_id]['asunto'];
+		$jugadores = array();
+		if($tipo === 'todos') {
+			$jugadores = $this->Administrator->getJugadores();
+		} elseif($tipo === 'categoria' && $category) {
+			$jugadores = $this->Administrator->getJugadoresByCategory($category);
+		} elseif($tipo === 'individual' && $partner_id) {
+			$j = $this->User->getById($partner_id);
+			if($j) $jugadores = array($j);
+		} elseif($tipo === '2ndchance') {
+			// Usar los pendientes guardados
+			$rows = $this->db->query("
+				SELECT partner_id as id, partner_name as name, partner_email as email, categoria
+				FROM mail_pendientes_2ndchance
+				ORDER BY partner_name ASC
+			")->result();
+			$jugadores = $rows;
+		}
+		$this->load->library('email');
+		$enviados = 0;
+		$seen = array();
+		foreach($jugadores as $j) {
+			if(in_array($j->id, $seen)) continue;
+			if(!filter_var($j->email, FILTER_VALIDATE_EMAIL)) continue;
+			$seen[] = $j->id;
+			$data = array('nombre' => $j->name);
+			$body = $this->load->view('email/' . $template_id . '.php', $data, true);
+			$this->email->initialize(array());
+			$this->email
+				->from('secretaria@baltc.net', 'Secretaría BALTC')
+				->to($j->email)
+				->subject($asunto)
+				->message($body)
+				->send();
+			$enviados++;
+		}
+		// Limpiar pendientes después de enviar
+		if($tipo === '2ndchance') {
+			$this->db->delete('mail_pendientes_2ndchance');
+		}
+		$this->protect->ajaxDie(array('action'=>true, 'enviados'=>$enviados));
+	}
+
+	public function descargarExcelJugadores() {
+		if (!$this->Administrator->isLogged()) {
+			redirect('admin/login');
+		}
+
+		$sql = "SELECT
+					c.name AS categoria,
+					p.name AS nombre,
+					p.dni,
+					p.email,
+					p.gender,
+					p2.name AS pareja,
+					p2.dni AS pareja_dni,
+					p2.email AS pareja_email
+				FROM reservations r
+				JOIN reservations_partners rp ON r.id = rp.reservation_id
+				JOIN partners p ON p.id = rp.partner_id
+				LEFT JOIN reservations_partners rp2 ON r.id = rp2.reservation_id AND rp2.partner_id != p.id
+				LEFT JOIN partners p2 ON p2.id = rp2.partner_id
+				JOIN category c ON c.id = r.category
+				ORDER BY c.name, p.name";
+
+		$query  = $this->db->query($sql);
+		$rows   = $query->result();
+
+		$html  = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">';
+		$html .= '<head><meta charset="UTF-8"></head><body>';
+		$html .= '<table border="1">';
+		$html .= '<tr>
+					<th>Categoría</th>
+					<th>Nombre</th>
+					<th>DNI</th>
+					<th>Email</th>
+					<th>Género</th>
+					<th>Pareja</th>
+					<th>DNI Pareja</th>
+					<th>Email Pareja</th>
+				  </tr>';
+
+		foreach ($rows as $row) {
+			$genero = ($row->gender === 'M') ? 'Caballeros' : 'Damas';
+			$html .= '<tr>';
+			$html .= '<td>' . htmlspecialchars($row->categoria,  ENT_QUOTES, 'UTF-8') . '</td>';
+			$html .= '<td>' . htmlspecialchars($row->nombre,     ENT_QUOTES, 'UTF-8') . '</td>';
+			$html .= '<td>' . htmlspecialchars($row->dni,        ENT_QUOTES, 'UTF-8') . '</td>';
+			$html .= '<td>' . htmlspecialchars($row->email,      ENT_QUOTES, 'UTF-8') . '</td>';
+			$html .= '<td>' . $genero . '</td>';
+			$html .= '<td>' . htmlspecialchars($row->pareja      ?: '', ENT_QUOTES, 'UTF-8') . '</td>';
+			$html .= '<td>' . htmlspecialchars($row->pareja_dni  ?: '', ENT_QUOTES, 'UTF-8') . '</td>';
+			$html .= '<td>' . htmlspecialchars($row->pareja_email ?: '', ENT_QUOTES, 'UTF-8') . '</td>';
+			$html .= '</tr>';
+		}
+
+		$html .= '</table></body></html>';
+
+		header('Content-Type: application/vnd.ms-excel; charset=UTF-8');
+		header('Content-Disposition: attachment; filename="inscriptos_' . date('Y-m-d') . '.xls"');
+		header('Pragma: no-cache');
+		header('Expires: 0');
+
+		echo "\xEF\xBB\xBF" . $html;
+		exit;
 	}
 }

@@ -23,7 +23,7 @@ class Partido_model extends CI_Model {
 	// Obtener todos los partidos con nombres
 	public function getAll() {
 		$q = $this->db
-			->select('m.id, m.ronda, m.score, m.category, m.gender,
+			->select('m.id, m.ronda, m.score, m.category, m.gender, m.fecha, m.hora, m.deadline,
 				c.name as categoria,
 				p1.name as jugador1, m.jugador1_id,
 				p2.name as jugador2, m.jugador2_id,
@@ -90,6 +90,13 @@ class Partido_model extends CI_Model {
 		if(isset($data['score']) && $data['score'] === '') {
 			$data['score'] = NULL;
 		}
+		// Convertir fecha/hora vacías a NULL
+		if(isset($data['fecha']) && ($data['fecha'] === '' || $data['fecha'] === '0000-00-00')) {
+			$data['fecha'] = NULL;
+		}
+		if(isset($data['hora']) && $data['hora'] === '') {
+			$data['hora'] = NULL;
+		}
 		$this->db->where('id', $id)->update('matches', $data);
 		return $this->db->affected_rows();
 	}
@@ -114,21 +121,22 @@ class Partido_model extends CI_Model {
 
 	// Obtener partidos pendientes de un jugador
 	public function getPendientesByPlayer($user_id) {
-		$sql = "SELECT m.id, m.ronda, m.score, m.gender, m.category,
+		$sql = "SELECT m.id, m.ronda, m.score, m.gender, m.category, m.deadline, m.fecha, m.hora,
 				c.name as categoria,
 				p1.name as jugador1, m.jugador1_id,
 				p2.name as jugador2, m.jugador2_id,
 				CASE WHEN m.jugador1_id = ? THEN p1.name ELSE p2.name END as yo,
 				CASE WHEN m.jugador1_id = ? THEN p2.name ELSE p1.name END as rival,
-				CASE WHEN m.jugador1_id = ? THEN m.jugador1_id ELSE m.jugador2_id END as yo_id
+				CASE WHEN m.jugador1_id = ? THEN m.jugador1_id ELSE m.jugador2_id END as yo_id,
+				CASE WHEN m.jugador1_id = ? THEN p2.whatsapp ELSE p1.whatsapp END as rival_wa
 				FROM matches m
 				JOIN category c ON c.id = m.category
 				JOIN partners p1 ON p1.id = m.jugador1_id
 				JOIN partners p2 ON p2.id = m.jugador2_id
 				WHERE (m.jugador1_id = ? OR m.jugador2_id = ?)
 				AND m.ganador_id IS NULL
-				ORDER BY m.id ASC";
-		$q = $this->db->query($sql, array($user_id, $user_id, $user_id, $user_id, $user_id));
+				ORDER BY CASE WHEN c.name LIKE '%2nd chance%' THEN 0 ELSE 1 END ASC, m.id ASC";
+		$q = $this->db->query($sql, array($user_id, $user_id, $user_id, $user_id, $user_id, $user_id));
 		return ($q->num_rows() > 0) ? $q->result() : array();
 	}
 
@@ -146,12 +154,12 @@ class Partido_model extends CI_Model {
 	// Obtener partidos de una ronda específica ordenados por id
 	public function getByRonda($category_id, $gender, $ronda) {
 		$q = $this->db
-			->select('m.id, m.jugador1_id, m.jugador2_id, m.ganador_id, m.ronda, m.category, m.gender')
+			->select('m.id, m.jugador1_id, m.jugador2_id, m.ganador_id, m.ronda, m.category, m.gender, m.bracket_pos')
 			->from('matches m')
 			->where('m.category', $category_id)
 			->where('m.gender', $gender)
 			->where('m.ronda', $ronda)
-			->order_by('m.id ASC')
+			->order_by('m.bracket_pos ASC')
 			->get();
 		return ($q->num_rows() > 0) ? $q->result() : null;
 	}

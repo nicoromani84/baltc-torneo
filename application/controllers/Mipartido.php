@@ -67,6 +67,29 @@ class Mipartido extends CI_Controller {
 		$this->protect->ajaxDie(array('action' => $updated !== false));
 	}
 
+	public function guardarFechaAcordada() {
+		$this->protect->setAjax();
+		$this->protect->setRequest('POST');
+		if(!$this->User->isLogged()) $this->protect->ajaxDie(array('action'=>false,'msg'=>'No autorizado.'));
+
+		$user_id = $this->session->id;
+		$id      = intval($this->input->post('id'));
+		$fecha   = $this->input->post('fecha', true);
+		$hora    = $this->input->post('hora', true);
+
+		$partido = $this->Partido_model->getById($id);
+		if(!$partido) $this->protect->ajaxDie(array('action'=>false,'msg'=>'Partido no encontrado.'));
+		if($partido->jugador1_id != $user_id && $partido->jugador2_id != $user_id) {
+			$this->protect->ajaxDie(array('action'=>false,'msg'=>'Sin permiso.'));
+		}
+		if(!empty($partido->deadline) && !empty($fecha) && strtotime($fecha) > strtotime($partido->deadline)) {
+			$this->protect->ajaxDie(array('action'=>false,'msg'=>'La fecha debe ser antes del deadline (' . date('d/m/Y', strtotime($partido->deadline)) . ').'));
+		}
+
+		$this->Partido_model->edit($id, array('fecha' => $fecha, 'hora' => $hora ?: null));
+		$this->protect->ajaxDie(array('action'=>true));
+	}
+
 	private function _sendResultadoEmail($partido_id, $ganador_id, $score) {
 		$partido = $this->Partido_model->getById($partido_id);
 		if(!$partido) return;
@@ -109,18 +132,16 @@ class Mipartido extends CI_Controller {
 		$partidos_ronda = $this->Partido_model->getByRonda($partido->category, $partido->gender, $partido->ronda);
 		if(!$partidos_ronda) return;
 
-		$pos = -1;
-		foreach($partidos_ronda as $i => $p) {
-			if($p->id == $partido_id) { $pos = $i; break; }
+		$bp = intval($partido->bracket_pos);
+		$hermano_bp = ($bp % 2 === 0) ? $bp + 1 : $bp - 1;
+
+		$hermano = null;
+		foreach($partidos_ronda as $p) {
+			if(intval($p->bracket_pos) === $hermano_bp) { $hermano = $p; break; }
 		}
-		if($pos === -1) return;
+		if(!$hermano || empty($hermano->ganador_id)) return;
 
-		$hermano_pos = ($pos % 2 === 0) ? $pos + 1 : $pos - 1;
-		if(!isset($partidos_ronda[$hermano_pos])) return;
-		$hermano = $partidos_ronda[$hermano_pos];
-		if(empty($hermano->ganador_id)) return;
-
-		if($pos % 2 === 0) {
+		if($bp % 2 === 0) {
 			$j1 = $ganador_id;
 			$j2 = intval($hermano->ganador_id);
 		} else {
@@ -132,7 +153,7 @@ class Mipartido extends CI_Controller {
 		if($existe) return;
 
 		$gender_val = !empty($partido->gender) ? $partido->gender : '';
-		$next_pos = floor(min($pos, $hermano_pos) / 2);
+		$next_pos = (int)floor(min($bp, $hermano_bp) / 2);
 		$this->Partido_model->add(array(
 			'category'    => $partido->category,
 			'gender'      => $gender_val,

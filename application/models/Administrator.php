@@ -26,6 +26,11 @@ class Administrator extends CI_Model
 		return $this->session->userdata['admin']['isLogged'];
 	}
 
+	public function isReadOnly() {
+		$a = $this->session->userdata('admin');
+		return isset($a['role']) && $a['role'] === 'readonly';
+	}
+
 	//Obtiene las reservas para el dashboard
 	public function getReservations($gender = false, $category = false) {
 		$this->db
@@ -134,6 +139,20 @@ class Administrator extends CI_Model
 		$this->db->delete('reservations', array('id' => $reserva_id));
 		return true;
 	}
+	// Jugadores de una categoría con email (para envío de mails)
+	public function getJugadoresByCategory($category_id) {
+		$sql = "SELECT DISTINCT p.id, p.name, p.dni, p.email, p.gender,
+				c.id as category_id, c.name as categoria, r.id as reserva_id
+				FROM reservations r
+				JOIN reservations_partners rp ON rp.reservation_id = r.id
+				JOIN partners p ON p.id = rp.partner_id
+				JOIN category c ON c.id = r.category
+				WHERE r.category = ?
+				ORDER BY p.name ASC";
+		$q = $this->db->query($sql, array($category_id));
+		return ($q->num_rows() > 0) ? $q->result() : array();
+	}
+
 // ── CATEGORÍAS ──────────────────────────────────────────
 
 	public function getAllCategories() {

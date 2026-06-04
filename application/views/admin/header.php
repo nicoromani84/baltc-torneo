@@ -90,16 +90,25 @@
 				<i class="fas fa-tennis-ball"></i> Partidos
 			</a>
 		</li>
+		<?php if(empty($readonly)): ?>
 		<li class="<?=$section=='admin-sorteo'?'active':''?>">
 			<a href="<?=base_url('admin/sorteo')?>">
 				<i class="fas fa-random"></i> Sorteo
 			</a>
 		</li>
+		<?php endif; ?>
 		<li class="<?=$section=='admin-draws'?'active':''?>">
 			<a href="<?=base_url('admin/draws')?>">
 				<i class="fas fa-sitemap"></i> Draws
 			</a>
 		</li>
+		<?php if(empty($readonly)): ?>
+		<li class="<?=$section=='admin-mails'?'active':''?>">
+			<a href="<?=base_url('admin/mails')?>">
+				<i class="fas fa-envelope"></i> Mails
+			</a>
+		</li>
+		<?php endif; ?>
 		<li class="admin-navbar-logout">
 			<a href="<?=base_url('admin/logout')?>">
 				<i class="fas fa-sign-out-alt"></i> Salir

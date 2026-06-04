@@ -54,6 +54,10 @@
 				</table>
 			</div>
 
+			<div style="background:#fff8e1; border-left:4px solid #f0ad4e; border-radius:4px; padding:12px 16px; margin-bottom:20px;">
+				<p style="margin:0; color:#856404; font-size:14px;">🎾 <strong>Recordatorio:</strong> no te olvides de devolver el tubo de balls en Secretaría en horario de 9 a 18hs.</p>
+			</div>
+
 			<p style="color:#666; font-size:14px;">Seguí atento la sección <strong>Partidos</strong> para conocer tu próximo rival.</p>
 			<p style="color:#666; font-size:14px;">Seguí el torneo en <a href="https://www.baltc.net/torneo" style="color:#7a9e3a;">baltc.net/torneo</a></p>
 			<p style="color:#666; font-size:14px;">Muchas gracias,<br><strong>Secretaría BALTC</strong></p>
