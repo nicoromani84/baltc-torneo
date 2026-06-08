@@ -1656,6 +1656,245 @@ public function enviarNotificacion() {
 		echo '</pre>';
 	}
 
+	public function descargarRankingPDF() {
+		ob_start();
+		?>
+		<!DOCTYPE html>
+		<html>
+		<head>
+			<meta charset="UTF-8">
+			<title>Sistema de Ranking BALTC</title>
+			<style>
+				body {
+					font-family: Arial, sans-serif;
+					max-width: 800px;
+					margin: 20px auto;
+					padding: 20px;
+					color: #333;
+					line-height: 1.6;
+				}
+				.header {
+					text-align: center;
+					margin-bottom: 30px;
+					border-bottom: 3px solid #0066cc;
+					padding-bottom: 20px;
+				}
+				.logo {
+					max-width: 150px;
+					height: auto;
+					margin-bottom: 15px;
+				}
+				h1 {
+					color: #0066cc;
+					font-size: 28px;
+					margin: 10px 0;
+				}
+				.subtitle {
+					color: #666;
+					font-size: 14px;
+					margin: 5px 0;
+				}
+				.section {
+					margin: 25px 0;
+					padding: 15px;
+					background: #f8f9fa;
+					border-left: 4px solid #0066cc;
+				}
+				.section h2 {
+					color: #0066cc;
+					font-size: 18px;
+					margin-top: 0;
+				}
+				table {
+					width: 100%;
+					border-collapse: collapse;
+					margin: 15px 0;
+				}
+				th, td {
+					padding: 10px;
+					text-align: left;
+					border-bottom: 1px solid #ddd;
+				}
+				th {
+					background: #0066cc;
+					color: white;
+					font-weight: bold;
+				}
+				tr:nth-child(even) {
+					background: #f9f9f9;
+				}
+				.highlight {
+					background: #fff3cd;
+					padding: 10px;
+					border-left: 3px solid #ffc107;
+					margin: 10px 0;
+				}
+				.punto {
+					margin: 8px 0;
+					padding-left: 20px;
+				}
+				.footer {
+					text-align: center;
+					margin-top: 30px;
+					padding-top: 20px;
+					border-top: 1px solid #ddd;
+					color: #999;
+					font-size: 12px;
+				}
+				@media print {
+					body { margin: 0; padding: 10px; }
+					.section { page-break-inside: avoid; }
+				}
+			</style>
+		</head>
+		<body>
+			<div class="header">
+				<img src="<?=asset_url('img/logo.png')?>" alt="BALTC" class="logo">
+				<h1>🏆 Ranking de Jugadores</h1>
+				<p class="subtitle">Sistema de Puntuación Jerárquico por Categoría</p>
+			</div>
+
+			<div class="section">
+				<h2>📋 Descripción General</h2>
+				<p>Ranking general que permite movilidad entre categorías. Los jugadores compiten por puntos basados en:</p>
+				<ul>
+					<li>Puntos base según su categoría (1ra, 2da, 3era)</li>
+					<li>Victorias ponderadas en torneos (cuartos, semifinal, final)</li>
+					<li>Multiplicadores que dan mayor importancia a 1ra categoría</li>
+				</ul>
+			</div>
+
+			<div class="section">
+				<h2>📊 Puntos Base por Categoría</h2>
+				<table>
+					<tr>
+						<th>Categoría</th>
+						<th>Puntos Base</th>
+						<th>Multiplicador</th>
+						<th>Divisor</th>
+					</tr>
+					<tr>
+						<td><strong>1ra</strong></td>
+						<td>270 pts</td>
+						<td>×3</td>
+						<td>÷1.0</td>
+					</tr>
+					<tr>
+						<td><strong>2da</strong></td>
+						<td>150 pts</td>
+						<td>×2</td>
+						<td>÷1.3</td>
+					</tr>
+					<tr>
+						<td><strong>3era</strong></td>
+						<td>100 pts</td>
+						<td>×1</td>
+						<td>÷4.8</td>
+					</tr>
+				</table>
+			</div>
+
+			<div class="section">
+				<h2>⚡ Puntos por Ronda</h2>
+				<p><strong>Fórmula:</strong> (puntos_ronda × multiplicador) ÷ divisor</p>
+				<table>
+					<tr>
+						<th>Ronda</th>
+						<th>Base</th>
+						<th>1ra</th>
+						<th>2da</th>
+						<th>3era</th>
+					</tr>
+					<tr>
+						<td>Clasificatorias</td>
+						<td>3</td>
+						<td>9 pts</td>
+						<td>5 pts</td>
+						<td>1 pt</td>
+					</tr>
+					<tr>
+						<td>Cuartos</td>
+						<td>20</td>
+						<td>60 pts</td>
+						<td>31 pts</td>
+						<td>4 pts</td>
+					</tr>
+					<tr>
+						<td>Semifinal</td>
+						<td>40</td>
+						<td>120 pts</td>
+						<td>62 pts</td>
+						<td>8 pts</td>
+					</tr>
+					<tr>
+						<td><strong>Final</strong></td>
+						<td><strong>80</strong></td>
+						<td><strong>240 pts</strong></td>
+						<td><strong>123 pts</strong></td>
+						<td><strong>17 pts</strong></td>
+					</tr>
+				</table>
+			</div>
+
+			<div class="section">
+				<h2>🎯 Jerarquía de Categorías</h2>
+				<div class="highlight">
+					<strong>Regla fundamental:</strong> Un jugador de categoría inferior <u>SOLO</u> puede superar a uno de categoría superior si es de la categoría inmediatamente inferior.
+				</div>
+				<div class="punto"><strong>Ejemplo:</strong> Finalista 2da (150 + 123 = 273 pts) <strong>SÍ</strong> puede superar a peor 1ra (270 pts)</div>
+				<div class="punto"><strong>Ejemplo:</strong> Mejor 3era (máx ~267 pts) <strong>NUNCA</strong> supera a peor 1ra (270 pts)</div>
+				<div class="punto"><strong>Regla:</strong> 3era nunca salta 2 categorías hacia arriba</div>
+			</div>
+
+			<div class="section">
+				<h2>🔄 Criterios de Desempate</h2>
+				<p>Si dos jugadores tienen <strong>los mismos puntos</strong>:</p>
+				<table>
+					<tr>
+						<th>Condición</th>
+						<th>Ordenamiento</th>
+					</tr>
+					<tr>
+						<td>Misma categoría</td>
+						<td>Por SIEMBRA (número menor = mejor)</td>
+					</tr>
+					<tr>
+						<td>Distinta categoría</td>
+						<td>Por VICTORIAS (más = mejor)</td>
+					</tr>
+				</table>
+			</div>
+
+			<div class="section">
+				<h2>✨ Características Especiales</h2>
+				<ul>
+					<li><strong>Incluye todos los jugadores:</strong> Aparecen en el ranking aunque no tengan victorias</li>
+					<li><strong>Sin decimales:</strong> Todos los puntos se redondean a números enteros</li>
+					<li><strong>Dinámico:</strong> Se actualiza automáticamente con nuevas victorias</li>
+					<li><strong>Movilidad:</strong> Los mejores de categoría inferior pueden superar a los peores de superior</li>
+					<li><strong>Desempates inteligentes:</strong> Considera siembra y victorias para resolver igualdades</li>
+				</ul>
+			</div>
+
+			<div class="footer">
+				<p>BALTC - Torneo de Tenis 2026</p>
+				<p>Sistema de Ranking Jerárquico</p>
+				<p style="font-size: 11px; margin-top: 10px;">Generado automáticamente el <?=date('d/m/Y H:i')?></p>
+			</div>
+		</body>
+		</html>
+		<?php
+		$html = ob_get_clean();
+
+		header('Content-Type: application/pdf');
+		header('Content-Disposition: attachment; filename="Ranking_BALTC_' . date('Y-m-d') . '.pdf"');
+
+		$this->load->library('pdf');
+		$this->pdf->load_html($html);
+		$this->pdf->render();
+		echo $this->pdf->output();
+	}
+
 	public function debugSeeding() {
 		echo "<strong>Columnas en tabla 'sembrados':</strong><br>";
 		$col_sem = $this->db->query("SHOW COLUMNS FROM sembrados");

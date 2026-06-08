@@ -2,9 +2,15 @@
 
 <div class="page-content">
     <div class="content-inner">
-        <div style="padding:20px 24px;background:#fff;border-bottom:1px solid #dee2e6;">
-            <h2 style="margin:0;font-size:20px;"><i class="fas fa-trophy"></i> Ranking de Jugadores</h2>
-            <p style="margin:8px 0 0;font-size:13px;color:#666;">Posiciones basadas en victorias ponderadas por ronda y categoría</p>
+        <div style="padding:20px 24px;background:#fff;border-bottom:1px solid #dee2e6;display:flex;justify-content:space-between;align-items:center;">
+            <div>
+                <h2 style="margin:0;font-size:20px;"><i class="fas fa-trophy"></i> Ranking de Jugadores</h2>
+                <p style="margin:8px 0 0;font-size:13px;color:#666;">Posiciones basadas en victorias ponderadas por ronda y categoría</p>
+            </div>
+            <a href="<?=base_url('admin/descargarRankingPDF')?>" class="btn btn-primary" title="Descargar explicación del ranking en PDF">
+                <i class="fas fa-download"></i> Descargar PDF
+            </a>
+        </div>
             <div style="margin:12px 0 0; padding:10px 12px; background:#f0f7ff; border-left:3px solid #0066cc; border-radius:3px; font-size:12px; color:#333;">
                 <strong>Sistema de puntuación con movilidad entre categorías:</strong>
                 <div style="margin:6px 0 0 0; line-height:1.5;">

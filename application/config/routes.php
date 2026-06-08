@@ -47,6 +47,7 @@ $route['admin/preview2ndChanceEmail'] = 'admin/preview2ndChanceEmail';
 $route['admin/enviarInvitacion2ndChanceIndividual'] = 'admin/enviarInvitacion2ndChanceIndividual';
 $route['admin/ranking'] = 'admin/ranking';
 $route['admin/getRankingData'] = 'admin/getRankingData';
+$route['admin/descargarRankingPDF'] = 'admin/descargarRankingPDF';
 
 $route['invitacion/aceptar2ndchance'] = 'invitacion/aceptar2ndchance';
 
