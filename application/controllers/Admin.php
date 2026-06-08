@@ -625,7 +625,7 @@ class Admin extends CI_Controller {
 				->to($partner->email)
 				->subject('Ya tenés tu inscripción confirmada')
 				->message($body)
-				->send();
+				->send(); // EMAILS DESHABILITADOS
 		}
 		$this->protect->ajaxDie(array('action'=>true));
 	}
