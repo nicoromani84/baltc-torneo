@@ -11,18 +11,16 @@
                 <i class="fas fa-download"></i> Descargar PDF
             </a>
         </div>
-            <div style="margin:12px 0 0; padding:10px 12px; background:#f0f7ff; border-left:3px solid #0066cc; border-radius:3px; font-size:12px; color:#333;">
-                <strong>Sistema de puntuación con movilidad entre categorías:</strong>
-                <div style="margin:6px 0 0 0; line-height:1.5;">
-                    • <strong>Puntos base:</strong> 1ra +270 | 2da +150 | 3era +100<br>
-                    • <strong>Fórmula:</strong> (puntos_ronda × multiplicador) ÷ divisor<br>
-                    • <strong>Ejemplo Final (80 pts):</strong> 1ra: 240÷1=240 | 2da: 160÷1.3=123 | 3era: 80÷4.8=17<br>
-                    • <strong>Movilidad garantizada:</strong> Finalista 2da (273) > peor 1ra (270) ✓ | Mejor 3era máx (267) < peor 1ra (270) ✓ | 3era nunca salta 2 categorías
-                </div>
+        <div style="margin:0; padding:10px 12px; background:#f0f7ff; border-left:3px solid #0066cc; border-radius:3px; font-size:12px; color:#333;">
+            <strong>Sistema de puntuación con movilidad entre categorías:</strong>
+            <div style="margin:6px 0 0 0; line-height:1.5;">
+                • <strong>Puntos base:</strong> 1ra +270 | 2da +150 | 3era +100<br>
+                • <strong>Fórmula:</strong> (puntos_ronda × multiplicador) ÷ divisor<br>
+                • <strong>Ejemplo Final (80 pts):</strong> 1ra: 240÷1=240 | 2da: 160÷1.3=123 | 3era: 80÷4.8=17<br>
+                • <strong>Movilidad garantizada:</strong> Finalista 2da (273) > peor 1ra (270) ✓ | Mejor 3era máx (267) < peor 1ra (270) ✓ | 3era nunca salta 2 categorías
             </div>
         </div>
-
-        <div style="padding:10px 20px;">
+        <div style="padding:8px 20px 10px 20px; margin-top:-400px;">
             <ul class="nav nav-tabs mb-2" role="tablist">
                 <li class="nav-item">
                     <a class="nav-link active" id="tab-caballeros" data-toggle="tab" href="#content-caballeros" role="tab" aria-selected="true">
