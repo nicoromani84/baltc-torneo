@@ -102,10 +102,20 @@
 				<i class="fas fa-sitemap"></i> Draws
 			</a>
 		</li>
+		<li class="<?=$section=='admin-ranking'?'active':''?>">
+			<a href="<?=base_url('admin/ranking')?>">
+				<i class="fas fa-trophy"></i> Ranking
+			</a>
+		</li>
 		<?php if(empty($readonly)): ?>
 		<li class="<?=$section=='admin-mails'?'active':''?>">
 			<a href="<?=base_url('admin/mails')?>">
 				<i class="fas fa-envelope"></i> Mails
+			</a>
+		</li>
+		<li class="<?=$section=='admin-mails-2ndchance'?'active':''?>">
+			<a href="<?=base_url('admin/mails2ndchance')?>">
+				<i class="fas fa-sync-alt"></i> 2nd Chance
 			</a>
 		</li>
 		<?php endif; ?>

@@ -32,8 +32,12 @@ $route['admin/getInscriptosByCategory'] = 'admin/getInscriptosByCategory';
 $route['admin/confirmarSorteo'] = 'admin/confirmarSorteo';
 
 $route['admin/mails'] = 'admin/mails';
+$route['admin/mails2ndchance'] = 'admin/mails2ndchance';
 $route['admin/getDestinatariosNotificacion'] = 'admin/getDestinatariosNotificacion';
 $route['admin/enviarNotificacion'] = 'admin/enviarNotificacion';
+$route['admin/verPendientes2ndChance'] = 'admin/verPendientes2ndChance';
+$route['admin/guardarPendientes2ndChance'] = 'admin/guardarPendientes2ndChance';
+$route['admin/enviar2ndChance'] = 'admin/enviar2ndChance';
 $route['admin/getEmailTemplates'] = 'admin/getEmailTemplates';
 $route['admin/previewEmailTemplate'] = 'admin/previewEmailTemplate';
 $route['admin/preview2ndChance'] = 'admin/preview2ndChance';
@@ -41,6 +45,8 @@ $route['admin/enviarInvitacion2ndChance'] = 'admin/enviarInvitacion2ndChance';
 $route['admin/get2ndChanceInscriptos'] = 'admin/get2ndChanceInscriptos';
 $route['admin/preview2ndChanceEmail'] = 'admin/preview2ndChanceEmail';
 $route['admin/enviarInvitacion2ndChanceIndividual'] = 'admin/enviarInvitacion2ndChanceIndividual';
+$route['admin/ranking'] = 'admin/ranking';
+$route['admin/getRankingData'] = 'admin/getRankingData';
 
 $route['invitacion/aceptar2ndchance'] = 'invitacion/aceptar2ndchance';
 
