@@ -8,10 +8,10 @@
             <div style="margin:12px 0 0; padding:10px 12px; background:#f0f7ff; border-left:3px solid #0066cc; border-radius:3px; font-size:12px; color:#333;">
                 <strong>Sistema de puntuación con movilidad entre categorías:</strong>
                 <div style="margin:6px 0 0 0; line-height:1.5;">
-                    • <strong>Puntos base:</strong> 1ra +400 | 2da +200 | 3era +100<br>
+                    • <strong>Puntos base:</strong> 1ra +350 | 2da +200 | 3era +100<br>
                     • <strong>Fórmula:</strong> (puntos_ronda × multiplicador) ÷ divisor<br>
-                    • <strong>Ejemplo Final (80 pts):</strong> 1ra: 240÷1=240 | 2da: 160÷1.5=106.67 | 3era: 80÷2=40<br>
-                    • <strong>Movilidad garantizada:</strong> Mejor de 2da supera a peor de 1ra • Mejor de 3era supera a peor de 2da • 3era nunca supera a 1ra
+                    • <strong>Ejemplo Final (80 pts):</strong> 1ra: 240÷1=240 | 2da: 160÷1.5=107 | 3era: 80÷3.5=23<br>
+                    • <strong>Movilidad:</strong> Finalista 2da (360) > peor 1ra (350) ✓ | Finalista 3era > peor 2da ✓ | Mejor 3era máx (328) < peor 1ra ✓
                 </div>
             </div>
         </div>
