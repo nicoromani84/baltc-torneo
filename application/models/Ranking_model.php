@@ -69,10 +69,35 @@ class Ranking_model extends CI_Model {
 		$inscriptos = $q->result();
 		$puntajes = array();
 
+		$sqlSiembra = "SELECT DISTINCT
+				rp.partner_id,
+				c.id as cat_id,
+				rp.seeding
+			FROM reservations_partners rp
+			JOIN reservations r ON r.id = rp.reservation_id
+			JOIN category c ON c.id = r.category
+			JOIN partners p ON p.id = rp.partner_id
+			WHERE p.gender = ?
+			AND c.name NOT LIKE '%2nd chance%'
+			AND rp.seeding IS NOT NULL
+			ORDER BY r.id DESC";
+
+		$q_siembra = $this->db->query($sqlSiembra, array($gender));
+		$siembras = array();
+		if($q_siembra->num_rows() > 0) {
+			foreach($q_siembra->result() as $sem) {
+				$key = $sem->partner_id . '_' . $sem->cat_id;
+				if(!isset($siembras[$key])) {
+					$siembras[$key] = $sem->seeding;
+				}
+			}
+		}
+
 		foreach($inscriptos as $insc) {
 			$playerId = $insc->id;
 			if(!isset($puntajes[$playerId])) {
 				$puntosBase = $this->getPuntosBase($insc->categoria);
+				$key_siembra = $playerId . '_' . $insc->cat_id;
 				$puntajes[$playerId] = array(
 					'id' => $playerId,
 					'name' => $insc->name,
@@ -80,7 +105,8 @@ class Ranking_model extends CI_Model {
 					'categoria' => $insc->categoria,
 					'cat_id' => $insc->cat_id,
 					'puntos' => $puntosBase,
-					'victorias' => 0
+					'victorias' => 0,
+					'siembra' => isset($siembras[$key_siembra]) ? $siembras[$key_siembra] : 999
 				);
 			}
 		}
@@ -129,6 +155,13 @@ class Ranking_model extends CI_Model {
 		usort($puntajes, function($a, $b) {
 			$cmpPuntos = $b['puntos'] - $a['puntos'];
 			if($cmpPuntos != 0) return $cmpPuntos;
+
+			if($a['puntos'] == $b['puntos']) {
+				if($a['cat_id'] == $b['cat_id']) {
+					$cmpSiembra = $a['siembra'] - $b['siembra'];
+					if($cmpSiembra != 0) return $cmpSiembra;
+				}
+			}
 
 			return $b['victorias'] - $a['victorias'];
 		});
