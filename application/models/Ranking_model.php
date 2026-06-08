@@ -40,62 +40,82 @@ class Ranking_model extends CI_Model {
 	}
 
 	public function getRankingByGender($gender) {
-		$sql = "SELECT
-				m.ganador_id,
-				m.category,
-				m.ronda,
+		$sql = "SELECT DISTINCT
+				p.id,
 				p.name,
 				p.gender,
 				c.id as cat_id,
 				c.name as categoria
-			FROM matches m
-			JOIN partners p ON p.id = m.ganador_id
-			JOIN category c ON c.id = m.category
+			FROM reservations_partners rp
+			JOIN reservations r ON r.id = rp.reservation_id
+			JOIN partners p ON p.id = rp.partner_id
+			JOIN category c ON c.id = r.category
 			WHERE p.gender = ?
-			AND m.ganador_id IS NOT NULL
 			AND c.name NOT LIKE '%2nd chance%'
-			ORDER BY m.category, m.ronda";
+			ORDER BY p.id";
 
 		$q = $this->db->query($sql, array($gender));
 		if($q->num_rows() === 0) {
 			return array();
 		}
 
-		$matches = $q->result();
-
-		$maxRondas = array();
+		$inscriptos = $q->result();
 		$puntajes = array();
 
-		foreach($matches as $match) {
-			$key = $match->category;
-			if(!isset($maxRondas[$key])) {
-				$maxRondas[$key] = -1;
-			}
-			$rondaOrder = $this->getRondaOrder($match->ronda);
-			$maxRondas[$key] = max($maxRondas[$key], $rondaOrder);
-		}
-
-		foreach($matches as $match) {
-			$playerId = $match->ganador_id;
-			$maxRondaOrder = $maxRondas[$match->category];
-			$puntosRonda = $this->getPuntosRonda($match->ronda, $maxRondaOrder);
-			$multiplicador = $this->getMultiplicadorCategoria($match->categoria);
-			$puntos = $puntosRonda * $multiplicador;
-
+		foreach($inscriptos as $insc) {
+			$playerId = $insc->id;
 			if(!isset($puntajes[$playerId])) {
-				$puntosBase = $this->getPuntosBase($match->categoria);
+				$puntosBase = $this->getPuntosBase($insc->categoria);
 				$puntajes[$playerId] = array(
 					'id' => $playerId,
-					'name' => $match->name,
-					'gender' => $match->gender,
-					'categoria' => $match->categoria,
-					'cat_id' => $match->cat_id,
+					'name' => $insc->name,
+					'gender' => $insc->gender,
+					'categoria' => $insc->categoria,
+					'cat_id' => $insc->cat_id,
 					'puntos' => $puntosBase,
 					'victorias' => 0
 				);
 			}
-			$puntajes[$playerId]['puntos'] += $puntos;
-			$puntajes[$playerId]['victorias'] += 1;
+		}
+
+		$sqlMatches = "SELECT
+				m.ganador_id,
+				m.category,
+				m.ronda,
+				c.id as cat_id,
+				c.name as categoria
+			FROM matches m
+			JOIN category c ON c.id = m.category
+			WHERE m.ganador_id IS NOT NULL
+			AND c.name NOT LIKE '%2nd chance%'
+			ORDER BY m.category, m.ronda";
+
+		$q = $this->db->query($sqlMatches);
+		if($q->num_rows() > 0) {
+			$matches = $q->result();
+
+			$maxRondas = array();
+			foreach($matches as $match) {
+				$key = $match->category;
+				if(!isset($maxRondas[$key])) {
+					$maxRondas[$key] = -1;
+				}
+				$rondaOrder = $this->getRondaOrder($match->ronda);
+				$maxRondas[$key] = max($maxRondas[$key], $rondaOrder);
+			}
+
+			foreach($matches as $match) {
+				$playerId = $match->ganador_id;
+				if(isset($puntajes[$playerId])) {
+					$maxRondaOrder = $maxRondas[$match->category];
+					$puntosRonda = $this->getPuntosRonda($match->ronda, $maxRondaOrder);
+					$multiplicador = $this->getMultiplicadorCategoria($match->categoria);
+					$puntos = $puntosRonda * $multiplicador;
+
+					$puntajes[$playerId]['puntos'] += $puntos;
+					$puntajes[$playerId]['victorias'] += 1;
+				}
+			}
 		}
 
 		usort($puntajes, function($a, $b) {
@@ -116,28 +136,22 @@ class Ranking_model extends CI_Model {
 	}
 
 	public function getRankingDetailedByGender($gender) {
-		$sql = "SELECT
+		$ranking = $this->getRankingByGender($gender);
+
+		$sqlMatches = "SELECT
 				m.ganador_id,
 				m.category,
 				m.ronda,
-				p.name,
-				p.gender,
 				c.id as cat_id,
 				c.name as categoria
 			FROM matches m
-			JOIN partners p ON p.id = m.ganador_id
 			JOIN category c ON c.id = m.category
-			WHERE p.gender = ?
-			AND m.ganador_id IS NOT NULL
+			WHERE m.ganador_id IS NOT NULL
 			AND c.name NOT LIKE '%2nd chance%'
-			ORDER BY p.name, m.category, m.ronda";
+			ORDER BY m.category, m.ronda";
 
-		$q = $this->db->query($sql, array($gender));
-		if($q->num_rows() === 0) {
-			return array();
-		}
-
-		$matches = $q->result();
+		$q = $this->db->query($sqlMatches);
+		$matches = $q->num_rows() > 0 ? $q->result() : array();
 
 		$maxRondas = array();
 		foreach($matches as $match) {
@@ -155,24 +169,34 @@ class Ranking_model extends CI_Model {
 			$catId = $match->cat_id;
 			$key = $playerId . '_' . $catId;
 
-			$maxRondaOrder = $maxRondas[$match->category];
-			$puntosRonda = $this->getPuntosRonda($match->ronda, $maxRondaOrder);
-			$multiplicador = $this->getMultiplicadorCategoria($match->categoria);
-			$puntos = $puntosRonda * $multiplicador;
-
-			if(!isset($detailed[$key])) {
-				$detailed[$key] = (object)array(
-					'id' => $playerId,
-					'name' => $match->name,
-					'gender' => $match->gender,
-					'cat_id' => $catId,
-					'categoria' => $match->categoria,
-					'puntos_categoria' => 0,
-					'victorias_categoria' => 0
-				);
+			$playerInfo = null;
+			foreach($ranking as $r) {
+				if($r['id'] == $playerId) {
+					$playerInfo = $r;
+					break;
+				}
 			}
-			$detailed[$key]->puntos_categoria += $puntos;
-			$detailed[$key]->victorias_categoria += 1;
+
+			if($playerInfo) {
+				$maxRondaOrder = $maxRondas[$match->category];
+				$puntosRonda = $this->getPuntosRonda($match->ronda, $maxRondaOrder);
+				$multiplicador = $this->getMultiplicadorCategoria($match->categoria);
+				$puntos = $puntosRonda * $multiplicador;
+
+				if(!isset($detailed[$key])) {
+					$detailed[$key] = (object)array(
+						'id' => $playerId,
+						'name' => $playerInfo['name'],
+						'gender' => $playerInfo['gender'],
+						'cat_id' => $catId,
+						'categoria' => $match->categoria,
+						'puntos_categoria' => 0,
+						'victorias_categoria' => 0
+					);
+				}
+				$detailed[$key]->puntos_categoria += $puntos;
+				$detailed[$key]->victorias_categoria += 1;
+			}
 		}
 
 		return array_values($detailed);
