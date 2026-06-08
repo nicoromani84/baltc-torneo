@@ -20,7 +20,7 @@
                 • <strong>Movilidad garantizada:</strong> Finalista 2da (273) > peor 1ra (270) ✓ | Mejor 3era máx (267) < peor 1ra (270) ✓ | 3era nunca salta 2 categorías
             </div>
         </div>
-        <div style="padding:8px 20px 10px 20px; margin-top:-400px;">
+        <div style="padding:8px 20px 10px 20px;">
             <ul class="nav nav-tabs mb-2" role="tablist">
                 <li class="nav-item">
                     <a class="nav-link active" id="tab-caballeros" data-toggle="tab" href="#content-caballeros" role="tab" aria-selected="true">
@@ -39,7 +39,7 @@
                 <div class="tab-pane fade show active" id="content-caballeros" role="tabpanel">
                     <div class="card">
                         <div class="card-body">
-                            <div id="loading-caballeros" class="text-center py-3">
+                            <div id="loading-caballeros" class="text-center" style="padding:12px 0;">
                                 <i class="fas fa-spinner fa-spin fa-2x text-primary"></i>
                                 <p class="text-muted mt-2 mb-0">Cargando...</p>
                             </div>
@@ -70,7 +70,7 @@
                 <div class="tab-pane fade" id="content-damas" role="tabpanel">
                     <div class="card">
                         <div class="card-body">
-                            <div id="loading-damas" class="text-center py-3">
+                            <div id="loading-damas" class="text-center" style="padding:12px 0;">
                                 <i class="fas fa-spinner fa-spin fa-2x text-primary"></i>
                                 <p class="text-muted mt-2 mb-0">Cargando...</p>
                             </div>
