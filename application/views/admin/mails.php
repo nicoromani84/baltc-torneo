@@ -50,11 +50,6 @@
                                         <button class="btn btn-xs btn-outline-secondary ml-2" id="btn-cambiar-mail-partner">Cambiar</button>
                                     </div>
                                 </div>
-
-                                <div class="form-check mb-2">
-                                    <input class="form-check-input" type="radio" name="tipo" id="tipo-2ndchance" value="2ndchance">
-                                    <label class="form-check-label" for="tipo-2ndchance"><strong>Inscriptos en 2nd Chance</strong></label>
-                                </div>
                             </div>
 
                             <button class="btn btn-outline-primary btn-sm" id="btn-preview-destinatarios">
@@ -63,16 +58,8 @@
 
                             <!-- Lista destinatarios (colapsable) -->
                             <div id="panel-destinatarios" style="display:none; margin-top:16px;">
-                                <div style="font-size:13px; color:#555; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap;">
-                                    <span><i class="fas fa-users"></i> <strong><span id="total-destinatarios">0</span> destinatarios</strong></span>
-                                    <div style="display:flex; gap:6px;">
-                                        <button class="btn btn-xs btn-outline-warning" id="btn-guardar-pendientes" style="display:none;" title="Guardar lista para identificar y borrar después">
-                                            <i class="fas fa-save"></i> Guardar pendientes
-                                        </button>
-                                        <button class="btn btn-xs btn-outline-info" id="btn-descargar-destinatarios" style="display:none;">
-                                            <i class="fas fa-download"></i> Descargar Excel
-                                        </button>
-                                    </div>
+                                <div style="font-size:13px; color:#555; margin-bottom:6px;">
+                                    <i class="fas fa-users"></i> <strong><span id="total-destinatarios">0</span> destinatarios</strong>
                                 </div>
                                 <div style="max-height:200px; overflow-y:auto; border:1px solid #dee2e6; border-radius:4px;">
                                     <table class="table table-sm mb-0">
@@ -138,8 +125,6 @@
 const adminurl = '<?=base_url('admin')?>';
 const token    = '<?=$token?>';
 var _totalDestinatarios = 0;
-var _destinatarios = [];
-var _tipoActual = '';
 
 $(function(){
 
@@ -277,73 +262,10 @@ $(function(){
                 }
                 $('#tabla-destinatarios').html(tbody);
                 $('#panel-destinatarios').show();
-                var es2ndchance = tipo === '2ndchance';
-                if(es2ndchance){
-                    $('#btn-descargar-destinatarios').show();
-                    $('#btn-guardar-pendientes').show();
-                } else {
-                    $('#btn-descargar-destinatarios').hide();
-                    $('#btn-guardar-pendientes').hide();
-                }
                 $('#resumen-dest').html('<i class="fas fa-users mr-1"></i> <strong>'+res.total+' destinatario(s)</strong>');
                 $('#mail-resultado').hide();
             }
         });
-    });
-
-    // Guardar pendientes de envío para 2nd chance
-    $('#btn-guardar-pendientes').on('click', function(){
-        if(!_destinatarios.length){ alert('Sin destinatarios.'); return; }
-        var $btn = $(this);
-        $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i> Guardando...');
-        $.ajax({
-            url: adminurl + '/guardarPendientes2ndChance',
-            type: 'POST',
-            data: { destinatarios: JSON.stringify(_destinatarios) },
-            headers: {'X-Auth-Token': token},
-            success: function(res){
-                $btn.prop('disabled', false).html('<i class="fas fa-save"></i> Guardar pendientes');
-                if(res.action){
-                    $('#mail-resultado').removeClass('alert-danger').addClass('alert-success')
-                        .html('<i class="fas fa-check-circle"></i> <strong>¡Guardado!</strong> Se guardaron '+res.total+' destinatarios como pendientes. Ahora podés borrarlos de las categorías en el backend.').show();
-                } else {
-                    $('#mail-resultado').removeClass('alert-success').addClass('alert-danger')
-                        .html('<i class="fas fa-times-circle"></i> Error: '+(res.msg||'No se pudo guardar.')).show();
-                }
-                $('html,body').animate({scrollTop: $('#mail-resultado').offset().top - 80}, 300);
-            },
-            error: function(){
-                $btn.prop('disabled', false).html('<i class="fas fa-save"></i> Guardar pendientes');
-                $('#mail-resultado').removeClass('alert-success').addClass('alert-danger')
-                    .html('<i class="fas fa-times-circle"></i> Error de conexión.').show();
-            }
-        });
-    });
-
-    // Descargar lista de destinatarios en Excel
-    $('#btn-descargar-destinatarios').on('click', function(){
-        if(!_destinatarios.length){ alert('Sin destinatarios.'); return; }
-        var html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">';
-        html += '<head><meta charset="UTF-8"></head><body>';
-        html += '<table border="1">';
-        html += '<tr><th>Nombre</th><th>Email</th><th>Categoría</th></tr>';
-        _destinatarios.forEach(function(d){
-            html += '<tr>';
-            html += '<td>'+d.name.toLowerCase()+'</td>';
-            html += '<td>'+d.email+'</td>';
-            html += '<td>'+(d.categoria||'')+'</td>';
-            html += '</tr>';
-        });
-        html += '</table></body></html>';
-        var blob = new Blob([html], {type: 'application/vnd.ms-excel;charset=UTF-8'});
-        var url = window.URL.createObjectURL(blob);
-        var a = document.createElement('a');
-        a.href = url;
-        a.download = '2ndchance_inscriptos_' + new Date().toISOString().split('T')[0] + '.xls';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
     });
 
     // Enviar

@@ -4,7 +4,15 @@
     <div class="content-inner">
         <div style="padding:20px 24px;background:#fff;border-bottom:1px solid #dee2e6;">
             <h2 style="margin:0;font-size:20px;"><i class="fas fa-trophy"></i> Ranking de Jugadores</h2>
-            <p style="margin:8px 0 0;font-size:13px;color:#666;">Posiciones basadas en victorias ponderadas por categoría (1ra=3pts, 2da=2pts, 3era=1pt)</p>
+            <p style="margin:8px 0 0;font-size:13px;color:#666;">Posiciones basadas en victorias ponderadas por ronda y categoría</p>
+            <div style="margin:12px 0 0; padding:10px 12px; background:#f0f7ff; border-left:3px solid #0066cc; border-radius:3px; font-size:12px; color:#333;">
+                <strong>Sistema de puntuación:</strong>
+                <div style="margin:6px 0 0 0; line-height:1.5;">
+                    • Primeras rondas: <strong>5pts</strong> | Segundas: <strong>10pts</strong> | Cuartos: <strong>20pts</strong> | Semifinal: <strong>40pts</strong> | Final: <strong>80pts</strong><br>
+                    • Multiplicador por categoría: <strong>1ra × 3</strong> | <strong>2da × 2</strong> | <strong>3era × 1</strong><br>
+                    • WO y adelantados cuentan igual que victorias normales
+                </div>
+            </div>
         </div>
 
         <div style="padding:20px;">
@@ -33,11 +41,11 @@
                                 <table class="table table-sm table-hover mb-0">
                                     <thead class="thead-light">
                                         <tr>
-                                            <th style="width:60px;text-align:center;">Posición</th>
+                                            <th style="width:60px;text-align:center;">Pos</th>
                                             <th>Jugador</th>
-                                            <th style="width:120px;text-align:center;">Puntos</th>
-                                            <th style="width:120px;text-align:center;">Victorias</th>
-                                            <th style="width:250px;">Desglose por categoría</th>
+                                            <th style="width:100px;text-align:center;"><strong>Puntos</strong></th>
+                                            <th style="width:100px;text-align:center;">Victorias</th>
+                                            <th>Categorías</th>
                                         </tr>
                                     </thead>
                                     <tbody id="tabla-caballeros"></tbody>
@@ -62,11 +70,11 @@
                                 <table class="table table-sm table-hover mb-0">
                                     <thead class="thead-light">
                                         <tr>
-                                            <th style="width:60px;text-align:center;">Posición</th>
+                                            <th style="width:60px;text-align:center;">Pos</th>
                                             <th>Jugador</th>
-                                            <th style="width:120px;text-align:center;">Puntos</th>
-                                            <th style="width:120px;text-align:center;">Victorias</th>
-                                            <th style="width:250px;">Desglose por categoría</th>
+                                            <th style="width:100px;text-align:center;"><strong>Puntos</strong></th>
+                                            <th style="width:100px;text-align:center;">Victorias</th>
+                                            <th>Categorías</th>
                                         </tr>
                                     </thead>
                                     <tbody id="tabla-damas"></tbody>
@@ -125,27 +133,33 @@ $(function(){
                     else if(posicion === 2) medal = '<i class="fas fa-medal" style="color:#c0c0c0; font-size:18px;"></i> ';
                     else if(posicion === 3) medal = '<i class="fas fa-medal" style="color:#cd7f32; font-size:18px;"></i> ';
 
-                    var desglose_html = '';
+                    var categorias_html = '<div style="display:flex; flex-wrap:wrap; gap:6px;">';
                     if(desglose[r.id]) {
                         desglose[r.id].forEach(function(d){
-                            var cat_badge = '';
+                            var cat_label = '';
+                            var cat_color = 'primary';
                             if(d.categoria.toLowerCase().includes('1')) {
-                                cat_badge = '<span class="badge badge-primary">1ra</span>';
+                                cat_label = '1ra';
+                                cat_color = 'primary';
                             } else if(d.categoria.toLowerCase().includes('2')) {
-                                cat_badge = '<span class="badge badge-info">2da</span>';
+                                cat_label = '2da';
+                                cat_color = 'info';
                             } else if(d.categoria.toLowerCase().includes('3')) {
-                                cat_badge = '<span class="badge badge-secondary">3era</span>';
+                                cat_label = '3era';
+                                cat_color = 'secondary';
                             }
-                            desglose_html += cat_badge + ' (' + d.victorias_categoria + 'v × ' + d.puntos_categoria + 'pts) ';
+                            categorias_html += '<span class="badge badge-'+cat_color+'" style="font-size:11px;">'
+                                + cat_label + ': ' + d.victorias_categoria + 'v = <strong>' + d.puntos_categoria + 'pts</strong></span>';
                         });
                     }
+                    categorias_html += '</div>';
 
                     tbody += '<tr>';
                     tbody += '<td style="text-align:center; font-weight:bold;">' + medal + posicion + '</td>';
                     tbody += '<td style="text-transform:capitalize;">' + r.name.toLowerCase() + '</td>';
-                    tbody += '<td style="text-align:center;"><strong>' + (r.puntos || 0) + '</strong></td>';
+                    tbody += '<td style="text-align:center;"><strong style="font-size:16px; color:#2c3e50;">' + (r.puntos || 0) + '</strong></td>';
                     tbody += '<td style="text-align:center;">' + (r.victorias || 0) + '</td>';
-                    tbody += '<td style="font-size:12px;">' + desglose_html + '</td>';
+                    tbody += '<td>' + categorias_html + '</td>';
                     tbody += '</tr>';
                 });
 
