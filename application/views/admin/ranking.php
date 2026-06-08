@@ -6,12 +6,12 @@
             <h2 style="margin:0;font-size:20px;"><i class="fas fa-trophy"></i> Ranking de Jugadores</h2>
             <p style="margin:8px 0 0;font-size:13px;color:#666;">Posiciones basadas en victorias ponderadas por ronda y categoría</p>
             <div style="margin:12px 0 0; padding:10px 12px; background:#f0f7ff; border-left:3px solid #0066cc; border-radius:3px; font-size:12px; color:#333;">
-                <strong>Sistema de puntuación:</strong>
+                <strong>Sistema de puntuación jerárquico:</strong>
                 <div style="margin:6px 0 0 0; line-height:1.5;">
-                    • Rondas clasificatorias: <strong>0 pts</strong> (sin puntaje)<br>
-                    • Cuartos de final: <strong>20 pts</strong> | Semifinal: <strong>40 pts</strong> | Final: <strong>80 pts</strong><br>
-                    • Multiplicador por categoría: <strong>1ra × 3</strong> | <strong>2da × 2</strong> | <strong>3era × 1</strong><br>
-                    • WO y adelantados cuentan igual que victorias normales
+                    • <strong>Puntos base por categoría:</strong> 1ra +1000 | 2da +500 | 3era +0<br>
+                    • <strong>Rondas clasificatorias:</strong> 3 pts × multiplicador | <strong>Cuartos:</strong> 20 × mult | <strong>Semifinal:</strong> 40 × mult | <strong>Final:</strong> 80 × mult<br>
+                    • <strong>Multiplicador:</strong> 1ra × 3 | 2da × 2 | 3era × 1<br>
+                    • <strong>Garantía:</strong> Un jugador de 3era nunca puede superar al peor de 1ra/2da solo por cantidad de victorias
                 </div>
             </div>
         </div>
@@ -43,10 +43,11 @@
                                     <thead class="thead-light">
                                         <tr>
                                             <th style="width:60px;text-align:center;">Pos</th>
+                                            <th style="width:60px;text-align:center;">Cat</th>
                                             <th>Jugador</th>
                                             <th style="width:100px;text-align:center;"><strong>Puntos</strong></th>
                                             <th style="width:100px;text-align:center;">Victorias</th>
-                                            <th>Categorías</th>
+                                            <th>Desglose</th>
                                         </tr>
                                     </thead>
                                     <tbody id="tabla-caballeros"></tbody>
@@ -72,10 +73,11 @@
                                     <thead class="thead-light">
                                         <tr>
                                             <th style="width:60px;text-align:center;">Pos</th>
+                                            <th style="width:60px;text-align:center;">Cat</th>
                                             <th>Jugador</th>
                                             <th style="width:100px;text-align:center;"><strong>Puntos</strong></th>
                                             <th style="width:100px;text-align:center;">Victorias</th>
-                                            <th>Categorías</th>
+                                            <th>Desglose</th>
                                         </tr>
                                     </thead>
                                     <tbody id="tabla-damas"></tbody>
@@ -127,32 +129,23 @@ $(function(){
                 });
 
                 var tbody = '';
-                var catActual = null;
-                var posicionEnCategoria = 0;
 
                 ranking.forEach(function(r, idx){
                     var posicion = idx + 1;
-
-                    if(catActual !== r.categoria) {
-                        catActual = r.categoria;
-                        posicionEnCategoria = 0;
-                        var catLabel = r.categoria.toLowerCase();
-                        var catBadge = '';
-                        if(catLabel.includes('1')) catBadge = '<span class="badge badge-primary">1ra</span>';
-                        else if(catLabel.includes('2')) catBadge = '<span class="badge badge-info">2da</span>';
-                        else if(catLabel.includes('3')) catBadge = '<span class="badge badge-secondary">3era</span>';
-
-                        tbody += '<tr style="background:#f8f9fa;">';
-                        tbody += '<td colspan="5" style="padding:10px 12px; font-weight:bold; border-top:2px solid #dee2e6;">'
-                            + catBadge + ' CATEGORÍA</td>';
-                        tbody += '</tr>';
-                    }
-
-                    posicionEnCategoria++;
                     var medal = '';
-                    if(posicionEnCategoria === 1) medal = '<i class="fas fa-medal" style="color:#ffd700; font-size:18px;"></i> ';
-                    else if(posicionEnCategoria === 2) medal = '<i class="fas fa-medal" style="color:#c0c0c0; font-size:18px;"></i> ';
-                    else if(posicionEnCategoria === 3) medal = '<i class="fas fa-medal" style="color:#cd7f32; font-size:18px;"></i> ';
+                    if(posicion === 1) medal = '<i class="fas fa-medal" style="color:#ffd700; font-size:18px;"></i> ';
+                    else if(posicion === 2) medal = '<i class="fas fa-medal" style="color:#c0c0c0; font-size:18px;"></i> ';
+                    else if(posicion === 3) medal = '<i class="fas fa-medal" style="color:#cd7f32; font-size:18px;"></i> ';
+
+                    var catLabel = r.categoria.toLowerCase();
+                    var catBadge = '';
+                    if(catLabel.includes('1')) {
+                        catBadge = '<span class="badge badge-primary" style="font-size:11px;">1ra</span>';
+                    } else if(catLabel.includes('2')) {
+                        catBadge = '<span class="badge badge-info" style="font-size:11px;">2da</span>';
+                    } else if(catLabel.includes('3')) {
+                        catBadge = '<span class="badge badge-secondary" style="font-size:11px;">3era</span>';
+                    }
 
                     var categorias_html = '<div style="display:flex; flex-wrap:wrap; gap:6px;">';
                     if(desglose[r.id]) {
@@ -176,7 +169,8 @@ $(function(){
                     categorias_html += '</div>';
 
                     tbody += '<tr>';
-                    tbody += '<td style="text-align:center; font-weight:bold;">' + medal + posicionEnCategoria + '</td>';
+                    tbody += '<td style="text-align:center; font-weight:bold;">' + medal + posicion + '</td>';
+                    tbody += '<td style="text-align:center; min-width:40px;">' + catBadge + '</td>';
                     tbody += '<td style="text-transform:capitalize;">' + r.name.toLowerCase() + '</td>';
                     tbody += '<td style="text-align:center;"><strong style="font-size:16px; color:#2c3e50;">' + (r.puntos || 0) + '</strong></td>';
                     tbody += '<td style="text-align:center;">' + (r.victorias || 0) + '</td>';

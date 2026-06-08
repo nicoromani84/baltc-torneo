@@ -15,11 +15,12 @@ class Ranking_model extends CI_Model {
 		$rondaOrder = $this->getRondaOrder($ronda);
 
 		if($rondaOrder < 0) return 0;
-		if($maxRondaOrder < 2) return 0;
 
 		if($rondaOrder == $maxRondaOrder) return 80;
 		if($rondaOrder == $maxRondaOrder - 1) return 40;
 		if($rondaOrder == $maxRondaOrder - 2) return 20;
+
+		if($rondaOrder < 2) return 3;
 
 		return 0;
 	}
@@ -29,6 +30,13 @@ class Ranking_model extends CI_Model {
 		if(preg_match('/(2|segunda|2da)/i', $categoria)) return 2;
 		if(preg_match('/(3|tercera|3era)/i', $categoria)) return 1;
 		return 1;
+	}
+
+	private function getPuntosBase($categoria) {
+		if(preg_match('/(1|primera|1ra)/i', $categoria)) return 1000;
+		if(preg_match('/(2|segunda|2da)/i', $categoria)) return 500;
+		if(preg_match('/(3|tercera|3era)/i', $categoria)) return 0;
+		return 0;
 	}
 
 	public function getRankingByGender($gender) {
@@ -75,15 +83,15 @@ class Ranking_model extends CI_Model {
 			$puntos = $puntosRonda * $multiplicador;
 
 			if(!isset($puntajes[$playerId])) {
+				$puntosBase = $this->getPuntosBase($match->categoria);
 				$puntajes[$playerId] = array(
 					'id' => $playerId,
 					'name' => $match->name,
 					'gender' => $match->gender,
 					'categoria' => $match->categoria,
 					'cat_id' => $match->cat_id,
-					'puntos' => 0,
-					'victorias' => 0,
-					'orden_categoria' => $this->getOrdenCategoria($match->categoria)
+					'puntos' => $puntosBase,
+					'victorias' => 0
 				);
 			}
 			$puntajes[$playerId]['puntos'] += $puntos;
@@ -91,9 +99,6 @@ class Ranking_model extends CI_Model {
 		}
 
 		usort($puntajes, function($a, $b) {
-			$cmpCat = $a['orden_categoria'] - $b['orden_categoria'];
-			if($cmpCat != 0) return $cmpCat;
-
 			$cmpPuntos = $b['puntos'] - $a['puntos'];
 			if($cmpPuntos != 0) return $cmpPuntos;
 
