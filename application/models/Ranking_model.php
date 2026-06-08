@@ -39,6 +39,13 @@ class Ranking_model extends CI_Model {
 		return 0;
 	}
 
+	private function getNivelCategoria($categoria) {
+		if(preg_match('/(1|primera|1ra)/i', $categoria)) return 1;
+		if(preg_match('/(2|segunda|2da)/i', $categoria)) return 2;
+		if(preg_match('/(3|tercera|3era)/i', $categoria)) return 3;
+		return 4;
+	}
+
 	public function getRankingByGender($gender) {
 		$sql = "SELECT DISTINCT
 				p.id,
@@ -110,7 +117,8 @@ class Ranking_model extends CI_Model {
 					$maxRondaOrder = $maxRondas[$match->category];
 					$puntosRonda = $this->getPuntosRonda($match->ronda, $maxRondaOrder);
 					$multiplicador = $this->getMultiplicadorCategoria($match->categoria);
-					$puntos = $puntosRonda * $multiplicador;
+					$nivelCategoria = $this->getNivelCategoria($match->categoria);
+					$puntos = ($puntosRonda * $multiplicador) / $nivelCategoria;
 
 					$puntajes[$playerId]['puntos'] += $puntos;
 					$puntajes[$playerId]['victorias'] += 1;
@@ -181,7 +189,8 @@ class Ranking_model extends CI_Model {
 				$maxRondaOrder = $maxRondas[$match->category];
 				$puntosRonda = $this->getPuntosRonda($match->ronda, $maxRondaOrder);
 				$multiplicador = $this->getMultiplicadorCategoria($match->categoria);
-				$puntos = $puntosRonda * $multiplicador;
+				$nivelCategoria = $this->getNivelCategoria($match->categoria);
+				$puntos = ($puntosRonda * $multiplicador) / $nivelCategoria;
 
 				if(!isset($detailed[$key])) {
 					$detailed[$key] = (object)array(
