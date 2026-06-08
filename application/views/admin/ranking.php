@@ -127,12 +127,32 @@ $(function(){
                 });
 
                 var tbody = '';
+                var catActual = null;
+                var posicionEnCategoria = 0;
+
                 ranking.forEach(function(r, idx){
                     var posicion = idx + 1;
+
+                    if(catActual !== r.categoria) {
+                        catActual = r.categoria;
+                        posicionEnCategoria = 0;
+                        var catLabel = r.categoria.toLowerCase();
+                        var catBadge = '';
+                        if(catLabel.includes('1')) catBadge = '<span class="badge badge-primary">1ra</span>';
+                        else if(catLabel.includes('2')) catBadge = '<span class="badge badge-info">2da</span>';
+                        else if(catLabel.includes('3')) catBadge = '<span class="badge badge-secondary">3era</span>';
+
+                        tbody += '<tr style="background:#f8f9fa;">';
+                        tbody += '<td colspan="5" style="padding:10px 12px; font-weight:bold; border-top:2px solid #dee2e6;">'
+                            + catBadge + ' CATEGORÍA</td>';
+                        tbody += '</tr>';
+                    }
+
+                    posicionEnCategoria++;
                     var medal = '';
-                    if(posicion === 1) medal = '<i class="fas fa-medal" style="color:#ffd700; font-size:18px;"></i> ';
-                    else if(posicion === 2) medal = '<i class="fas fa-medal" style="color:#c0c0c0; font-size:18px;"></i> ';
-                    else if(posicion === 3) medal = '<i class="fas fa-medal" style="color:#cd7f32; font-size:18px;"></i> ';
+                    if(posicionEnCategoria === 1) medal = '<i class="fas fa-medal" style="color:#ffd700; font-size:18px;"></i> ';
+                    else if(posicionEnCategoria === 2) medal = '<i class="fas fa-medal" style="color:#c0c0c0; font-size:18px;"></i> ';
+                    else if(posicionEnCategoria === 3) medal = '<i class="fas fa-medal" style="color:#cd7f32; font-size:18px;"></i> ';
 
                     var categorias_html = '<div style="display:flex; flex-wrap:wrap; gap:6px;">';
                     if(desglose[r.id]) {
@@ -156,7 +176,7 @@ $(function(){
                     categorias_html += '</div>';
 
                     tbody += '<tr>';
-                    tbody += '<td style="text-align:center; font-weight:bold;">' + medal + posicion + '</td>';
+                    tbody += '<td style="text-align:center; font-weight:bold;">' + medal + posicionEnCategoria + '</td>';
                     tbody += '<td style="text-transform:capitalize;">' + r.name.toLowerCase() + '</td>';
                     tbody += '<td style="text-align:center;"><strong style="font-size:16px; color:#2c3e50;">' + (r.puntos || 0) + '</strong></td>';
                     tbody += '<td style="text-align:center;">' + (r.victorias || 0) + '</td>';

@@ -38,6 +38,7 @@ class Ranking_model extends CI_Model {
 				m.ronda,
 				p.name,
 				p.gender,
+				c.id as cat_id,
 				c.name as categoria
 			FROM matches m
 			JOIN partners p ON p.id = m.ganador_id
@@ -78,8 +79,11 @@ class Ranking_model extends CI_Model {
 					'id' => $playerId,
 					'name' => $match->name,
 					'gender' => $match->gender,
+					'categoria' => $match->categoria,
+					'cat_id' => $match->cat_id,
 					'puntos' => 0,
-					'victorias' => 0
+					'victorias' => 0,
+					'orden_categoria' => $this->getOrdenCategoria($match->categoria)
 				);
 			}
 			$puntajes[$playerId]['puntos'] += $puntos;
@@ -87,11 +91,23 @@ class Ranking_model extends CI_Model {
 		}
 
 		usort($puntajes, function($a, $b) {
-			$cmp = $b['puntos'] - $a['puntos'];
-			return $cmp != 0 ? $cmp : $b['victorias'] - $a['victorias'];
+			$cmpCat = $a['orden_categoria'] - $b['orden_categoria'];
+			if($cmpCat != 0) return $cmpCat;
+
+			$cmpPuntos = $b['puntos'] - $a['puntos'];
+			if($cmpPuntos != 0) return $cmpPuntos;
+
+			return $b['victorias'] - $a['victorias'];
 		});
 
 		return array_values($puntajes);
+	}
+
+	private function getOrdenCategoria($categoria) {
+		if(preg_match('/(1|primera|1ra)/i', $categoria)) return 1;
+		if(preg_match('/(2|segunda|2da)/i', $categoria)) return 2;
+		if(preg_match('/(3|tercera|3era)/i', $categoria)) return 3;
+		return 4;
 	}
 
 	public function getRankingDetailedByGender($gender) {
