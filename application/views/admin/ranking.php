@@ -41,8 +41,11 @@
                 <div class="tab-pane fade show active" id="content-caballeros" role="tabpanel">
                     <div class="card">
                         <div class="card-body">
-                            <div id="loading-caballeros" class="text-center py-4">
-                                <i class="fas fa-spinner fa-spin fa-2x text-muted"></i>
+                            <div id="loading-caballeros" class="text-center py-5" style="min-height:300px; display:flex; align-items:center; justify-content:center;">
+                                <div>
+                                    <i class="fas fa-spinner fa-spin fa-3x text-primary mb-3" style="display:block;"></i>
+                                    <p class="text-muted mt-2">Cargando ranking...</p>
+                                </div>
                             </div>
                             <div id="ranking-caballeros" style="display:none;">
                                 <table class="table table-sm table-hover mb-0">
@@ -71,8 +74,11 @@
                 <div class="tab-pane fade" id="content-damas" role="tabpanel">
                     <div class="card">
                         <div class="card-body">
-                            <div id="loading-damas" class="text-center py-4">
-                                <i class="fas fa-spinner fa-spin fa-2x text-muted"></i>
+                            <div id="loading-damas" class="text-center py-5" style="min-height:300px; display:flex; align-items:center; justify-content:center;">
+                                <div>
+                                    <i class="fas fa-spinner fa-spin fa-3x text-primary mb-3" style="display:block;"></i>
+                                    <p class="text-muted mt-2">Cargando ranking...</p>
+                                </div>
                             </div>
                             <div id="ranking-damas" style="display:none;">
                                 <table class="table table-sm table-hover mb-0">
