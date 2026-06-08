@@ -118,7 +118,7 @@ class Ranking_model extends CI_Model {
 					$puntosRonda = $this->getPuntosRonda($match->ronda, $maxRondaOrder);
 					$multiplicador = $this->getMultiplicadorCategoria($match->categoria);
 					$divisor = $this->getDivisorCategoria($match->categoria);
-					$puntos = ($puntosRonda * $multiplicador) / $divisor;
+					$puntos = round(($puntosRonda * $multiplicador) / $divisor, 0);
 
 					$puntajes[$playerId]['puntos'] += $puntos;
 					$puntajes[$playerId]['victorias'] += 1;
@@ -190,7 +190,7 @@ class Ranking_model extends CI_Model {
 				$puntosRonda = $this->getPuntosRonda($match->ronda, $maxRondaOrder);
 				$multiplicador = $this->getMultiplicadorCategoria($match->categoria);
 				$divisor = $this->getDivisorCategoria($match->categoria);
-				$puntos = ($puntosRonda * $multiplicador) / $divisor;
+				$puntos = round(($puntosRonda * $multiplicador) / $divisor, 0);
 
 				if(!isset($detailed[$key])) {
 					$detailed[$key] = (object)array(
