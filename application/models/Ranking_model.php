@@ -33,9 +33,9 @@ class Ranking_model extends CI_Model {
 	}
 
 	private function getPuntosBase($categoria) {
-		if(preg_match('/(1|primera|1ra)/i', $categoria)) return 1000;
-		if(preg_match('/(2|segunda|2da)/i', $categoria)) return 500;
-		if(preg_match('/(3|tercera|3era)/i', $categoria)) return 0;
+		if(preg_match('/(1|primera|1ra)/i', $categoria)) return 500;
+		if(preg_match('/(2|segunda|2da)/i', $categoria)) return 300;
+		if(preg_match('/(3|tercera|3era)/i', $categoria)) return 100;
 		return 0;
 	}
 

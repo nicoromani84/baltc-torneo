@@ -6,12 +6,12 @@
             <h2 style="margin:0;font-size:20px;"><i class="fas fa-trophy"></i> Ranking de Jugadores</h2>
             <p style="margin:8px 0 0;font-size:13px;color:#666;">Posiciones basadas en victorias ponderadas por ronda y categoría</p>
             <div style="margin:12px 0 0; padding:10px 12px; background:#f0f7ff; border-left:3px solid #0066cc; border-radius:3px; font-size:12px; color:#333;">
-                <strong>Sistema de puntuación jerárquico:</strong>
+                <strong>Sistema de puntuación con movilidad entre categorías:</strong>
                 <div style="margin:6px 0 0 0; line-height:1.5;">
-                    • <strong>Puntos base por categoría:</strong> 1ra +1000 | 2da +500 | 3era +0<br>
-                    • <strong>Rondas clasificatorias:</strong> 3 pts × multiplicador | <strong>Cuartos:</strong> 20 × mult | <strong>Semifinal:</strong> 40 × mult | <strong>Final:</strong> 80 × mult<br>
-                    • <strong>Multiplicador:</strong> 1ra × 3 | 2da × 2 | 3era × 1<br>
-                    • <strong>Garantía:</strong> Un jugador de 3era nunca puede superar al peor de 1ra/2da solo por cantidad de victorias
+                    • <strong>Puntos base:</strong> 1ra +500 | 2da +300 | 3era +100<br>
+                    • <strong>Puntos por ronda:</strong> Clasificatorias 3 pts | Cuartos 20 pts | Semifinal 40 pts | Final 80 pts<br>
+                    • <strong>Multiplicador por categoría:</strong> 1ra × 3 | 2da × 2 | 3era × 1<br>
+                    • <strong>Movilidad garantizada:</strong> Mejor de 2da puede superar a peor de 1ra • Mejor de 3era puede superar a peor de 2da • Nunca se salta dos categorías
                 </div>
             </div>
         </div>
