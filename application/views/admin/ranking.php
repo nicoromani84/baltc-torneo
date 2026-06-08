@@ -8,10 +8,10 @@
             <div style="margin:12px 0 0; padding:10px 12px; background:#f0f7ff; border-left:3px solid #0066cc; border-radius:3px; font-size:12px; color:#333;">
                 <strong>Sistema de puntuación con movilidad entre categorías:</strong>
                 <div style="margin:6px 0 0 0; line-height:1.5;">
-                    • <strong>Puntos base:</strong> 1ra +500 | 2da +300 | 3era +100<br>
-                    • <strong>Puntos por ronda:</strong> Clasificatorias 3 pts | Cuartos 20 pts | Semifinal 40 pts | Final 80 pts<br>
-                    • <strong>Multiplicador por categoría:</strong> 1ra × 3 | 2da × 2 | 3era × 1<br>
-                    • <strong>Movilidad garantizada:</strong> Mejor de 2da puede superar a peor de 1ra • Mejor de 3era puede superar a peor de 2da • Nunca se salta dos categorías
+                    • <strong>Puntos base:</strong> 1ra +300 | 2da +200 | 3era +100<br>
+                    • <strong>Fórmula:</strong> (puntos_ronda × multiplicador) ÷ nivel_categoría<br>
+                    • <strong>Ejemplo Final:</strong> 1ra 240 pts | 2da 80 pts | 3era 26.67 pts<br>
+                    • <strong>Movilidad garantizada:</strong> Mejor de 2da supera a peor de 1ra • Mejor de 3era supera a peor de 2da • 3era nunca supera a 1ra
                 </div>
             </div>
         </div>
