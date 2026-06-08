@@ -22,8 +22,8 @@
             </div>
         </div>
 
-        <div style="padding:20px;">
-            <ul class="nav nav-tabs mb-4" role="tablist">
+        <div style="padding:10px 20px;">
+            <ul class="nav nav-tabs mb-2" role="tablist">
                 <li class="nav-item">
                     <a class="nav-link active" id="tab-caballeros" data-toggle="tab" href="#content-caballeros" role="tab" aria-selected="true">
                         <i class="fas fa-male mr-2"></i><strong>Caballeros</strong>
