@@ -33,16 +33,16 @@ class Ranking_model extends CI_Model {
 	}
 
 	private function getPuntosBase($categoria) {
-		if(preg_match('/(1|primera|1ra)/i', $categoria)) return 350;
-		if(preg_match('/(2|segunda|2da)/i', $categoria)) return 200;
+		if(preg_match('/(1|primera|1ra)/i', $categoria)) return 270;
+		if(preg_match('/(2|segunda|2da)/i', $categoria)) return 150;
 		if(preg_match('/(3|tercera|3era)/i', $categoria)) return 100;
 		return 0;
 	}
 
 	private function getDivisorCategoria($categoria) {
 		if(preg_match('/(1|primera|1ra)/i', $categoria)) return 1.0;
-		if(preg_match('/(2|segunda|2da)/i', $categoria)) return 1.5;
-		if(preg_match('/(3|tercera|3era)/i', $categoria)) return 3.5;
+		if(preg_match('/(2|segunda|2da)/i', $categoria)) return 1.3;
+		if(preg_match('/(3|tercera|3era)/i', $categoria)) return 4.8;
 		return 1.0;
 	}
 
