@@ -1647,4 +1647,12 @@ public function enviarNotificacion() {
 			'detailed' => $detailed
 		));
 	}
+
+	public function debugRanking() {
+		$this->load->model('Ranking_model');
+		$debug = $this->Ranking_model->getDebugInfo();
+		echo '<pre>';
+		print_r($debug);
+		echo '</pre>';
+	}
 }

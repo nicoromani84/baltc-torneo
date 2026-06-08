@@ -2,17 +2,24 @@
 
 class Ranking_model extends CI_Model {
 
-	private function getPuntosRonda($ronda, $maxRonda) {
-		if($maxRonda <= 2) return 0;
+	private function getRondaOrder($ronda) {
+		if(preg_match('/final/i', $ronda)) return 4;
+		if(preg_match('/semifinal/i', $ronda)) return 3;
+		if(preg_match('/cuartos/i', $ronda)) return 2;
+		if(preg_match('/2da.*ronda/i', $ronda)) return 1;
+		if(preg_match('/1ra.*ronda/i', $ronda)) return 0;
+		return -1;
+	}
 
-		$cuartos = $maxRonda - 2;
-		$semifinal = $maxRonda - 1;
-		$final = $maxRonda;
+	private function getPuntosRonda($ronda, $maxRondaOrder) {
+		$rondaOrder = $this->getRondaOrder($ronda);
 
-		if($ronda < $cuartos) return 0;
-		if($ronda == $cuartos) return 20;
-		if($ronda == $semifinal) return 40;
-		if($ronda == $final) return 80;
+		if($rondaOrder < 0) return 0;
+		if($maxRondaOrder < 2) return 0;
+
+		if($rondaOrder == $maxRondaOrder) return 80;
+		if($rondaOrder == $maxRondaOrder - 1) return 40;
+		if($rondaOrder == $maxRondaOrder - 2) return 20;
 
 		return 0;
 	}
@@ -53,15 +60,16 @@ class Ranking_model extends CI_Model {
 		foreach($matches as $match) {
 			$key = $match->category;
 			if(!isset($maxRondas[$key])) {
-				$maxRondas[$key] = 0;
+				$maxRondas[$key] = -1;
 			}
-			$maxRondas[$key] = max($maxRondas[$key], $match->ronda);
+			$rondaOrder = $this->getRondaOrder($match->ronda);
+			$maxRondas[$key] = max($maxRondas[$key], $rondaOrder);
 		}
 
 		foreach($matches as $match) {
 			$playerId = $match->ganador_id;
-			$maxRonda = $maxRondas[$match->category];
-			$puntosRonda = $this->getPuntosRonda($match->ronda, $maxRonda);
+			$maxRondaOrder = $maxRondas[$match->category];
+			$puntosRonda = $this->getPuntosRonda($match->ronda, $maxRondaOrder);
 			$multiplicador = $this->getMultiplicadorCategoria($match->categoria);
 			$puntos = $puntosRonda * $multiplicador;
 
@@ -114,9 +122,10 @@ class Ranking_model extends CI_Model {
 		foreach($matches as $match) {
 			$key = $match->category;
 			if(!isset($maxRondas[$key])) {
-				$maxRondas[$key] = 0;
+				$maxRondas[$key] = -1;
 			}
-			$maxRondas[$key] = max($maxRondas[$key], $match->ronda);
+			$rondaOrder = $this->getRondaOrder($match->ronda);
+			$maxRondas[$key] = max($maxRondas[$key], $rondaOrder);
 		}
 
 		$detailed = array();
@@ -125,8 +134,8 @@ class Ranking_model extends CI_Model {
 			$catId = $match->cat_id;
 			$key = $playerId . '_' . $catId;
 
-			$maxRonda = $maxRondas[$match->category];
-			$puntosRonda = $this->getPuntosRonda($match->ronda, $maxRonda);
+			$maxRondaOrder = $maxRondas[$match->category];
+			$puntosRonda = $this->getPuntosRonda($match->ronda, $maxRondaOrder);
 			$multiplicador = $this->getMultiplicadorCategoria($match->categoria);
 			$puntos = $puntosRonda * $multiplicador;
 
@@ -146,5 +155,49 @@ class Ranking_model extends CI_Model {
 		}
 
 		return array_values($detailed);
+	}
+
+	public function getDebugInfo() {
+		$sql = "SELECT
+				c.name as categoria,
+				m.gender,
+				MIN(m.ronda) as min_ronda,
+				MAX(m.ronda) as max_ronda,
+				COUNT(*) as total_matches,
+				SUM(CASE WHEN m.ganador_id IS NOT NULL THEN 1 ELSE 0 END) as matches_con_ganador
+			FROM matches m
+			JOIN category c ON c.id = m.category
+			WHERE c.name NOT LIKE '%2nd chance%'
+			GROUP BY m.category, m.gender
+			ORDER BY c.name, m.gender";
+
+		$q = $this->db->query($sql);
+		$categorias = $q->result();
+
+		$debug = array(
+			'categorias_info' => $categorias,
+			'sample_matches_M' => array(),
+			'sample_matches_F' => array()
+		);
+
+		foreach(array('M', 'F') as $gender) {
+			$sql = "SELECT
+					p.name,
+					c.name as categoria,
+					m.ronda,
+					m.ganador_id
+				FROM matches m
+				JOIN partners p ON p.id = m.ganador_id
+				JOIN category c ON c.id = m.category
+				WHERE p.gender = ?
+				AND m.ganador_id IS NOT NULL
+				AND c.name NOT LIKE '%2nd chance%'
+				ORDER BY m.ronda DESC
+				LIMIT 5";
+			$q = $this->db->query($sql, array($gender));
+			$debug['sample_matches_' . $gender] = $q->result();
+		}
+
+		return $debug;
 	}
 }
