@@ -1655,4 +1655,30 @@ public function enviarNotificacion() {
 		print_r($debug);
 		echo '</pre>';
 	}
+
+	public function debugSeeding() {
+		echo "<strong>Columnas en tabla 'sembrados':</strong><br>";
+		$col_sem = $this->db->query("SHOW COLUMNS FROM sembrados");
+		foreach($col_sem->result() as $col) {
+			echo "- " . $col->Field . " (" . $col->Type . ")<br>";
+		}
+
+		echo "<br><strong>Ejemplos de datos en sembrados:</strong><br>";
+		$sql = "SELECT * FROM sembrados LIMIT 10";
+		$q = $this->db->query($sql);
+		echo '<pre>';
+		print_r($q->result());
+		echo '</pre>';
+
+		echo "<br><strong>Estructura completa con JOIN:</strong><br>";
+		$sql = "SELECT s.*, p.name, c.name as categoria
+				FROM sembrados s
+				LEFT JOIN partners p ON p.id = s.partner_id
+				LEFT JOIN category c ON c.id = s.category_id
+				LIMIT 5";
+		$q = $this->db->query($sql);
+		echo '<pre>';
+		print_r($q->result());
+		echo '</pre>';
+	}
 }
