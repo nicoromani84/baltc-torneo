@@ -1657,7 +1657,6 @@ public function enviarNotificacion() {
 	}
 
 	public function descargarRankingPDF() {
-		ob_start();
 		?>
 		<!DOCTYPE html>
 		<html>
@@ -1667,7 +1666,7 @@ public function enviarNotificacion() {
 			<style>
 				body {
 					font-family: Arial, sans-serif;
-					max-width: 800px;
+					max-width: 900px;
 					margin: 20px auto;
 					padding: 20px;
 					color: #333;
@@ -1699,6 +1698,7 @@ public function enviarNotificacion() {
 					padding: 15px;
 					background: #f8f9fa;
 					border-left: 4px solid #0066cc;
+					page-break-inside: avoid;
 				}
 				.section h2 {
 					color: #0066cc;
@@ -1741,13 +1741,28 @@ public function enviarNotificacion() {
 					color: #999;
 					font-size: 12px;
 				}
+				.print-note {
+					background: #e7f3ff;
+					border: 1px solid #0066cc;
+					padding: 15px;
+					border-radius: 5px;
+					margin-bottom: 20px;
+					text-align: center;
+				}
+				.print-note strong {
+					color: #0066cc;
+				}
 				@media print {
 					body { margin: 0; padding: 10px; }
-					.section { page-break-inside: avoid; }
+					.print-note { display: none; }
 				}
 			</style>
 		</head>
 		<body>
+			<div class="print-note">
+				<strong>💡 Para descargar como PDF:</strong> Presiona <strong>Ctrl+P</strong> (o <strong>Cmd+P</strong> en Mac) y selecciona "Guardar como PDF"
+			</div>
+
 			<div class="header">
 				<img src="<?=asset_url('img/logo.png')?>" alt="BALTC" class="logo">
 				<h1>🏆 Ranking de Jugadores</h1>
@@ -1884,15 +1899,6 @@ public function enviarNotificacion() {
 		</body>
 		</html>
 		<?php
-		$html = ob_get_clean();
-
-		header('Content-Type: application/pdf');
-		header('Content-Disposition: attachment; filename="Ranking_BALTC_' . date('Y-m-d') . '.pdf"');
-
-		$this->load->library('pdf');
-		$this->pdf->load_html($html);
-		$this->pdf->render();
-		echo $this->pdf->output();
 	}
 
 	public function debugSeeding() {
