@@ -8,7 +8,8 @@
             <div style="margin:12px 0 0; padding:10px 12px; background:#f0f7ff; border-left:3px solid #0066cc; border-radius:3px; font-size:12px; color:#333;">
                 <strong>Sistema de puntuación:</strong>
                 <div style="margin:6px 0 0 0; line-height:1.5;">
-                    • Primeras rondas: <strong>5pts</strong> | Segundas: <strong>10pts</strong> | Cuartos: <strong>20pts</strong> | Semifinal: <strong>40pts</strong> | Final: <strong>80pts</strong><br>
+                    • Rondas clasificatorias: <strong>0 pts</strong> (sin puntaje)<br>
+                    • Cuartos de final: <strong>20 pts</strong> | Semifinal: <strong>40 pts</strong> | Final: <strong>80 pts</strong><br>
                     • Multiplicador por categoría: <strong>1ra × 3</strong> | <strong>2da × 2</strong> | <strong>3era × 1</strong><br>
                     • WO y adelantados cuentan igual que victorias normales
                 </div>

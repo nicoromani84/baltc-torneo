@@ -3,12 +3,18 @@
 class Ranking_model extends CI_Model {
 
 	private function getPuntosRonda($ronda, $maxRonda) {
-		if($maxRonda <= 1) return 10;
-		if($ronda == $maxRonda) return 80;
-		if($ronda >= $maxRonda - 1) return 40;
-		if($ronda >= ceil($maxRonda * 0.75)) return 20;
-		if($ronda >= ceil($maxRonda * 0.5)) return 10;
-		return 5;
+		if($maxRonda <= 2) return 0;
+
+		$cuartos = $maxRonda - 2;
+		$semifinal = $maxRonda - 1;
+		$final = $maxRonda;
+
+		if($ronda < $cuartos) return 0;
+		if($ronda == $cuartos) return 20;
+		if($ronda == $semifinal) return 40;
+		if($ronda == $final) return 80;
+
+		return 0;
 	}
 
 	private function getMultiplicadorCategoria($categoria) {
