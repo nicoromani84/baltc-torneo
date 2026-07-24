@@ -28,11 +28,29 @@ class Login extends CI_Controller {
 			} elseif($inscripto_doubles) {
 				$categoria = $this->Reservation->getCategoryByPlayer($user_id, 'doubles');
 				$cat_nombre = $this->Reservation->getCategoryName($categoria);
+
+				// Obtener el compañero del usuario
+				$q_partner = $this->db
+					->select('p.name')
+					->from('reservations_partners rp')
+					->join('reservations r', 'rp.reservation_id = r.id')
+					->join('partners p', 'rp.partner_id = p.id')
+					->where('r.tournament_type', 'doubles')
+					->where('rp.partner_id !=', $user_id)
+					->where('r.id IN (SELECT reservation_id FROM reservations_partners WHERE partner_id = ' . intval($user_id) . ')')
+					->get();
+
+				$partner_name = '';
+				if($q_partner->num_rows() > 0) {
+					$partner_name = $q_partner->row()->name;
+				}
+
 				$d['titulo'] 	= 'Inscripción';
 				$d['token']		= $this->protect->eToken();
 				$d['user'] 		= $this->session;
 				$d['classname'] = 'reserva';
 				$d['categoria'] = $cat_nombre;
+				$d['partner'] = $partner_name;
 				$this->load->view('web/header',$d);
 				$this->load->view('web/inscripto');
 				$this->load->view('web/footer');
