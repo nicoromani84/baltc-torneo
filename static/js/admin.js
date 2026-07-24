@@ -67,7 +67,7 @@ var admin = {
 	},
 
 	dashboard: {
-		table: $('#reservasTable'),
+		table: $('#jugadoresTable'),
 		reservations: [],
 		partners: {
 			names: [],
@@ -86,7 +86,7 @@ var admin = {
 				that.hideSideModal();
 			})
 
-			$('#reservasTable').DataTable({
+			$('#jugadoresTable').DataTable({
 				dom: 'ltp',
 				order: [[ 2, "DESC" ]]
 			});
@@ -353,7 +353,7 @@ var admin = {
 				success: function(res) {
 					// Destruyo la tabla
 					if ($.fn.DataTable.isDataTable('#reservasTable')) {
-						$('#reservasTable').DataTable().destroy();
+						$('#jugadoresTable').DataTable().destroy();
 					}
 
 					// Almaceno los datos en variables
@@ -413,7 +413,7 @@ var admin = {
 						}
 					});
 
-					$('#reservasTable').DataTable({
+					$('#jugadoresTable').DataTable({
 						dom: 'ltp',
 						order: [[ 2, "DESC" ]]
 					});
