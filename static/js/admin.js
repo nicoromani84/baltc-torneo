@@ -126,6 +126,41 @@ var admin = {
 			$('#add').click(function(){
 				that.showAssignModal();
 			});
+
+			// Event listeners para editar y borrar jugadores
+			$(document).on('click', '.btn-editar-jugador', function(){
+				var jugadorId = $(this).data('id');
+				var jugador = that.jugadoresCache[jugadorId];
+				if(!jugador) return;
+				$('#jugador-id').val(jugador.id);
+				$('#jugador-reserva-id').val(jugador.reserva_id);
+				$('#form-jugador-titulo').text('Editar Jugador');
+				$('#form-editar-fields').show();
+				$('#form-nuevo-fields').hide();
+				$('#jugador-name').val(jugador.name);
+				$('#jugador-dni').val(jugador.dni);
+				$('#jugador-email').val(jugador.email);
+				$('#jugador-gender').val(jugador.gender);
+				$('#jugador-category').val(jugador.category_id);
+				$('#form-jugador').slideDown();
+				$('html,body').animate({scrollTop:0}, 300);
+			});
+
+			$(document).on('click', '.btn-borrar-jugador', function(){
+				var jugadorId = $(this).data('id');
+				var jugador = that.jugadoresCache[jugadorId];
+				if(!jugador) return;
+				if(!confirm('¿Eliminar a ' + jugador.name + ' del torneo?')) return;
+				$.ajax({
+					url: adminurl + '/deleteJugador',
+					type: 'POST',
+					data: { id: jugador.id, reserva_id: jugador.reserva_id },
+					headers: {'X-Auth-Token': token},
+					success: function(res) {
+						if(res.action) that.getReservations(function(){ showNotification('success', 'Jugador eliminado correctamente.'); });
+					}
+				});
+			});
 		},
 
 		hideSideModal: function() {
@@ -385,40 +420,6 @@ var admin = {
 					$('#jugadoresTable').DataTable({
 						dom: 'ltp',
 						order: [[ 2, "DESC" ]]
-					});
-
-					$(document).off('click', '.btn-editar-jugador').on('click', '.btn-editar-jugador', function(){
-						var jugadorId = $(this).data('id');
-						var jugador = that.jugadoresCache[jugadorId];
-						if(!jugador) return;
-						$('#jugador-id').val(jugador.id);
-						$('#jugador-reserva-id').val(jugador.reserva_id);
-						$('#form-jugador-titulo').text('Editar Jugador');
-						$('#form-editar-fields').show();
-						$('#form-nuevo-fields').hide();
-						$('#jugador-name').val(jugador.name);
-						$('#jugador-dni').val(jugador.dni);
-						$('#jugador-email').val(jugador.email);
-						$('#jugador-gender').val(jugador.gender);
-						$('#jugador-category').val(jugador.category_id);
-						$('#form-jugador').slideDown();
-						$('html,body').animate({scrollTop:0}, 300);
-					});
-
-					$(document).off('click', '.btn-borrar-jugador').on('click', '.btn-borrar-jugador', function(){
-						var jugadorId = $(this).data('id');
-						var jugador = that.jugadoresCache[jugadorId];
-						if(!jugador) return;
-						if(!confirm('¿Eliminar a ' + jugador.name + ' del torneo?')) return;
-						$.ajax({
-							url: adminurl + '/deleteJugador',
-							type: 'POST',
-							data: { id: jugador.id, reserva_id: jugador.reserva_id },
-							headers: {'X-Auth-Token': token},
-							success: function(res) {
-								if(res.action) that.getReservations(function(){ showNotification('success', 'Jugador eliminado correctamente.'); });
-							}
-						});
 					});
 
 					if(typeof cb == 'function')
