@@ -204,7 +204,7 @@ const token = '<?=$token?>';
 const baseurl = '<?=base_url()?>';
 
 $(function() {
-	// admin.dashboard.run(); // comentado - reemplazado por jugadores
+	admin.dashboard.run();
 
 	// Switch inscripciones
 	$('#btn-inscripciones').on('click', function(){
