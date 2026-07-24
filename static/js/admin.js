@@ -96,25 +96,26 @@ var admin = {
 				return that.vars.names.indexOf(value) >= 0;
 			});
 
-			$('select[name="category"]').change(function(){
+			$('#filtro-categoria').change(function(){
 				that.getReservations();
 			});
 
-			$('select[name="gender"]').change(function(){
+			$('#filtro-gender').change(function(){
 				that.getCategories(function(res) {
 					if(res.action) {
 						$('select[name="category"] option').remove();
 						$.each(res.categories, function(i, v){
-							$('select[name="category"]').append('<option value="' + v.id + '">' + v.name + '</option>');
+							$('#filtro-categoria').append('<option value="' + v.id + '">' + v.name + '</option>');
 						});
 						that.getReservations();
 					}
 				})
 			});
 
-			$('.tournament-tab').click(function(e){
+			$(document).on('click', '.tournament-tab', function(e){
 				e.preventDefault();
 				var tournament = $(this).data('tournament');
+				console.log('Tab clicked:', tournament);
 				that.tournament_type = tournament;
 				$('.tournament-tab').removeClass('active');
 				$(this).addClass('active');
@@ -342,10 +343,12 @@ var admin = {
 		// Obtenemos las reservas para la tabla
 		getReservations: function(cb) {
 			var that = this;
+			var ajaxData = {category: $('#filtro-categoria').val(), gender: $('#filtro-gender').val(), tournament_type: that.tournament_type};
+			console.log('Enviando datos:', ajaxData);
 			$.ajax({
 				url: adminurl + '/getReservations',
 				type: "POST",
-				data: {category: $('select[name="category"]').val(), gender: $('select[name="gender"]').val(), tournament_type: that.tournament_type},
+				data: ajaxData,
 				headers: { 'X-Auth-Token' : token },
 				success: function(res) {
 					// Destruyo la tabla
@@ -428,7 +431,7 @@ var admin = {
 			$.ajax({
 				url: adminurl + '/getCategories',
 				type: "POST",
-				data: {gender: $('select[name="gender"]').val()},
+				data: {gender: $('#filtro-gender').val()},
 				async: false,
 				headers: { 'X-Auth-Token' : token },
 				success: function(res) {
