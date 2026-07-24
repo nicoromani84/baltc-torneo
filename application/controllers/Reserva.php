@@ -6,9 +6,6 @@ class Reserva extends CI_Controller {
 	public function __construct() {
 		parent::__construct();
 
-		//Unicamente usuarios loggeados
-		//$this->protect->loggedUsers();
-
 		$this->load->model('User');
 		$this->load->model('Reservation');
 	}
@@ -26,7 +23,6 @@ class Reserva extends CI_Controller {
 		$d['partners'] = $this->User->getAllExceptMe($this->session->gender);
 		$d['user'] = $this->session;
 
-		// Si no hay horarios disponibles para hoy, saco el option
 		$this->load->view('web/header',$d);
 		$this->load->view('web/reserva');
 		$this->load->view('web/footer');
@@ -39,9 +35,9 @@ class Reserva extends CI_Controller {
 		$post = $this->input->post();
 		$response = array();
 
-		// Valido los campos
+		// Validar campos requeridos
 		$this->form_validation->set_error_delimiters('', '');
-		//$this->form_validation->set_rules('partner', 'Oponente', 'required')->set_message('required', 'Debe seleccionar un oponente.');
+		$this->form_validation->set_rules('partner', 'Compañero', 'required')->set_message('required', 'Debe seleccionar un compañero.');
 		$this->form_validation->set_rules('category', 'Categoría', 'required')->set_message('required', 'Debe seleccionar una categoría.');
 		if ($this->form_validation->run() == FALSE) {
 			$response['action'] = false;
@@ -49,23 +45,22 @@ class Reserva extends CI_Controller {
 			$this->protect->ajaxDie($response);
 		}
 
-		/* Valido que no haya hecho una reserva en este día
-		$recurrent = $this->Reservation->canReserve(array(intval($this->session->userdata('id')), intval($post['partner'])));
-		if($recurrent) {
+		// Validar que el partner existe y es del mismo género
+		$partner = $this->User->getById(intval($post['partner']));
+		if(!$partner || $partner->gender != $this->session->gender) {
 			$response['action'] = false;
-			$response['msg'] = array();
-			for($i = 0; $i < count($recurrent); $i++) {
-				if(intval($recurrent[$i]->id) == $this->session->userdata('id')) {
-					$response['msg'][$i] = 'Ya has participado.';
-				} else {
-					$response['msg'][$i] = '<strong class="name">' . strtolower($recurrent[$i]->name) . '</strong> ya ha participado.';
-				}
-			}
+			$response['msg'] = 'El compañero seleccionado no existe o no es del mismo género.';
 			$this->protect->ajaxDie($response);
-		}*/
+		}
 
-		// Formateo la fecha del turno
-		//$partner = $this->User->getById($post['partner']);
+		// Validar que no sea la misma persona
+		if(intval($post['partner']) == intval($this->session->userdata('id'))) {
+			$response['action'] = false;
+			$response['msg'] = 'No puedes seleccionarte a ti mismo como compañero.';
+			$this->protect->ajaxDie($response);
+		}
+
+		// Obtener datos del usuario
 		$user = $this->User->getById($this->session->userdata('id'));
 
 		$cat_obj = $this->db->where('id', $post['category'])->get('category')->row();
@@ -73,51 +68,39 @@ class Reserva extends CI_Controller {
 		$email_data = array(
 			'nombre' 		=> $this->session->name,
 			'category'		=> $cat_nombre,
+			'partner' 		=> $partner->name
 		);
 
-		// Enviamos confirmación por email
+		// Enviar confirmación por email
 		if(filter_var($user->email, FILTER_VALIDATE_EMAIL) !== false) {
 			$this->sendConfirmation($email_data, $user->email);
 		}
-		/*
-		if($court) {
 
-			$email_owner_data = array(
-				//'cuando' 		=> date('Y-m-d') == date('Y-m-d', strtotime($post['date'])) ? 'hoy' : 'mañana',
-				'cuando'		=> 'el día ' . $this->translateDayName(date('l', strtotime($post['date']))) . ' ' . date('d/m', strtotime($post['date'])),
-				'desde' 		=> $post['hour'],
-				'hasta' 		=> date('H:i', strtotime($post['hour']) + 60*60),
-				'cancha'		=> $court ? $court->name : '',
-				'cancha_id'		=> $court ? $court->id : '',
-				'club' 			=> $court ? $court->club : '',
-				'partner' 		=> strtolower(ucwords($this->session->name)) . ', ' . ($partner ? strtolower($partner->name) : '')
-			);
+		// Validar que ninguno de los dos esté ya inscripto
+		$userRegistered = $this->Reservation->isPlayerRegistered($this->session->userdata('id'));
+		$partnerRegistered = $this->Reservation->isPlayerRegistered(intval($post['partner']));
 
-			if(filter_var($court->cemail, FILTER_VALIDATE_EMAIL) !== false) {
-				$this->sendOwnerConfirmation($email_owner_data, $court->cemail);
-			}
-
-		}
-		$response['email_owner_data'] = $court;
-		*/
-
-		// Validar que no esté ya inscripto
-		$yaInscripto = $this->Reservation->isPlayerRegistered($this->session->userdata('id'));
-		if($yaInscripto) {
+		if($userRegistered || $partnerRegistered) {
 			$response['action'] = false;
-			$response['msg'] = 'Ya estás inscripto en el torneo. Solo podés participar en una categoría.';
+			if($userRegistered && $partnerRegistered) {
+				$response['msg'] = 'Ambos jugadores ya están inscriptos en el torneo.';
+			} else if($userRegistered) {
+				$response['msg'] = 'Ya estás inscripto en el torneo. Solo podés participar en una categoría.';
+			} else {
+				$response['msg'] = $partner->name . ' ya está inscripto en el torneo. Solo cada jugador puede participar en una categoría.';
+			}
 			$this->protect->ajaxDie($response);
 		}
 
-		// Guardamos la reserva
+		// Guardar la reserva
 		$add = $this->Reservation->add($post);
 		$addPartners = false;
 
-		// Si se guardó la reserva, guardamos los participantes
+		// Si se guardó la reserva, guardar ambos participantes
 		if(is_integer($add)) {
 			$partners = array(
 				array('partner_id' => intval($this->session->userdata('id')), 'reservation_id' => $add),
-				//array('partner_id' => intval($post['partner']), 'reservation_id' => $add)
+				array('partner_id' => intval($post['partner']), 'reservation_id' => $add)
 			);
 			$addPartners = $this->Reservation->addReservationPartners($partners);
 		}
@@ -146,7 +129,7 @@ class Reserva extends CI_Controller {
 		    ->to($email)
 		    ->subject($subject)
 		    ->message($body)
-		    ->send(); // EMAILS DESHABILITADOS
+		    ->send();
 	}
 
 	private function sendOwnerConfirmation($data, $email) {
@@ -159,6 +142,6 @@ class Reserva extends CI_Controller {
 		    ->to($email)
 		    ->subject($subject)
 		    ->message($body)
-		    ->send(); // EMAILS DESHABILITADOS
+		    ->send();
 	}
 }

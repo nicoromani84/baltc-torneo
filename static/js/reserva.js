@@ -1,8 +1,8 @@
 var reserva = {
-	
+
 	run : function() {
 		this.reserva.triggers();
-		
+
 		// Actualizo las canchas al cargar
 		$('#fecha').change()
 	},
@@ -22,7 +22,7 @@ var reserva = {
 					that.vars.data = res.data.map(function(a){
 						return {id: a.id, name: a.name.toLowerCase()};
 					})
-					
+
 					that.vars.names = res.data.map(function(a){
 						return a.name.toLowerCase();
 					})
@@ -64,30 +64,29 @@ var reserva = {
 		        onclick: false,
 		        onfocusout: false,
 		        rules: {
-					/*partner: {
+					partner: {
 						required: true,
 						validName : true
-					}*/
+					}
 				},
 				messages: {
-					/*partner: {
+					partner: {
 						required: 'Debes ingresar tu compañero',
 						validName: 'El compañero ingresado no existe'
-					}*/
+					}
 				},
 		        errorPlacement: function (error, element) {
 		            error.addClass("invalid-feedback");
 		            error.insertAfter(element);
 		        },
 		        submitHandler: function(form) {
-		        	//var formdata = that.serializedToObj($('.form form').serializeArray());
-		        	//	formdata.partner = that.getPartnerId(formdata.partner);
 		        	var formdata = that.serializedToObj($('.form form').serializeArray());
+		        	formdata.partner = that.getPartnerId(formdata.partner);
 
-		        	/*if(typeof formdata.partner == 'undefined' || formdata.partner == '') {
+		        	if(typeof formdata.partner == 'undefined' || formdata.partner == '') {
 		        		showNotification('error', 'Debes ingresar tu compañero.');
 		        		return false;
-		        	}*/
+		        	}
 
 		        	if(typeof formdata.category == 'undefined' || formdata.category == '') {
 		        		showNotification('error', 'Debe seleccionar una categoría.');
@@ -196,6 +195,7 @@ var reserva = {
 						'<div class="splash-check"><i class="fas fa-check-circle"></i></div>',
 						'<h2 class="splash-titulo">¡Estás inscripto!</h2>',
 						'<div class="splash-categoria"><i class="fas fa-star"></i> Categoría ' + data.category + '</div>',
+						'<div class="splash-partner"><i class="fas fa-user-friends"></i> Compañero: <strong>' + data.partner + '</strong></div>',
 						'<div class="splash-fecha"><i class="fas fa-calendar-alt"></i> Inicio: <strong>19 de Mayo 2026</strong></div>',
 						'<div class="splash-aviso"><i class="fas fa-info-circle"></i> Tu categoría puede quedar sujeta a revisión por parte de la organización.</div>',
 						'<button class="btn btn-secondary splash-btn" id="splash-cerrar">Cerrar</button>',
@@ -210,6 +210,7 @@ var reserva = {
 				$('#inscripcion-splash').fadeOut(300, function(){ $(this).remove(); });
 				// Limpiar el formulario
 				$('#category').val('').trigger('change');
+				$('input[name="partner"]').val('');
 				if($('.niceselect').length) $('.niceselect').niceSelect('update');
 				$('#acepto_reglamento').prop('checked', false);
 				$('button[type="submit"]').prop('disabled', false).removeClass('loading');
@@ -231,6 +232,7 @@ var reserva = {
 					'.splash-check { font-size:70px;color:#a5d051;margin-bottom:16px; }',
 					'.splash-titulo { color:#fff;font-size:26px;font-weight:800;text-transform:uppercase;letter-spacing:1px;margin-bottom:20px; }',
 					'.splash-categoria { background:rgba(165,208,81,0.15);border:1px solid rgba(165,208,81,0.4);color:#a5d051;font-weight:700;font-size:16px;padding:10px 20px;border-radius:8px;margin-bottom:12px; }',
+					'.splash-partner { background:rgba(165,208,81,0.15);border:1px solid rgba(165,208,81,0.4);color:#a5d051;font-weight:700;font-size:16px;padding:10px 20px;border-radius:8px;margin-bottom:12px; }',
 					'.splash-fecha { color:rgba(255,255,255,0.8);font-size:15px;margin-bottom:16px; }',
 					'.splash-fecha strong { color:#fff; }',
 					'.splash-aviso { background:rgba(255,200,0,0.1);border:1px solid rgba(255,200,0,0.3);color:rgba(255,220,80,0.9);font-size:13px;padding:10px 14px;border-radius:8px;margin-bottom:24px;line-height:1.4; }',
