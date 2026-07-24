@@ -357,9 +357,7 @@ var admin = {
 					}
 
 					// Almaceno los datos en variables
-					that.partners.data = res.partners.map(function(a){
 						return {id: a.id, name: a.name.toLowerCase()};
-					})
 					
 					that.partners.names = res.partners.map(function(a){
 						return a.name.toLowerCase();
