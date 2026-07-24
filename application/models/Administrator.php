@@ -97,14 +97,15 @@ class Administrator extends CI_Model
 	}
 
 	// Inscriptos filtrados por categoría y género
-	public function getInscriptosByCategory($category_id, $gender = false) {
+	public function getInscriptosByCategory($category_id, $gender = false, $tournament_type = 'singles') {
 		$this->db
 			->distinct()
 			->select('p.id as jugador_id, p.name as jugador, p.gender')
 			->from('reservations r')
 			->join('reservations_partners rp', 'rp.reservation_id = r.id')
 			->join('partners p', 'p.id = rp.partner_id')
-			->where('r.category', $category_id);
+			->where('r.category', $category_id)
+			->where('r.tournament_type', $tournament_type);
 		if($gender) {
 			$this->db->where('p.gender', $gender);
 		}

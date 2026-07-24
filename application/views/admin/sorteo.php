@@ -6,10 +6,17 @@
 	<!-- PASO 1: SELECTOR -->
 	<div class="sorteo-card mb-4">
 		<div class="sorteo-card-header">
-			<span class="sorteo-step">1</span> Seleccionar categoría y género
+			<span class="sorteo-step">1</span> Seleccionar torneo, categoría y género
 		</div>
 		<div class="sorteo-card-body">
 			<div class="form-row align-items-end">
+				<div class="form-group col-md-2 mb-0">
+					<label>Torneo</label>
+					<select id="sorteo-tournament" class="form-control">
+						<option value="singles">Singles</option>
+						<option value="doubles">Dobles</option>
+					</select>
+				</div>
 				<div class="form-group col-md-3 mb-0">
 					<label>Categoría</label>
 					<select id="sorteo-category" class="form-control">
@@ -158,6 +165,7 @@ $(function(){
 	var jugadores = [];
 	var categoryId = null;
 	var gender = null;
+	var tournament_type = 'singles';
 	var numSembrados = 0;
 	var bracketFinal = [];
 	var RONDAS = ['1ra Ronda','2da Ronda','Cuartos de Final','Semifinal','Final'];
@@ -168,26 +176,16 @@ $(function(){
 		return 8;
 	}
 	function posicionesSembrados(size, nSembrados) {
-		// Siembra ATP: cada sembrado va al INICIO de su octavo
-		// Bracket de 16: octavos de 2, bracket de 32: octavos de 4
-		var e = Math.max(1, Math.floor(size / 8)); // tamaño de octavo
-		// Los 8 octavos empiezan en: 0, e, 2e, 3e, 4e, 5e, 6e, 7e
-		// Asignación ATP:
-		// [1] = octavo 0 (pos 0)
-		// [2] = octavo 7 (pos 7e) -- bottom
-		// [3] y [4] = octavos 3 y 4 sorteados -- mitad superior e inferior del medio
-		// [5]-[8] = octavos 1, 2, 5, 6 sorteados
+		var e = Math.max(1, Math.floor(size / 8));
 		var pos = {};
 		if(nSembrados >= 1) pos[0] = 0;
-		if(nSembrados >= 2) pos[1] = size - 2; // penúltimo slot → BYE en último
-
+		if(nSembrados >= 2) pos[1] = size - 2;
 		if(nSembrados >= 4) {
 			var ops34 = [3*e, 4*e];
 			var s34 = Math.random() < 0.5;
 			pos[2] = s34 ? ops34[0] : ops34[1];
 			pos[3] = s34 ? ops34[1] : ops34[0];
 		}
-
 		if(nSembrados >= 8) {
 			var libres = [e, 2*e, 5*e, 6*e];
 			for(var i = libres.length-1; i > 0; i--) {
@@ -199,12 +197,19 @@ $(function(){
 			pos[6] = libres[2];
 			pos[7] = libres[3];
 		}
-
-		// Filtrar posiciones que excedan el bracket real
 		var validas = {};
 		for(var k in pos) { if(pos[k] < size) validas[k] = pos[k]; }
 		return validas;
 	}
+	$('#sorteo-tournament').on('change', function(){
+		tournament_type = $(this).val();
+		$('#paso2').hide();
+		$('#bracket-col').hide();
+		$('#btns-confirmacion').hide();
+		$('#btn-sortear').show();
+		bracketFinal = null;
+		jugadores = [];
+	});
 	$('#sorteo-category, #sorteo-gender').on('change', function(){
 		$('#paso2').hide();
 		$('#bracket-col').hide();
@@ -213,7 +218,6 @@ $(function(){
 		bracketFinal = null;
 		jugadores = [];
 	});
-
 	$('#btn-cargar').on('click', function(){
 		categoryId = $('#sorteo-category').val();
 		gender = $('#sorteo-gender').val();
@@ -221,7 +225,7 @@ $(function(){
 		$.ajax({
 			url: baseurl + 'admin/getInscriptosByCategory',
 			type: 'POST',
-			data: { category: categoryId, gender: gender },
+			data: { category: categoryId, gender: gender, tournament_type: tournament_type },
 			headers: { 'X-Auth-Token': token },
 			success: function(res) {
 				if(!res.action || !res.jugadores.length) {
@@ -234,7 +238,6 @@ $(function(){
 				renderLista();
 				renderBracket();
 				$('#paso2').slideDown();
-				// paso3 integrado
 			}
 		});
 	});
@@ -248,7 +251,6 @@ $(function(){
 		jugadores = sembrados.concat(resto);
 		renderLista();
 		armarBracket();
-		// paso3 integrado
 	});
 	function renderLista() {
 		var html = '';
@@ -288,23 +290,15 @@ $(function(){
 		while(size < n) size *= 2;
 		var slots = new Array(size).fill(null);
 		var posMap = posicionesSembrados(size, numSembrados);
-
-		// Contar cuántos sembrados tienen posición real definida
 		var sembradosConPos = 0;
 		for(var s = 0; s < numSembrados; s++) {
 			if(posMap[s] !== undefined) sembradosConPos++;
 		}
-
-		// 1) Ubicar solo los sembrados que tienen posición fija
 		for(var s = 0; s < sembradosConPos && s < jugadores.length; s++) {
 			if(posMap[s] !== undefined) slots[posMap[s]] = jugadores[s];
 		}
-
 		var nByes = size - n;
-		// No sembrados = todos los jugadores que no tienen posición fija
 		var noSembrados = jugadores.slice(sembradosConPos);
-
-		// 2) Asignar BYEs como compañeros de CADA sembrado con posición
 		var slotsConBye = {};
 		var byesUsados = 0;
 		for(var s = 0; s < sembradosConPos && byesUsados < nByes; s++) {
@@ -315,14 +309,10 @@ $(function(){
 				byesUsados++;
 			}
 		}
-
-		// 3) Slots libres restantes
 		var vacios = [];
 		for(var i = 0; i < size; i++) {
 			if(!slots[i] && !slotsConBye[i]) vacios.push(i);
 		}
-
-		// 4) Distribuir BYEs restantes aleatoriamente entre los vacios
 		var byesRestantes = nByes - byesUsados;
 		for(var i = vacios.length-1; i > 0; i--) {
 			var j = Math.floor(Math.random()*(i+1));
@@ -331,8 +321,6 @@ $(function(){
 		for(var i = 0; i < byesRestantes; i++) {
 			if(vacios[i] !== undefined) slotsConBye[vacios[i]] = true;
 		}
-
-		// 5) Slots disponibles para jugadores no sembrados
 		var slotsJugadores = [];
 		for(var i = 0; i < size; i++) {
 			if(!slots[i] && !slotsConBye[i]) slotsJugadores.push(i);
@@ -344,7 +332,6 @@ $(function(){
 		for(var i = 0; i < noSembrados.length; i++) {
 			if(slotsJugadores[i] !== undefined) slots[slotsJugadores[i]] = noSembrados[i];
 		}
-
 		bracketFinal = slots;
 		$('#bracket-col').show();
 		renderBracketFromSlots(slots, size);
@@ -383,13 +370,11 @@ $(function(){
 			html += '<div class="bracket-ronda"><div class="bracket-ronda-titulo">' + ronda.titulo + '</div><div class="bracket-matches">';
 			ronda.matches.forEach(function(p, mi) {
 				var p1 = p[0], p2 = p[1];
-				// En la primera ronda, si ambos slots son null no mostrar el partido
 				if(ri === 0 && !p1 && !p2) return;
 				var isSembrado1 = p1 && jugadores.indexOf(p1) < numSembrados;
 				var isSembrado2 = p2 && jugadores.indexOf(p2) < numSembrados;
 				var matchClass = (isSembrado1 || isSembrado2) && ri == 0 ? ' sembrado-match' : '';
 				html += '<div class="bracket-match' + matchClass + '">';
-				// En 1ra ronda, slot vacío es BYE si el otro slot tiene jugador
 				var p1Empty = ri === 0 && !p1 && p2 ? 'BYE' : 'TBD';
 				var p2Empty = ri === 0 && !p2 && p1 ? 'BYE' : 'TBD';
 				html += '<div class="bracket-player' + (p1 ? (isSembrado1&&ri==0?' sembrado-player':'') : ' tbd') + '">';
@@ -430,7 +415,6 @@ $(function(){
 		$('#resumen-sorteo').html(html);
 	}
 	$('#btn-volver').on('click', function(){
-		// paso3 integrado
 		$('#bracket-col').hide();
 		$('#btns-confirmacion').hide();
 		$('#btn-sortear').show();
@@ -440,21 +424,18 @@ $(function(){
 		var catNombre = $('#sorteo-category option:selected').text();
 		var genNombre = gender == 'M' ? 'Caballeros' : 'Damas';
 		if(!confirm('¿Confirmás el sorteo de ' + catNombre + ' ' + genNombre + '? Si ya hay partidos para esta categoría y género serán eliminados.')) return;
-
-		// Mandar bracketFinal con posiciones exactas (incluyendo nulls para BYEs)
 		var idsOrdenados = bracketFinal.map(function(j){ return j ? j.jugador_id : null; });
-
 		var sembradosData = [];
 		for(var s = 0; s < numSembrados; s++) {
 			sembradosData.push(jugadores[s] ? jugadores[s].jugador_id : null);
 		}
-
 		$.ajax({
 			url: baseurl + 'admin/confirmarSorteo',
 			type: 'POST',
 			data: {
 				category: categoryId,
 				gender: gender,
+				tournament_type: tournament_type,
 				jugadores: JSON.stringify(idsOrdenados),
 				sembrados: JSON.stringify(sembradosData)
 			},

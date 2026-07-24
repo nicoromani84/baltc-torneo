@@ -694,7 +694,9 @@ class Admin extends CI_Controller {
 		$this->protect->setRequest('POST');
 		$category = intval($this->input->post('category'));
 		$gender = $this->input->post('gender', true);
-		$jugadores = $this->Administrator->getInscriptosByCategory($category, $gender);
+		$tournament_type = $this->input->post('tournament_type', true);
+		if(!$tournament_type) $tournament_type = 'singles';
+		$jugadores = $this->Administrator->getInscriptosByCategory($category, $gender, $tournament_type);
 		$this->protect->ajaxDie(array('action' => !empty($jugadores), 'jugadores' => $jugadores ?: array()));
 	}
 
