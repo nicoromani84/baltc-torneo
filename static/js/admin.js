@@ -352,7 +352,7 @@ var admin = {
 				headers: { 'X-Auth-Token' : token },
 				success: function(res) {
 					// Destruyo la tabla
-					if ($.fn.DataTable.isDataTable('#reservasTable')) {
+					if ($.fn.DataTable.isDataTable('#jugadoresTable')) {
 						$('#jugadoresTable').DataTable().destroy();
 					}
 
