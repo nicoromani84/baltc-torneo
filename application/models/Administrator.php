@@ -32,6 +32,30 @@ class Administrator extends CI_Model
 	}
 
 	//Obtiene las reservas para el dashboard
+	// Obtiene jugadores inscritos filtrados por torneo
+	public function getJugadoresByTournament($gender = false, $category = false, $tournament_type = 'singles') {
+		$this->db
+		->distinct()
+		->select('p.id, p.name, p.dni, p.email, p.gender, c.id as category_id, c.name as categoria')
+		->from('reservations r')
+		->join('reservations_partners rp', 'rp.reservation_id = r.id')
+		->join('partners p', 'p.id = rp.partner_id')
+		->join('category c', 'c.id = r.category')
+		->where('r.tournament_type', $tournament_type);
+
+		if($category) {
+			$this->db->where('r.category', $category);
+		}
+		if($gender) {
+			$this->db->where('p.gender', $gender);
+		}
+
+		$this->db->order_by('p.name ASC');
+		$q = $this->db->get();
+
+		return ($q->num_rows() > 0) ? $q->result() : false;
+	}
+
 	public function getReservations($gender = false, $category = false, $tournament_type = 'singles') {
 		$this->db
 		->select('res.id, res.timestamp, res.tournament_type, cat.name category,
@@ -49,6 +73,11 @@ class Administrator extends CI_Model
 		}
 
 		$q = $this->db->get('reservations res');
+
+		// Debug: Log the SQL query
+		error_log('SQL Query: ' . $this->db->last_query());
+		error_log('Tournament Type Filter: ' . $tournament_type);
+		error_log('Rows returned: ' . $q->num_rows());
 
 		return ( $q->num_rows() > 0 ) ? $q->result() : false;
 	}

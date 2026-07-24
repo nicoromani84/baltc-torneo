@@ -120,16 +120,10 @@ class Admin extends CI_Controller {
 		$tournament_type = $this->input->post('tournament_type', true);
 		if(!$tournament_type) $tournament_type = 'singles';
 
-		$reservations = $this->Administrator->getReservations($gender, $category, $tournament_type);
-		$partners = $this->User->getAll();
-
-		foreach($reservations as $reservation) {
-			$reservation->partners = json_decode($reservation->partners);
-		}
+		$jugadores = $this->Administrator->getJugadoresByTournament($gender, $category, $tournament_type);
 
 		$res = array(
-			'reservations' 		=> $reservations,
-			'partners'			=> $partners
+			'jugadores' 		=> $jugadores
 		);
 
 		$this->protect->ajaxDie($res);

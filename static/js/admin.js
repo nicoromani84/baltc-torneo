@@ -367,27 +367,21 @@ var admin = {
 
 					// Armo el tbody de la tabla
 					var tbody = '';
-					
-					// Relleno los campos con los turnos
-					$.each(res.reservations, function(i, reservation) {
-						tbody += '<tr data-id="' + reservation.id + '">';
-						var partners = '';
-						that.reservations[reservation.id] = reservation;
-						tbody += '<td nowrap>';
-						// Si hay partners
-						if(reservation.partners) {
-							$.each(reservation.partners, function(e, partner){
-								if(e <= 1)
-									tbody += '<span>' + partner.name + '</span>';
-							})
-						}
-						tbody += '</td>';
-						tbody += '<td>' + reservation.category + '</td>';
-						tbody += '<td>' + moment(reservation.timestamp).format('YYYY-MM-DD HH:mm:ss') + '</td>';
-						tbody += '<td><button class="delete-reservation"><i class="far fa-trash-alt"></i></button></td>';
-						tbody += '</tr>';
-					});
-					
+
+					// Relleno los campos con los jugadores
+					if(res.jugadores) {
+						$.each(res.jugadores, function(i, jugador) {
+							tbody += '<tr class="jugador-row" data-nombre="' + jugador.name.toLowerCase() + '" data-dni="' + jugador.dni + '" data-category="' + jugador.category_id + '" data-gender="' + jugador.gender + '">';
+							tbody += '<td style="text-transform:capitalize">' + jugador.name.toLowerCase() + '</td>';
+							tbody += '<td>' + jugador.dni + '</td>';
+							tbody += '<td>' + jugador.email + '</td>';
+							tbody += '<td>' + (jugador.gender == 'M' ? '<span class="badge badge-primary">M</span>' : '<span class="badge badge-danger">F</span>') + '</td>';
+							tbody += '<td><span class="badge badge-info">' + jugador.categoria + '</span></td>';
+							tbody += '<td nowrap></td>';
+							tbody += '</tr>';
+						});
+					}
+
 					// Muestro la estructura de la tabla
 					that.table.find('tbody').html(tbody);
 
