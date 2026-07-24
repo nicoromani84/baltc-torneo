@@ -98,18 +98,35 @@ class Administrator extends CI_Model
 
 	// Inscriptos filtrados por categoría y género
 	public function getInscriptosByCategory($category_id, $gender = false, $tournament_type = 'singles') {
-		$this->db
-			->distinct()
-			->select('p.id as jugador_id, p.name as jugador, p.gender')
-			->from('reservations r')
-			->join('reservations_partners rp', 'rp.reservation_id = r.id')
-			->join('partners p', 'p.id = rp.partner_id')
-			->where('r.category', $category_id)
-			->where('r.tournament_type', $tournament_type);
-		if($gender) {
-			$this->db->where('p.gender', $gender);
+		if($tournament_type === 'doubles') {
+			// Para dobles, agrupar pareja como una unidad
+			$this->db
+				->select('r.id as jugador_id, GROUP_CONCAT(p.name ORDER BY p.name SEPARATOR \'-\') as jugador, p.gender')
+				->from('reservations r')
+				->join('reservations_partners rp', 'rp.reservation_id = r.id')
+				->join('partners p', 'p.id = rp.partner_id')
+				->where('r.category', $category_id)
+				->where('r.tournament_type', 'doubles')
+				->group_by('r.id');
+			if($gender) {
+				$this->db->where('p.gender', $gender);
+			}
+			$q = $this->db->order_by('jugador ASC')->get();
+		} else {
+			// Para singles, jugadores individuales
+			$this->db
+				->distinct()
+				->select('p.id as jugador_id, p.name as jugador, p.gender')
+				->from('reservations r')
+				->join('reservations_partners rp', 'rp.reservation_id = r.id')
+				->join('partners p', 'p.id = rp.partner_id')
+				->where('r.category', $category_id)
+				->where('r.tournament_type', 'singles');
+			if($gender) {
+				$this->db->where('p.gender', $gender);
+			}
+			$q = $this->db->order_by('p.name ASC')->get();
 		}
-		$q = $this->db->order_by('p.name ASC')->get();
 		return ($q->num_rows() > 0) ? $q->result() : array();
 	}
 
