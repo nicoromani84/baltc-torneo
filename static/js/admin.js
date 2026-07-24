@@ -368,7 +368,10 @@ var admin = {
 							tbody += '<td>' + jugador.email + '</td>';
 							tbody += '<td>' + (jugador.gender == 'M' ? '<span class="badge badge-primary">M</span>' : '<span class="badge badge-danger">F</span>') + '</td>';
 							tbody += '<td><span class="badge badge-info">' + jugador.categoria + '</span></td>';
-							tbody += '<td nowrap></td>';
+							tbody += '<td nowrap>';
+							tbody += '<button class="btn btn-xs btn-warning btn-editar-jugador" data-id="' + jugador.id + '" data-reserva="' + jugador.reserva_id + '" data-name="' + jugador.name + '" data-dni="' + jugador.dni + '" data-email="' + jugador.email + '" data-gender="' + jugador.gender + '" data-category="' + jugador.category_id + '"><i class="fas fa-edit"></i></button>';
+							tbody += '<button class="btn btn-xs btn-danger btn-borrar-jugador" data-id="' + jugador.id + '" data-reserva="' + jugador.reserva_id + '" data-name="' + jugador.name.toLowerCase() + '"><i class="fas fa-trash"></i></button>';
+							tbody += '</td>';
 							tbody += '</tr>';
 						});
 					}
