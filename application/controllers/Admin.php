@@ -117,9 +117,12 @@ class Admin extends CI_Controller {
 		$this->protect->setRequest('POST');
 		$gender = $this->input->post('gender', true);
 		$category = $this->input->post('category', true);
-		$reservations = $this->Administrator->getReservations($gender, $category);
+		$tournament_type = $this->input->post('tournament_type', true);
+		if(!$tournament_type) $tournament_type = 'singles';
+
+		$reservations = $this->Administrator->getReservations($gender, $category, $tournament_type);
 		$partners = $this->User->getAll();
-		
+
 		foreach($reservations as $reservation) {
 			$reservation->partners = json_decode($reservation->partners);
 		}

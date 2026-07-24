@@ -74,6 +74,7 @@ var admin = {
 			data: []
 		},
 		selectedPartners: [],
+		tournament_type: 'singles',
 
 		// Inicializamos el módulo
 		run: function() {
@@ -109,6 +110,15 @@ var admin = {
 						that.getReservations();
 					}
 				})
+			});
+
+			$('.tournament-tab').click(function(e){
+				e.preventDefault();
+				var tournament = $(this).data('tournament');
+				that.tournament_type = tournament;
+				$('.tournament-tab').removeClass('active');
+				$(this).addClass('active');
+				that.getReservations();
 			});
 
 			$('#add').click(function(){
@@ -335,7 +345,7 @@ var admin = {
 			$.ajax({
 				url: adminurl + '/getReservations',
 				type: "POST",
-				data: {category: $('select[name="category"]').val(), gender: $('select[name="gender"]').val()},
+				data: {category: $('select[name="category"]').val(), gender: $('select[name="gender"]').val(), tournament_type: that.tournament_type},
 				headers: { 'X-Auth-Token' : token },
 				success: function(res) {
 					// Destruyo la tabla

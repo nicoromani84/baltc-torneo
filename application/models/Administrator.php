@@ -32,12 +32,13 @@ class Administrator extends CI_Model
 	}
 
 	//Obtiene las reservas para el dashboard
-	public function getReservations($gender = false, $category = false) {
+	public function getReservations($gender = false, $category = false, $tournament_type = 'singles') {
 		$this->db
-		->select('res.id, res.timestamp, cat.name category,
+		->select('res.id, res.timestamp, res.tournament_type, cat.name category,
 		CONCAT(\'[\', GROUP_CONCAT((SELECT CONCAT(\'{"id":"\', spart.id, \'", "name":"\', spart.name, \'", "email":"\', spart.email,\'"}\') FROM partners spart WHERE spart.id = rp.partner_id) ORDER BY rp.id SEPARATOR \',\'), \']\') partners')
 		->join('reservations_partners rp', 'res.id = rp.reservation_id', 'left')
 		->join('category cat', 'res.category = cat.id')
+		->where('res.tournament_type', $tournament_type)
 		->group_by('res.id');
 		if($category) {
 			$this->db->where('res.category', $category);

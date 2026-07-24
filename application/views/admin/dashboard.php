@@ -5,7 +5,17 @@
     <div class="content-inner">
         <div style="padding:20px 24px;background:#fff;border-bottom:1px solid #dee2e6;">
         	<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
-                <h2 style="margin:0;font-size:20px;">Jugadores Inscriptos</h2>
+                <div>
+                    <h2 style="margin:0 0 12px 0;font-size:20px;">Jugadores Inscriptos</h2>
+                    <ul class="nav nav-tabs" style="border:none;gap:8px;">
+                        <li class="nav-item">
+                            <a class="nav-link active tournament-tab" data-tournament="singles" href="#" style="padding:6px 12px;font-size:14px;">Singles</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link tournament-tab" data-tournament="doubles" href="#" style="padding:6px 12px;font-size:14px;">Dobles</a>
+                        </li>
+                    </ul>
+                </div>
                 <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
 	            	<button id="btn-inscripciones" class="btn btn-sm <?=$inscripciones_abiertas ? 'btn-success' : 'btn-secondary'?>" data-estado="<?=$inscripciones_abiertas ? '1' : '0'?>">
 						<i class="fas <?=$inscripciones_abiertas ? 'fa-lock-open' : 'fa-lock'?>"></i>
