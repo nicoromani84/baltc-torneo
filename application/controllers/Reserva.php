@@ -76,23 +76,24 @@ class Reserva extends CI_Controller {
 			$this->sendConfirmation($email_data, $user->email);
 		}
 
-		// Validar que ninguno de los dos esté ya inscripto
-		$userRegistered = $this->Reservation->isPlayerRegistered($this->session->userdata('id'));
-		$partnerRegistered = $this->Reservation->isPlayerRegistered(intval($post['partner']));
+		// Validar que ninguno de los dos esté ya inscripto en dobles
+		$userRegistered = $this->Reservation->isPlayerRegistered($this->session->userdata('id'), 'doubles');
+		$partnerRegistered = $this->Reservation->isPlayerRegistered(intval($post['partner']), 'doubles');
 
 		if($userRegistered || $partnerRegistered) {
 			$response['action'] = false;
 			if($userRegistered && $partnerRegistered) {
-				$response['msg'] = 'Ambos jugadores ya están inscriptos en el torneo.';
+				$response['msg'] = 'Ambos jugadores ya están inscriptos en dobles.';
 			} else if($userRegistered) {
-				$response['msg'] = 'Ya estás inscripto en el torneo. Solo podés participar en una categoría.';
+				$response['msg'] = 'Ya estás inscripto en dobles. Solo podés participar en una categoría.';
 			} else {
-				$response['msg'] = $partner->name . ' ya está inscripto en el torneo. Solo cada jugador puede participar en una categoría.';
+				$response['msg'] = $partner->name . ' ya está inscripto en dobles. Solo cada jugador puede participar en una categoría.';
 			}
 			$this->protect->ajaxDie($response);
 		}
 
 		// Guardar la reserva
+		$post['tournament_type'] = 'doubles';
 		$add = $this->Reservation->add($post);
 		$addPartners = false;
 
