@@ -356,13 +356,6 @@ var admin = {
 						$('#jugadoresTable').DataTable().destroy();
 					}
 
-					// Almaceno los datos en variables
-						return {id: a.id, name: a.name.toLowerCase()};
-					
-					that.partners.names = res.partners.map(function(a){
-						return a.name.toLowerCase();
-					})
-
 					// Armo el tbody de la tabla
 					var tbody = '';
 
