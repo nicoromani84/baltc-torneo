@@ -40,7 +40,7 @@ class Login extends CI_Controller {
 			} else {
 				$d['titulo'] 	= 'Torneo';
 				$d['token']		= $this->protect->eToken();
-				$d['categories'] = $this->Reservation->getCategories($this->session->gender);
+				$d['categories'] = $this->Reservation->getCategories($this->session->gender, true);
 				$d['partners'] = $this->User->getAllExceptMe($this->session->gender);
 				$d['user'] = $this->session;
 				$d['classname'] = 'reserva';

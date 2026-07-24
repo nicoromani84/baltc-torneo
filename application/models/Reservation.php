@@ -2,10 +2,13 @@
 
 class Reservation extends CI_Model {
 
-	public function getCategories($gender = false) {
+	public function getCategories($gender = false, $exclude_2nd_chance = false) {
 		if($gender) {
 			$this->db->where('gender', $gender);
 			$this->db->or_where('gender', NULL);
+		}
+		if($exclude_2nd_chance) {
+			$this->db->where('name NOT LIKE', '%2nd chance%');
 		}
 		$q = $this->db->get('category');
 		return ( $q->num_rows() > 0 ) ? $q->result() : false;
