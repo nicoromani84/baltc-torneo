@@ -15,7 +15,7 @@ class Login extends CI_Controller {
 
 		if ( $this->User->isLogged() ) {
 			$user_id = $this->session->userdata('id');
-			$ya_inscripto = $this->Reservation->isPlayerRegistered($user_id);
+			$inscripto_doubles = $this->Reservation->isPlayerRegistered($user_id, 'doubles');
 
 			// Verificar si las inscripciones están abiertas
 			$q_setting = $this->db->where('key', 'inscripciones_abiertas')->get('settings');
@@ -24,9 +24,9 @@ class Login extends CI_Controller {
 			// Si inscripciones cerradas → siempre al menu
 			if(!$inscripciones_abiertas) {
 				redirect(base_url('menu'));
-			// Si ya inscripto → pantalla inscripto
-			} elseif($ya_inscripto) {
-				$categoria = $this->Reservation->getCategoryByPlayer($user_id);
+			// Si ya inscripto en dobles → pantalla inscripto
+			} elseif($inscripto_doubles) {
+				$categoria = $this->Reservation->getCategoryByPlayer($user_id, 'doubles');
 				$cat_nombre = $this->Reservation->getCategoryName($categoria);
 				$d['titulo'] 	= 'Inscripción';
 				$d['token']		= $this->protect->eToken();
@@ -36,7 +36,7 @@ class Login extends CI_Controller {
 				$this->load->view('web/header',$d);
 				$this->load->view('web/inscripto');
 				$this->load->view('web/footer');
-			// Inscripciones abiertas y no inscripto → formulario
+			// Inscripciones abiertas y no inscripto en dobles → formulario
 			} else {
 				$d['titulo'] 	= 'Torneo';
 				$d['token']		= $this->protect->eToken();
