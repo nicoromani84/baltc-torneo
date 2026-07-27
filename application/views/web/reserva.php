@@ -62,7 +62,7 @@
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="modalReglamentoLabel">Reglamento del Torneo Interno de Dobles</h5>
+                <h5 class="modal-title" id="modalReglamentoLabel">Reglamento – Torneo Interno BALTC – Etapa: Dobles</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -81,20 +81,22 @@
                     <h5>2. Inscripción y arancel</h5>
                     <p>Los participantes podrán inscribirse en una o más etapas.</p>
                     <p>El arancel de $20.000 será por etapa y se debitará junto con la liquidación de la cuota mensual.</p>
+                    <p>En la etapa de DOBLES no habrá second chance.</p>
 
                     <h5>3. Categorías</h5>
-                    <p>El torneo contará en principio con tres categorías (sujeto a cantidad de participantes), definidas según el nivel de juego:</p>
+                    <p>El torneo contará con hasta cuatro categorías (sujeto a cantidad de participantes), definidas según el nivel de juego, donde:</p>
                     <ul>
                         <li>1ª: nivel más alto</li>
-                        <li>2ª: nivel intermedio</li>
-                        <li>3ª: nivel inicial</li>
+                        <li>2ª: nivel bueno</li>
+                        <li>3ª: nivel intermedio</li>
+                        <li>4°: nivel inicial</li>
                     </ul>
                     <p>La organización se reserva el derecho de reubicar a cualquier jugador en la categoría que considere más adecuada a su nivel real.</p>
 
                     <h5>4. Participantes</h5>
                     <p>Podrán participar todos los socios activos del club que se encuentren al día con sus obligaciones sociales.</p>
                     <p>Los menores podrán participar siempre que tengan más de 12 años y cuenten con el nivel requerido de juego.</p>
-                    <p>Cada pareja podrá inscribirse en una sola categoría. Los integrantes de la pareja deben ser del mismo género.</p>
+                    <p>Cada jugador podrá inscribirse en una sola categoría.</p>
 
                     <h5>5. Formato de juego</h5>
                     <p>Los partidos se disputarán al mejor de tres (3) sets:</p>
@@ -102,7 +104,6 @@
                         <li>Los dos primeros sets con tie-break</li>
                         <li>En caso de tercer set, se jugará un match tie-break a diez puntos, con diferencia mínima de dos</li>
                     </ul>
-                    <p>El torneo garantizará un mínimo de dos (2) partidos a cada pareja inscripta.</p>
 
                     <h5>6. Programación de partidos</h5>
                     <p>Una vez cerrada la inscripción, los participantes tendrán acceso a los cuadros actualizados del torneo accediendo al mismo link: <strong>baltc.net/torneo</strong> en la sección DRAWS.</p>
@@ -114,20 +115,13 @@
                     <h5>7. Uso de canchas</h5>
                     <p>Los participantes podrán jugar cualquier día y horario que quieran, respetando el reglamento interno del club.</p>
                     <p>Se recomienda a los que vayan a jugar después de las 18:00 reservar cancha previamente (con luz), sobre todo los días de semana (martes a viernes).</p>
-                    <p>Se recuerda también que en la <strong>cancha 9</strong> hay prioridad todos los días para jugar (salvo en el horario de escuela).</p>
-                    <p>Se establecerá una prioridad adicional para la disputa de partidos del torneo en la <strong>cancha 14</strong> durante los fines de semana en los siguientes horarios:</p>
-                    <ul>
-                        <li>Sábados: de 12:00 a 18:00</li>
-                        <li>Domingos y feriados: hasta las 18:00</li>
-                    </ul>
-                    <p>Esta prioridad será válida exclusivamente para la disputa de partidos correspondientes al torneo.</p>
 
                     <h5>8. Pelotas</h5>
                     <p>La organización proveerá las pelotas, siempre y cuando se juegue durante el horario de la Secretaría.</p>
                     <p>Los jugadores deberán pedir los tubos en la Secretaría y asegurarse de devolverlos al finalizar el partido. En caso que la Secretaría esté cerrada, deberán devolverlos al día siguiente, sin excepción.</p>
 
                     <h5>9. Resultados</h5>
-                    <p>Los resultados deberán ser cargados por uno de los jugadores ganadores en la sección MI PARTIDO una vez finalizado el encuentro. Se recomienda hacerlo inmediatamente para evitar errores y facilitar la organización.</p>
+                    <p>Los resultados deberán ser cargados por el participante GANADOR en la sección MI PARTIDO una vez finalizado el encuentro. Se recomienda hacerlo inmediatamente para evitar errores y facilitar la organización.</p>
                     <p>En caso que no sea posible, por favor hacerlo antes de la fecha límite provista por la organización.</p>
 
                     <h5>10. Código de conducta</h5>
@@ -139,7 +133,7 @@
                     <p>Los jugadores deberán resolver las situaciones dudosas de manera deportiva. En caso de desacuerdos irresolubles, podrá solicitarse la intervención de un representante de la organización.</p>
 
                     <h5>12. Walkover (no presentación)</h5>
-                    <p>En caso de no presentación de alguna pareja sin aviso previo, la organización podrá dar el partido por perdido (walkover).</p>
+                    <p>En caso de no presentación de alguno de los jugadores sin aviso previo, la organización podrá dar el partido por perdido (walkover).</p>
 
                     <h5>13. Premios</h5>
                     <p>Los ganadores y finalistas de cada categoría recibirán premios y distinciones, que serán anunciados oportunamente.</p>
@@ -149,7 +143,7 @@
                     <p>Cualquier situación no contemplada será resuelta por la Comisión Deportiva, cuya decisión será inapelable.</p>
 
                     <h5>15. Datos de Contacto</h5>
-                    <p>Ante cualquier inconveniente, por favor comunicarse con la organización vía WhatsApp a los siguientes números:</p>
+                    <p>Ante cualquier inconveniente, por favor comunicarse con la organización vía whatsapp a los siguientes números:</p>
                     <ul>
                         <li>Juliana Piumatti: +54 9 11 3621 0003</li>
                         <li>Mailen Auroux: +54 9 11 6820 8130</li>
