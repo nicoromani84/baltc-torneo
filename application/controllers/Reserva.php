@@ -65,9 +65,10 @@ class Reserva extends CI_Controller {
 
 		$cat_obj = $this->db->where('id', $post['category'])->get('category')->row();
 		$cat_nombre = $cat_obj ? $cat_obj->name : $post['category'];
+		$cat_desc = $cat_obj && !empty($cat_obj->description) ? ' (' . $cat_obj->description . ')' : '';
 		$email_data = array(
 			'nombre' 		=> $this->session->name,
-			'category'		=> $cat_nombre,
+			'category'		=> $cat_nombre . $cat_desc,
 			'partner' 		=> $partner->name
 		);
 
