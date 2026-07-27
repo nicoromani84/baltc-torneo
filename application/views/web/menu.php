@@ -18,8 +18,8 @@
 <div class="page reserve-page">
 	<div id="reservar" class="container">
 		<div class="container">
-			<h1 class="d-none d-sm-block">Hola <strong><?=$user->name?></strong><br>Torneo Interno de Singles</h1>
-			<h1 class="d-sm-none">Hola <strong><?=$user->name?></strong><br>Torneo Interno de Singles</h1>
+			<h1 class="d-none d-sm-block">Hola <strong><?=$user->name?></strong><br>Torneo Interno de Dobles</h1>
+			<h1 class="d-sm-none">Hola <strong><?=$user->name?></strong><br>Torneo Interno de Dobles</h1>
 			<p>¿Qué querés ver?</p>
 			<div class="menu-grid">
 
@@ -119,7 +119,7 @@ var token = '<?=$token?>';
     <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Reglamento del Torneo Interno de Singles</h5>
+                <h5 class="modal-title">Reglamento del Torneo Interno de Dobles</h5>
                 <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
             </div>
             <div class="modal-body">
