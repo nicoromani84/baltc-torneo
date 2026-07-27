@@ -85,10 +85,10 @@
                     <h5>3. Categorías</h5>
                     <p>El torneo contará con hasta cuatro categorías (sujeto a cantidad de participantes), definidas según el nivel de juego, donde:</p>
                     <ul>
-                        <li>1ª: nivel más alto</li>
-                        <li>2ª: nivel bueno</li>
-                        <li>3ª: nivel intermedio</li>
-                        <li>4°: nivel inicial</li>
+                        <li>1.ª (nivel avanzado)</li>
+                        <li>2.ª (nivel intermedio alto)</li>
+                        <li>3.ª (nivel intermedio)</li>
+                        <li>4.ª (nivel inicial)</li>
                     </ul>
                     <p>La organización se reserva el derecho de reubicar a cualquier jugador en la categoría que considere más adecuada a su nivel real.</p>
 
