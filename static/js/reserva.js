@@ -196,7 +196,7 @@ var reserva = {
 						'<h2 class="splash-titulo">¡Estás inscripto!</h2>',
 						'<div class="splash-categoria"><i class="fas fa-star"></i> Categoría ' + data.category + '</div>',
 						'<div class="splash-partner"><i class="fas fa-user-friends"></i> Compañero: <strong>' + data.partner + '</strong></div>',
-						'<div class="splash-fecha"><i class="fas fa-calendar-alt"></i> Inicio: <strong>15 de Agosto 2026</strong></div>',
+						'<div class="splash-fecha"><i class="fas fa-calendar-alt"></i> Inicio: <strong>10 de agosto 2026</strong></div>',
 						'<div class="splash-aviso"><i class="fas fa-info-circle"></i> Tu categoría puede quedar sujeta a revisión por parte de la organización.</div>',
 						'<button class="btn btn-secondary splash-btn" id="splash-cerrar">Cerrar</button>',
 					'</div>',

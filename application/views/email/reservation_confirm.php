@@ -46,7 +46,7 @@
 					</tr>
 					<tr>
 						<td style="padding:8px 0;color:#888;font-size:13px;text-transform:uppercase;letter-spacing:0.5px;">Inicio del torneo</td>
-						<td style="padding:8px 0;font-weight:700;color:#5a7a2e;">15 de Agosto 2026</td>
+						<td style="padding:8px 0;font-weight:700;color:#5a7a2e;">10 de agosto 2026</td>
 					</tr>
 				</table>
 			</div>

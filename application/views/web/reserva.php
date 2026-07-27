@@ -19,7 +19,7 @@
 		<div class="container">
 			<h1 class="d-none d-sm-block">Hola <strong><?=$user->name?></strong><br>Inscribite en el Torneo de Dobles</h1>
 			<h1 class="d-sm-none">Hola <strong><?=$user->name?></strong><br>Inscribite en el Torneo de Dobles</h1>
-			<p>A partir del 15 de Agosto 2026</p>
+			<p>A partir del 10 de agosto 2026</p>
 			<div class="form">
 				<form class="form-inline">
 					<div class="form-group xs-fullwidth">

@@ -39,7 +39,7 @@
 					<?php endif; ?>
 					<div class="inscripto-item">
 						<i class="fas fa-calendar-alt"></i>
-						<span>Inicio: <strong>15 de Agosto 2026</strong></span>
+						<span>Inicio: <strong>10 de agosto 2026</strong></span>
 					</div>
 					<div class="inscripto-item inscripto-aviso">
 						<i class="fas fa-info-circle"></i>
