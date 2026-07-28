@@ -7,6 +7,7 @@ class Login extends CI_Controller {
 		parent::__construct();
 		$this->load->model('User');
 		$this->load->model('Reservation');
+		$this->load->model('LoginLog');
 	}
 
 	public function index()	{
@@ -78,6 +79,10 @@ class Login extends CI_Controller {
 
 	public function logout() {
 		$this->protect->setRequest('GET');
+		$user_id = $this->session->userdata('id');
+		if($user_id) {
+			$this->LoginLog->logLogout($user_id);
+		}
 		$this->session->sess_destroy();
 		redirect(base_url());
 	}
@@ -118,6 +123,8 @@ class Login extends CI_Controller {
 				'gender'	=> $u->gender
 			);
 			$this->session->set_userdata($s);
+			//Registrar login en logs
+			$this->LoginLog->logLogin($u->id, $u->dni, $u->name);
 			$res['action'] 	= true;
 		}
 		//Retornamos Respuesta

@@ -9,6 +9,7 @@ class Admin extends CI_Controller {
 		$this->load->model('Reservation');
 		$this->load->model('Administrator');
 		$this->load->model('Partido_model');
+		$this->load->model('LoginLog');
 	}
 
 	public function index()	{
@@ -63,6 +64,18 @@ class Admin extends CI_Controller {
 		$d['inscripciones_abiertas'] = ($q_s->num_rows() > 0 && $q_s->row()->value == '1');
 		$this->load->view('admin/header',$d);
 		$this->load->view('admin/singles');
+		$this->load->view('admin/footer');
+	}
+
+	public function loginLogs() {
+		$this->protect->setRequest('GET');
+		if (!$this->Administrator->isLogged()) redirect(base_url('/admin'));
+		$d['titulo']     = 'Login Logs - Admin';
+		$d['token']      = $this->protect->eToken();
+		$d['section']    = 'admin-loginlogs';
+		$d['logs']       = $this->LoginLog->getLogs(200);
+		$this->load->view('admin/header',$d);
+		$this->load->view('admin/loginlogs');
 		$this->load->view('admin/footer');
 	}
 
