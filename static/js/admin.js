@@ -80,17 +80,22 @@ var admin = {
 		// Inicializamos el módulo
 		run: function() {
 			var that = this;
-			that.getReservations();
 
 			// Overlay click
 			$(document).on('click', '#overlay', function(){
 				that.hideSideModal();
 			})
 
-			$('#jugadoresTable').DataTable({
-				dom: 'ltp',
-				order: [[ 2, "DESC" ]]
-			});
+			// Solo inicializar DataTable si es singles (default es dobles ahora)
+			if(that.tournament_type !== 'doubles') {
+				$('#jugadoresTable').DataTable({
+					dom: 'ltp',
+					order: [[ 2, "DESC" ]]
+				});
+			}
+
+			// Cargar datos del torneo seleccionado
+			that.getReservations();
 
 			// Partners validation
 			jQuery.validator.addMethod("validName", function(value, element) {
