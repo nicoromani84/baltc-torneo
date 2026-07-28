@@ -387,40 +387,59 @@ var admin = {
 				data: ajaxData,
 				headers: { 'X-Auth-Token' : token },
 				success: function(res) {
-					// Destruyo la tabla
-					if ($.fn.DataTable.isDataTable('#jugadoresTable')) {
-						$('#jugadoresTable').DataTable().destroy();
-					}
+					// Para dobles, mostrar cards; para singles, mostrar tabla
+					if(that.tournament_type === 'doubles' && res.parejas) {
+						// Modo dobles: mostrar cards
+						var container = $('#reservas-container');
+						if(container.length === 0) {
+							container = $('<div id="reservas-container" class="card-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:16px; padding:20px;"></div>');
+							$('#jugadoresTable').replaceWith(container);
+						} else {
+							container.empty();
+						}
 
-					// Armo el tbody de la tabla
-					var tbody = '';
+						that.jugadoresCache = {};
+						$.each(res.parejas, function(i, pareja) {
+							that.jugadoresCache[pareja.reservation_id] = pareja;
+							var card = $('<div class="card" style="border:1px solid #dee2e6; border-radius:8px; padding:16px;">');
+							card.append('<h5 style="margin:0 0 8px 0; text-transform:capitalize;">' + pareja.pareja.toLowerCase() + '</h5>');
+							card.append('<p style="margin:0 0 8px 0; font-size:13px;"><small style="color:#666;">DNI: ' + pareja.dnis + '</small></p>');
+							card.append('<p style="margin:0 0 8px 0; font-size:13px;"><span class="badge ' + (pareja.gender == 'M' ? 'badge-primary' : 'badge-danger') + '">' + (pareja.gender == 'M' ? 'Caballeros' : 'Damas') + '</span> <span class="badge badge-info">' + pareja.categoria + '</span></p>');
+							card.append('<div style="margin-top:12px;"><button class="btn btn-xs btn-danger" onclick="confirm(\'¿Borrar pareja ' + pareja.pareja + '?\') && $.ajax({url:adminurl+\'/deleteJugador\',type:\'POST\',data:{id:' + pareja.reservation_id + ',reserva_id:' + pareja.reservation_id + '},headers:{\'X-Auth-Token\':token},success:function(){location.reload()}})"><i class="fas fa-trash"></i> Borrar</button></div>');
+							container.append(card);
+						});
+					} else {
+						// Modo singles: mostrar tabla
+						if ($.fn.DataTable.isDataTable('#jugadoresTable')) {
+							$('#jugadoresTable').DataTable().destroy();
+						}
 
-					// Relleno los campos con los jugadores
-					that.jugadoresCache = {};
-					if(res.jugadores) {
-						$.each(res.jugadores, function(i, jugador) {
-							that.jugadoresCache[jugador.id] = jugador;
-							tbody += '<tr class="jugador-row" data-nombre="' + jugador.name.toLowerCase() + '" data-dni="' + jugador.dni + '" data-category="' + jugador.category_id + '" data-gender="' + jugador.gender + '">';
-							tbody += '<td style="text-transform:capitalize">' + jugador.name.toLowerCase() + '</td>';
-							tbody += '<td>' + jugador.dni + '</td>';
-							tbody += '<td>' + jugador.email + '</td>';
-							tbody += '<td>' + (jugador.gender == 'M' ? '<span class="badge badge-primary">M</span>' : '<span class="badge badge-danger">F</span>') + '</td>';
-							tbody += '<td><span class="badge badge-info">' + jugador.categoria + '</span></td>';
-							tbody += '<td nowrap>';
-							tbody += '<button class="btn btn-xs btn-warning btn-editar-jugador" data-id="' + jugador.id + '" data-reserva="' + jugador.reserva_id + '" data-name="' + $('<div>').text(jugador.name).html() + '" data-dni="' + jugador.dni + '" data-email="' + jugador.email + '" data-gender="' + jugador.gender + '" data-category="' + jugador.category_id + '"><i class="fas fa-edit"></i></button>';
-							tbody += '<button class="btn btn-xs btn-danger btn-borrar-jugador" data-id="' + jugador.id + '" data-reserva="' + jugador.reserva_id + '" data-name="' + jugador.name.toLowerCase() + '"><i class="fas fa-trash"></i></button>';
-							tbody += '</td>';
-							tbody += '</tr>';
+						var tbody = '';
+						that.jugadoresCache = {};
+						if(res.jugadores) {
+							$.each(res.jugadores, function(i, jugador) {
+								that.jugadoresCache[jugador.id] = jugador;
+								tbody += '<tr class="jugador-row" data-nombre="' + jugador.name.toLowerCase() + '" data-dni="' + jugador.dni + '" data-category="' + jugador.category_id + '" data-gender="' + jugador.gender + '">';
+								tbody += '<td style="text-transform:capitalize">' + jugador.name.toLowerCase() + '</td>';
+								tbody += '<td>' + jugador.dni + '</td>';
+								tbody += '<td>' + jugador.email + '</td>';
+								tbody += '<td>' + (jugador.gender == 'M' ? '<span class="badge badge-primary">M</span>' : '<span class="badge badge-danger">F</span>') + '</td>';
+								tbody += '<td><span class="badge badge-info">' + jugador.categoria + '</span></td>';
+								tbody += '<td nowrap>';
+								tbody += '<button class="btn btn-xs btn-warning btn-editar-jugador" data-id="' + jugador.id + '" data-reserva="' + jugador.reserva_id + '" data-name="' + $('<div>').text(jugador.name).html() + '" data-dni="' + jugador.dni + '" data-email="' + jugador.email + '" data-gender="' + jugador.gender + '" data-category="' + jugador.category_id + '"><i class="fas fa-edit"></i></button>';
+								tbody += '<button class="btn btn-xs btn-danger btn-borrar-jugador" data-id="' + jugador.id + '" data-reserva="' + jugador.reserva_id + '" data-name="' + jugador.name.toLowerCase() + '"><i class="fas fa-trash"></i></button>';
+								tbody += '</td>';
+								tbody += '</tr>';
+							});
+						}
+
+						that.table.find('tbody').html(tbody);
+
+						$('#jugadoresTable').DataTable({
+							dom: 'ltp',
+							order: [[ 2, "DESC" ]]
 						});
 					}
-
-					// Muestro la estructura de la tabla
-					that.table.find('tbody').html(tbody);
-
-					$('#jugadoresTable').DataTable({
-						dom: 'ltp',
-						order: [[ 2, "DESC" ]]
-					});
 
 					if(typeof cb == 'function')
 						cb(res);

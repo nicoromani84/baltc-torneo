@@ -56,6 +56,29 @@ class Administrator extends CI_Model
 		return ($q->num_rows() > 0) ? $q->result() : false;
 	}
 
+	public function getPairesByTournament($gender = false, $category = false, $tournament_type = 'doubles') {
+		$this->db
+		->select('r.id as reservation_id, GROUP_CONCAT(p.id ORDER BY p.name SEPARATOR ",") as partner_ids, GROUP_CONCAT(p.name ORDER BY p.name SEPARATOR "-") as pareja, GROUP_CONCAT(p.dni ORDER BY p.name SEPARATOR ",") as dnis, p.gender, c.id as category_id, c.name as categoria')
+		->from('reservations r')
+		->join('reservations_partners rp', 'rp.reservation_id = r.id')
+		->join('partners p', 'p.id = rp.partner_id')
+		->join('category c', 'c.id = r.category')
+		->where('r.tournament_type', $tournament_type)
+		->group_by('r.id');
+
+		if($category) {
+			$this->db->where('r.category', $category);
+		}
+		if($gender) {
+			$this->db->where('p.gender', $gender);
+		}
+
+		$this->db->order_by('pareja ASC');
+		$q = $this->db->get();
+
+		return ($q->num_rows() > 0) ? $q->result() : false;
+	}
+
 	public function getReservations($gender = false, $category = false, $tournament_type = 'singles') {
 		$this->db
 		->select('res.id, res.timestamp, res.tournament_type, cat.name category,

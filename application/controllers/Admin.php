@@ -120,11 +120,13 @@ class Admin extends CI_Controller {
 		$tournament_type = $this->input->post('tournament_type', true);
 		if(!$tournament_type) $tournament_type = 'singles';
 
-		$jugadores = $this->Administrator->getJugadoresByTournament($gender, $category, $tournament_type);
-
-		$res = array(
-			'jugadores' 		=> $jugadores
-		);
+		if($tournament_type === 'doubles') {
+			$parejas = $this->Administrator->getPairesByTournament($gender, $category, $tournament_type);
+			$res = array('parejas' => $parejas);
+		} else {
+			$jugadores = $this->Administrator->getJugadoresByTournament($gender, $category, $tournament_type);
+			$res = array('jugadores' => $jugadores);
+		}
 
 		$this->protect->ajaxDie($res);
 	}
