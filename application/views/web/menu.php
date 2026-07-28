@@ -129,7 +129,7 @@ var token = '<?=$token?>';
                     <p>El torneo se desarrollará en tres etapas:</p>
                     <ul>
                         <li>Singles: mayo, junio y julio</li>
-                        <li>Dobles (Damas y Caballeros): julio, agosto y septiembre</li>
+                        <li>Dobles (Damas y Caballeros): agosto y septiembre</li>
                         <li>Dobles Mixto: septiembre, octubre y noviembre</li>
                     </ul>
 
