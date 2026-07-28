@@ -119,6 +119,11 @@
 			</a>
 		</li>
 		<?php endif; ?>
+		<li class="<?=$section=='admin-loginlogs'?'active':''?>">
+			<a href="<?=base_url('admin/loginLogs')?>">
+				<i class="fas fa-history"></i> Logs
+			</a>
+		</li>
 		<li class="admin-navbar-logout">
 			<a href="<?=base_url('admin/logout')?>">
 				<i class="fas fa-sign-out-alt"></i> Salir
