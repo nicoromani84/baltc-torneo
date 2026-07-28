@@ -377,86 +377,68 @@ var admin = {
 				data: ajaxData,
 				headers: { 'X-Auth-Token' : token },
 				success: function(res) {
-					// Destruir container de cards si existe (cuando volvemos de dobles)
+					// Actualizar headers según tipo de torneo
+					var thead = $('#jugadoresTable thead tr');
+					if(that.tournament_type === 'doubles' && res.parejas) {
+						thead.html('<th>Pareja</th><th>Categoría</th><th>Género</th><th width="80"></th>');
+					} else {
+						thead.html('<th>Nombre</th><th>DNI</th><th>Email</th><th>Género</th><th>Categoría</th><th width="80"></th>');
+					}
+
+					// Para dobles y singles: mostrar tabla
 					var container = $('#reservas-container');
 					if(container.length > 0) {
 						container.remove();
-						// Recrear tabla
-						that.table = $('<table class="table table-hover table-sm" id="jugadoresTable"><thead class="thead-light"><tr><th>Nombre</th><th>DNI</th><th>Email</th><th>Género</th><th>Categoría</th><th width="80"></th></tr></thead><tbody></tbody></table>');
-						$('section#reservas .container-fluid').append(that.table);
 					}
 
-					// Para dobles, mostrar cards; para singles, mostrar tabla
-					if(that.tournament_type === 'doubles' && res.parejas) {
-						// Modo dobles: mostrar cards
-						var table = $('#jugadoresTable');
-						if(table.length > 0) {
-							if ($.fn.DataTable.isDataTable('#jugadoresTable')) {
-								$('#jugadoresTable').DataTable().destroy();
-							}
-							table.hide();
-						}
-
-						var container = $('#reservas-container');
-						if(container.length === 0) {
-							container = $('<div id="reservas-container" class="card-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:16px; padding:20px;"></div>');
-							$('#jugadoresTable').after(container);
-						} else {
-							container.empty().show();
-						}
-
-						that.jugadoresCache = {};
-						$.each(res.parejas, function(i, pareja) {
-							that.jugadoresCache[pareja.reservation_id] = pareja;
-							var card = $('<div class="card" style="border:1px solid #dee2e6; border-radius:8px; padding:16px;">');
-							card.append('<h5 style="margin:0 0 8px 0; text-transform:capitalize;">' + pareja.pareja.toLowerCase() + '</h5>');
-							card.append('<p style="margin:0 0 8px 0; font-size:13px;"><small style="color:#666;">DNI: ' + pareja.dnis + '</small></p>');
-							card.append('<p style="margin:0 0 8px 0; font-size:13px;"><span class="badge ' + (pareja.gender == 'M' ? 'badge-primary' : 'badge-danger') + '">' + (pareja.gender == 'M' ? 'Caballeros' : 'Damas') + '</span> <span class="badge badge-info">' + pareja.categoria + '</span></p>');
-							card.append('<div style="margin-top:12px;"><button class="btn btn-xs btn-danger" onclick="confirm(\'¿Borrar pareja ' + pareja.pareja + '?\') && $.ajax({url:adminurl+\'/deleteJugador\',type:\'POST\',data:{id:' + pareja.reservation_id + ',reserva_id:' + pareja.reservation_id + '},headers:{\'X-Auth-Token\':token},success:function(){location.reload()}})"><i class="fas fa-trash"></i> Borrar</button></div>');
-							container.append(card);
-						});
-					} else {
-						// Modo singles: mostrar tabla
-						var container = $('#reservas-container');
-						if(container.length > 0) {
-							container.hide();
-						}
-
-						var table = $('#jugadoresTable');
-						if(table.length > 0) {
-							table.show();
-						}
-
+					var table = $('#jugadoresTable');
+					if(table.length > 0) {
+						table.show();
 						if ($.fn.DataTable.isDataTable('#jugadoresTable')) {
 							$('#jugadoresTable').DataTable().destroy();
 						}
+					}
 
-						var tbody = '';
-						that.jugadoresCache = {};
-						if(res.jugadores) {
-							$.each(res.jugadores, function(i, jugador) {
-								that.jugadoresCache[jugador.id] = jugador;
-								tbody += '<tr class="jugador-row" data-nombre="' + jugador.name.toLowerCase() + '" data-dni="' + jugador.dni + '" data-category="' + jugador.category_id + '" data-gender="' + jugador.gender + '">';
-								tbody += '<td style="text-transform:capitalize">' + jugador.name.toLowerCase() + '</td>';
-								tbody += '<td>' + jugador.dni + '</td>';
-								tbody += '<td>' + jugador.email + '</td>';
-								tbody += '<td>' + (jugador.gender == 'M' ? '<span class="badge badge-primary">M</span>' : '<span class="badge badge-danger">F</span>') + '</td>';
-								tbody += '<td><span class="badge badge-info">' + jugador.categoria + '</span></td>';
-								tbody += '<td nowrap>';
-								tbody += '<button class="btn btn-xs btn-warning btn-editar-jugador" data-id="' + jugador.id + '" data-reserva="' + jugador.reserva_id + '" data-name="' + $('<div>').text(jugador.name).html() + '" data-dni="' + jugador.dni + '" data-email="' + jugador.email + '" data-gender="' + jugador.gender + '" data-category="' + jugador.category_id + '"><i class="fas fa-edit"></i></button>';
-								tbody += '<button class="btn btn-xs btn-danger btn-borrar-jugador" data-id="' + jugador.id + '" data-reserva="' + jugador.reserva_id + '" data-name="' + jugador.name.toLowerCase() + '"><i class="fas fa-trash"></i></button>';
-								tbody += '</td>';
-								tbody += '</tr>';
-							});
-						}
+					var tbody = '';
+					that.jugadoresCache = {};
 
-						that.table.find('tbody').html(tbody);
-
-						$('#jugadoresTable').DataTable({
-							dom: 'ltp',
-							order: [[ 2, "DESC" ]]
+					if(that.tournament_type === 'doubles' && res.parejas) {
+						// Modo dobles: mostrar parejas como tabla
+						$.each(res.parejas, function(i, pareja) {
+							that.jugadoresCache[pareja.reservation_id] = pareja;
+							tbody += '<tr class="pareja-row" data-nombre="' + pareja.pareja.toLowerCase() + '" data-category="' + pareja.category_id + '" data-gender="' + pareja.gender + '">';
+							tbody += '<td style="text-transform:capitalize;">' + pareja.pareja.toLowerCase() + '</td>';
+							tbody += '<td><span class="badge badge-info">' + pareja.categoria + '</span></td>';
+							tbody += '<td>' + (pareja.gender == 'M' ? '<span class="badge badge-primary">M</span>' : '<span class="badge badge-danger">F</span>') + '</td>';
+							tbody += '<td nowrap>';
+							tbody += '<button class="btn btn-xs btn-danger btn-borrar-jugador" data-id="' + pareja.reservation_id + '" data-reserva="' + pareja.reservation_id + '" data-name="' + pareja.pareja.toLowerCase() + '"><i class="fas fa-trash"></i></button>';
+							tbody += '</td>';
+							tbody += '</tr>';
+						});
+					} else if(res.jugadores) {
+						// Modo singles: mostrar jugadores como tabla
+						$.each(res.jugadores, function(i, jugador) {
+							that.jugadoresCache[jugador.id] = jugador;
+							tbody += '<tr class="jugador-row" data-nombre="' + jugador.name.toLowerCase() + '" data-dni="' + jugador.dni + '" data-category="' + jugador.category_id + '" data-gender="' + jugador.gender + '">';
+							tbody += '<td style="text-transform:capitalize">' + jugador.name.toLowerCase() + '</td>';
+							tbody += '<td>' + jugador.dni + '</td>';
+							tbody += '<td>' + jugador.email + '</td>';
+							tbody += '<td>' + (jugador.gender == 'M' ? '<span class="badge badge-primary">M</span>' : '<span class="badge badge-danger">F</span>') + '</td>';
+							tbody += '<td><span class="badge badge-info">' + jugador.categoria + '</span></td>';
+							tbody += '<td nowrap>';
+							tbody += '<button class="btn btn-xs btn-warning btn-editar-jugador" data-id="' + jugador.id + '" data-reserva="' + jugador.reserva_id + '" data-name="' + $('<div>').text(jugador.name).html() + '" data-dni="' + jugador.dni + '" data-email="' + jugador.email + '" data-gender="' + jugador.gender + '" data-category="' + jugador.category_id + '"><i class="fas fa-edit"></i></button>';
+							tbody += '<button class="btn btn-xs btn-danger btn-borrar-jugador" data-id="' + jugador.id + '" data-reserva="' + jugador.reserva_id + '" data-name="' + jugador.name.toLowerCase() + '"><i class="fas fa-trash"></i></button>';
+							tbody += '</td>';
+							tbody += '</tr>';
 						});
 					}
+
+					that.table.find('tbody').html(tbody);
+
+					$('#jugadoresTable').DataTable({
+						dom: 'ltp',
+						order: [[ 0, "ASC" ]]
+					});
 
 					if(typeof cb == 'function')
 						cb(res);
