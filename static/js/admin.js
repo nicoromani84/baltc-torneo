@@ -387,15 +387,32 @@ var admin = {
 				data: ajaxData,
 				headers: { 'X-Auth-Token' : token },
 				success: function(res) {
+					// Destruir container de cards si existe (cuando volvemos de dobles)
+					var container = $('#reservas-container');
+					if(container.length > 0) {
+						container.remove();
+						// Recrear tabla
+						that.table = $('<table class="table table-hover table-sm" id="jugadoresTable"><thead class="thead-light"><tr><th>Nombre</th><th>DNI</th><th>Email</th><th>Género</th><th>Categoría</th><th width="80"></th></tr></thead><tbody></tbody></table>');
+						$('section#reservas .container-fluid').append(that.table);
+					}
+
 					// Para dobles, mostrar cards; para singles, mostrar tabla
 					if(that.tournament_type === 'doubles' && res.parejas) {
 						// Modo dobles: mostrar cards
+						var table = $('#jugadoresTable');
+						if(table.length > 0) {
+							if ($.fn.DataTable.isDataTable('#jugadoresTable')) {
+								$('#jugadoresTable').DataTable().destroy();
+							}
+							table.hide();
+						}
+
 						var container = $('#reservas-container');
 						if(container.length === 0) {
 							container = $('<div id="reservas-container" class="card-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:16px; padding:20px;"></div>');
-							$('#jugadoresTable').replaceWith(container);
+							$('#jugadoresTable').after(container);
 						} else {
-							container.empty();
+							container.empty().show();
 						}
 
 						that.jugadoresCache = {};
@@ -410,6 +427,16 @@ var admin = {
 						});
 					} else {
 						// Modo singles: mostrar tabla
+						var container = $('#reservas-container');
+						if(container.length > 0) {
+							container.hide();
+						}
+
+						var table = $('#jugadoresTable');
+						if(table.length > 0) {
+							table.show();
+						}
+
 						if ($.fn.DataTable.isDataTable('#jugadoresTable')) {
 							$('#jugadoresTable').DataTable().destroy();
 						}
