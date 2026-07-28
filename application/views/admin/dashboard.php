@@ -130,9 +130,6 @@
                             <option value="F">Damas</option>
                         </select>
                     </div>
-                    <div class="admin-filtro-contador">
-                        <span class="text-muted small" id="contador-jugadores"></span>
-                    </div>
                 </div>
 
                 <!-- TABLA -->
