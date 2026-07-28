@@ -415,6 +415,7 @@ var admin = {
 							tbody += '</td>';
 							tbody += '</tr>';
 						});
+						$('#contador-parejas').text(res.parejas.length + ' pareja' + (res.parejas.length !== 1 ? 's' : ''));
 					} else if(res.jugadores) {
 						// Modo singles: mostrar jugadores como tabla
 						$.each(res.jugadores, function(i, jugador) {
