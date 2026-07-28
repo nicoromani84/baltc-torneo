@@ -9,10 +9,10 @@
                     <h2 style="margin:0 0 12px 0;font-size:20px;">Jugadores Inscriptos</h2>
                     <ul class="nav nav-tabs" style="border:none;gap:8px;">
                         <li class="nav-item">
-                            <a class="nav-link active tournament-tab" data-tournament="singles" href="#" style="padding:6px 12px;font-size:14px;">Singles</a>
+                            <a class="nav-link tournament-tab" data-tournament="singles" href="#" style="padding:6px 12px;font-size:14px;">Singles</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link tournament-tab" data-tournament="doubles" href="#" style="padding:6px 12px;font-size:14px;">Dobles</a>
+                            <a class="nav-link active tournament-tab" data-tournament="doubles" href="#" style="padding:6px 12px;font-size:14px;">Dobles</a>
                         </li>
                     </ul>
                 </div>

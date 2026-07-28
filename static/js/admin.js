@@ -74,7 +74,7 @@ var admin = {
 			data: []
 		},
 		selectedPartners: [],
-		tournament_type: 'singles',
+		tournament_type: 'doubles',
 		jugadoresCache: {},
 
 		// Inicializamos el módulo
