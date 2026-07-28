@@ -86,13 +86,8 @@ var admin = {
 				that.hideSideModal();
 			})
 
-			// Solo inicializar DataTable si es singles (default es dobles ahora)
-			if(that.tournament_type !== 'doubles') {
-				$('#jugadoresTable').DataTable({
-					dom: 'ltp',
-					order: [[ 2, "DESC" ]]
-				});
-			}
+			// Dashboard only shows doubles
+			that.tournament_type = 'doubles';
 
 			// Cargar datos del torneo seleccionado
 			that.getReservations();
@@ -116,16 +111,6 @@ var admin = {
 						that.getReservations();
 					}
 				})
-			});
-
-			$(document).on('click', '.tournament-tab', function(e){
-				e.preventDefault();
-				var tournament = $(this).data('tournament');
-				console.log('Tab clicked:', tournament);
-				that.tournament_type = tournament;
-				$('.tournament-tab').removeClass('active');
-				$(this).addClass('active');
-				that.getReservations();
 			});
 
 			$('#add').click(function(){
@@ -501,6 +486,92 @@ var admin = {
 			});
 			if(categories)
 				return categories;
+		}
+	},
+
+	singles: {
+		table: $('#jugadoresTable'),
+		tournament_type: 'singles',
+
+		run: function() {
+			var that = this;
+
+			$('#jugadoresTable').DataTable({
+				dom: 'ltp',
+				order: [[ 2, "DESC" ]]
+			});
+
+			that.getReservations();
+
+			$('#filtro-categoria').change(function(){
+				that.getReservations();
+			});
+
+			$('#filtro-gender').change(function(){
+				that.getReservations();
+			});
+
+			$(document).on('click', '.btn-editar-jugador', function(){
+				var jugadorId = $(this).data('id');
+				if(!jugadorId) return;
+				$('#jugador-id').val($(this).data('id'));
+				$('#jugador-reserva-id').val($(this).data('reserva'));
+				$('#form-jugador-titulo').text('Editar Jugador');
+				$('#form-editar-fields').show();
+				$('#form-nuevo-fields').hide();
+				$('#jugador-name').val($(this).data('name'));
+				$('#jugador-dni').val($(this).data('dni'));
+				$('#jugador-email').val($(this).data('email'));
+				$('#jugador-gender').val($(this).data('gender'));
+				$('#jugador-category').val($(this).data('category'));
+				$('#form-jugador').slideDown();
+				$('html,body').animate({scrollTop:0}, 300);
+			});
+
+			$(document).on('click', '.btn-borrar-jugador', function(){
+				var d = $(this).data();
+				if(!confirm('¿Eliminar a ' + d.name + ' del torneo?')) return;
+				$.ajax({
+					url: adminurl + '/deleteJugador', type: 'POST',
+					data: { id:d.id, reserva_id:d.reserva },
+					headers: {'X-Auth-Token': token},
+					success: function(res){ if(res.action) location.reload(); }
+				});
+			});
+		},
+
+		getReservations: function(cb) {
+			var that = this;
+			var ajaxData = {category: $('#filtro-categoria').val(), gender: $('#filtro-gender').val(), tournament_type: that.tournament_type};
+			$.ajax({
+				url: adminurl + '/getReservations',
+				type: "POST",
+				data: ajaxData,
+				headers: { 'X-Auth-Token' : token },
+				success: function(res) {
+					var tbody = '';
+					if(res.jugadores) {
+						$.each(res.jugadores, function(i, jugador) {
+							tbody += '<tr class="jugador-row" data-nombre="' + jugador.name.toLowerCase() + '" data-dni="' + jugador.dni + '" data-category="' + jugador.category_id + '" data-gender="' + jugador.gender + '">';
+							tbody += '<td style="text-transform:capitalize">' + jugador.name.toLowerCase() + '</td>';
+							tbody += '<td>' + jugador.dni + '</td>';
+							tbody += '<td>' + jugador.email + '</td>';
+							tbody += '<td>' + (jugador.gender == 'M' ? '<span class="badge badge-primary">M</span>' : '<span class="badge badge-danger">F</span>') + '</td>';
+							tbody += '<td><span class="badge badge-info">' + jugador.categoria + '</span></td>';
+							tbody += '<td nowrap>';
+							tbody += '<button class="btn btn-xs btn-warning btn-editar-jugador" data-id="' + jugador.id + '" data-reserva="' + jugador.reserva_id + '" data-name="' + $('<div>').text(jugador.name).html() + '" data-dni="' + jugador.dni + '" data-email="' + jugador.email + '" data-gender="' + jugador.gender + '" data-category="' + jugador.category_id + '"><i class="fas fa-edit"></i></button>';
+							tbody += '<button class="btn btn-xs btn-danger btn-borrar-jugador" data-id="' + jugador.id + '" data-reserva="' + jugador.reserva_id + '" data-name="' + jugador.name.toLowerCase() + '"><i class="fas fa-trash"></i></button>';
+							tbody += '</td>';
+							tbody += '</tr>';
+						});
+					}
+
+					that.table.find('tbody').html(tbody);
+
+					if(typeof cb == 'function')
+						cb(res);
+				}
+			});
 		}
 	}
 };

@@ -6,10 +6,10 @@
         <div style="padding:20px 24px;background:#fff;border-bottom:1px solid #dee2e6;">
         	<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
                 <div>
-                    <h2 style="margin:0 0 12px 0;font-size:20px;">Parejas Inscriptas - Dobles</h2>
+                    <h2 style="margin:0 0 12px 0;font-size:20px;">Jugadores Inscriptos - Singles</h2>
                     <div style="margin-top:8px;">
-                        <a href="<?=base_url('admin/singles')?>" class="btn btn-sm btn-outline-secondary" style="font-size:12px;">
-                            <i class="fas fa-arrow-left"></i> Ver Singles
+                        <a href="<?=base_url('admin')?>" class="btn btn-sm btn-outline-secondary" style="font-size:12px;">
+                            <i class="fas fa-arrow-left"></i> Ver Dobles
                         </a>
                     </div>
                 </div>
@@ -201,7 +201,7 @@ const token = '<?=$token?>';
 const baseurl = '<?=base_url()?>';
 
 $(function() {
-	admin.dashboard.run();
+	admin.singles.run();
 
 	// Switch inscripciones
 	$('#btn-inscripciones').on('click', function(){

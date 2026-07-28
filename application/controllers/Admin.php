@@ -50,6 +50,22 @@ class Admin extends CI_Controller {
 		redirect(base_url('/admin'));
 	}
 
+	public function singles() {
+		$this->protect->setRequest('GET');
+		if (!$this->Administrator->isLogged()) redirect(base_url('/admin'));
+		$d['titulo']     = 'Singles - Admin';
+		$d['token']      = $this->protect->eToken();
+		$d['section']    = 'admin-singles';
+		$d['readonly']   = $this->Administrator->isReadOnly();
+		$d['jugadores']  = $this->Administrator->getJugadoresByTournament(false, false, 'singles');
+		$d['categories'] = $this->Administrator->getAllCategories();
+		$q_s = $this->db->where('key', 'inscripciones_abiertas')->get('settings');
+		$d['inscripciones_abiertas'] = ($q_s->num_rows() > 0 && $q_s->row()->value == '1');
+		$this->load->view('admin/header',$d);
+		$this->load->view('admin/singles');
+		$this->load->view('admin/footer');
+	}
+
 	public function validate() {
 		$check = $this->Administrator->check(
 			$this->input->get('username', true),
