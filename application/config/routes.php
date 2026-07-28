@@ -22,6 +22,7 @@ $route['admin/deletePartido'] = 'admin/deletePartido';
 
 $route['admin/draws'] = 'admin/draws';
 $route['admin/getDrawData'] = 'admin/getDrawData';
+$route['admin/singles'] = 'admin/singles';
 $route['admin/jugadores'] = 'admin/jugadores';
 $route['admin/toggleInscripciones'] = 'admin/toggleInscripciones';
 $route['admin/addJugador'] = 'admin/addJugador';
