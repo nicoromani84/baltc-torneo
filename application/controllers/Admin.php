@@ -706,10 +706,34 @@ class Admin extends CI_Controller {
 		if($this->Administrator->isReadOnly()) $this->protect->ajaxDie(array('action'=>false,'msg'=>'Sin permisos.'));
 		$category = intval($this->input->post('category'));
 		$gender   = $this->input->post('gender', true);
+		$tournament_type = $this->input->post('tournament_type', true);
+		if(!$tournament_type) $tournament_type = 'singles';
 		$jugadores = json_decode($this->input->post('jugadores'), true);
 
 		if(empty($jugadores)) {
 			$this->protect->ajaxDie(array('action' => false, 'msg' => 'Sin jugadores.'));
+		}
+
+		// Para dobles, convertir reservation_ids a arrays de [partner1_id, partner2_id]
+		if($tournament_type === 'doubles') {
+			$jugadores_dobles = array();
+			foreach($jugadores as $res_id) {
+				if($res_id === null) {
+					$jugadores_dobles[] = null;
+				} else {
+					// Obtener los dos partners de esta reserva
+					$this->db->select('partner_id')
+						->where('reservation_id', intval($res_id))
+						->order_by('id', 'ASC');
+					$partners = $this->db->get('reservations_partners')->result();
+					if(count($partners) === 2) {
+						$jugadores_dobles[] = array(intval($partners[0]->partner_id), intval($partners[1]->partner_id));
+					} else {
+						$jugadores_dobles[] = null;
+					}
+				}
+			}
+			$jugadores = $jugadores_dobles;
 		}
 
 		// Borrar partidos existentes de esta categoria + genero
@@ -770,12 +794,26 @@ class Admin extends CI_Controller {
 			$j1 = isset($jugadores[$i])   ? $jugadores[$i]   : null;
 			$j2 = isset($jugadores[$i+1]) ? $jugadores[$i+1] : null;
 			$bp = $i / 2;
-			if($j1 && $j2) {
-				$partidos[] = array('category'=>$category,'gender'=>$gender,'ronda'=>$rondasNombres[$rondaInicio],'bracket_pos'=>$bp,'jugador1_id'=>intval($j1),'jugador2_id'=>intval($j2),'score'=>null,'ganador_id'=>null);
-			} elseif($j1) {
-				$partidos[] = array('category'=>$category,'gender'=>$gender,'ronda'=>$rondasNombres[$rondaInicio],'bracket_pos'=>$bp,'jugador1_id'=>intval($j1),'jugador2_id'=>null,'score'=>'BYE','ganador_id'=>intval($j1));
-			} elseif($j2) {
-				$partidos[] = array('category'=>$category,'gender'=>$gender,'ronda'=>$rondasNombres[$rondaInicio],'bracket_pos'=>$bp,'jugador1_id'=>null,'jugador2_id'=>intval($j2),'score'=>'BYE','ganador_id'=>intval($j2));
+
+			// Para dobles, j1 y j2 son arrays [partner1_id, partner2_id]
+			// Para singles, j1 y j2 son enteros partner_id
+			if($tournament_type === 'doubles') {
+				if($j1 && $j2) {
+					// Ambas parejas: j1[0] vs j2[0] (representante de cada pareja), guardando todos los IDs
+					$partidos[] = array('category'=>$category,'gender'=>$gender,'ronda'=>$rondasNombres[$rondaInicio],'bracket_pos'=>$bp,'jugador1_id'=>intval($j1[0]),'jugador2_id'=>intval($j2[0]),'score'=>null,'ganador_id'=>null);
+				} elseif($j1) {
+					$partidos[] = array('category'=>$category,'gender'=>$gender,'ronda'=>$rondasNombres[$rondaInicio],'bracket_pos'=>$bp,'jugador1_id'=>intval($j1[0]),'jugador2_id'=>null,'score'=>'BYE','ganador_id'=>intval($j1[0]));
+				} elseif($j2) {
+					$partidos[] = array('category'=>$category,'gender'=>$gender,'ronda'=>$rondasNombres[$rondaInicio],'bracket_pos'=>$bp,'jugador1_id'=>null,'jugador2_id'=>intval($j2[0]),'score'=>'BYE','ganador_id'=>intval($j2[0]));
+				}
+			} else {
+				if($j1 && $j2) {
+					$partidos[] = array('category'=>$category,'gender'=>$gender,'ronda'=>$rondasNombres[$rondaInicio],'bracket_pos'=>$bp,'jugador1_id'=>intval($j1),'jugador2_id'=>intval($j2),'score'=>null,'ganador_id'=>null);
+				} elseif($j1) {
+					$partidos[] = array('category'=>$category,'gender'=>$gender,'ronda'=>$rondasNombres[$rondaInicio],'bracket_pos'=>$bp,'jugador1_id'=>intval($j1),'jugador2_id'=>null,'score'=>'BYE','ganador_id'=>intval($j1));
+				} elseif($j2) {
+					$partidos[] = array('category'=>$category,'gender'=>$gender,'ronda'=>$rondasNombres[$rondaInicio],'bracket_pos'=>$bp,'jugador1_id'=>null,'jugador2_id'=>intval($j2),'score'=>'BYE','ganador_id'=>intval($j2));
+				}
 			}
 			// null+null → slot vacío, no se guarda
 		}
