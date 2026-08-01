@@ -85,7 +85,7 @@ class Admin extends CI_Controller {
 		$d['titulo']     = 'Partners - Admin';
 		$d['token']      = $this->protect->eToken();
 		$d['section']    = 'admin-partners';
-		$d['partners']   = $this->db->order_by('name')->get('partners')->result();
+		$d['partners']   = $this->db->order_by('name', 'ASC')->get('partners')->result();
 		$this->load->view('admin/header',$d);
 		$this->load->view('admin/partners');
 		$this->load->view('admin/footer');
