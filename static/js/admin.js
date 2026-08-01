@@ -39,7 +39,7 @@ var admin = {
 	            	that.do( function(res) {
 					if (res.action) {
 						showNotification('success', 'Sesión iniciada correctamente.')
-						setTimeout(function(){window.location.reload();}, 1500);
+						setTimeout(function(){window.location.href = loginurl;}, 800);
 					} else {
 						showNotification('error', res.msg)
 					}
