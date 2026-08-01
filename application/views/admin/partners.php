@@ -269,25 +269,35 @@ $(function() {
     });
 
     // Inicializar tabla
-    $('#partnersTable').DataTable({
+    var partnersTable = $('#partnersTable').DataTable({
         dom: 'ltp',
-        order: [[ 0, "ASC" ]]
+        order: [[ 0, "asc" ]],
+        pageLength: -1
     });
 
     // Filtrado
     function filtrar() {
         var buscar = $('#buscar-partner').val().toLowerCase();
         var gender = $('#filtro-gender-partners').val();
-        var visible = 0;
 
-        $('.partner-row').each(function() {
-            var nombre = $(this).data('nombre');
-            var dni = String($(this).data('dni'));
-            var gen = $(this).data('gender');
+        partnersTable.columns(0).search('').columns(1).search('').columns(2).search('').columns(3).search('').draw();
+
+        var visible = 0;
+        partnersTable.rows().every(function() {
+            var data = this.data();
+            var nombre = $(data[0]).text().toLowerCase();
+            var dni = $(data[1]).text();
+            var gen = this.node().getAttribute('data-gender');
+
             var ok = (!buscar || nombre.indexOf(buscar) >= 0 || dni.indexOf(buscar) >= 0) &&
                      (!gender || gen === gender);
-            $(this).toggle(ok);
-            if(ok) visible++;
+
+            if(ok) {
+                visible++;
+                $(this.node()).show();
+            } else {
+                $(this.node()).hide();
+            }
         });
 
         $('#contador-partners').text(visible + ' partner' + (visible !== 1 ? 's' : ''));
