@@ -91,6 +91,27 @@ class Admin extends CI_Controller {
 		$this->load->view('admin/footer');
 	}
 
+	public function editPartner() {
+		$this->protect->setAjax();
+		$this->protect->setRequest('POST');
+		if (!$this->Administrator->isLogged()) {
+			$this->protect->ajaxDie(array('action' => false, 'msg' => 'No autorizado'));
+		}
+
+		$id = $this->input->post('id', true);
+		$name = $this->input->post('name', true);
+		$dni = $this->input->post('dni', true);
+		$gender = $this->input->post('gender', true);
+		$email = $this->input->post('email', true);
+
+		if (!$id || !$name || !$dni || !$gender) {
+			$this->protect->ajaxDie(array('action' => false, 'msg' => 'Campos requeridos'));
+		}
+
+		$result = $this->Administrator->editPartner($id, $name, $dni, $gender, $email);
+		$this->protect->ajaxDie(array('action' => $result, 'msg' => $result ? 'Partner actualizado' : 'Error'));
+	}
+
 	public function deletePartner() {
 		$this->protect->setAjax();
 		$this->protect->setRequest('POST');

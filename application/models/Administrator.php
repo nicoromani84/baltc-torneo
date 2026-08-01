@@ -255,4 +255,14 @@ class Administrator extends CI_Model
 		);
 		return $this->db->insert('partners', $data);
 	}
+
+	public function editPartner($id, $name, $dni, $gender, $email = '') {
+		$data = array(
+			'name' => $name,
+			'dni' => $dni,
+			'gender' => $gender,
+			'email' => $email
+		);
+		return $this->db->where('id', $id)->update('partners', $data);
+	}
 }

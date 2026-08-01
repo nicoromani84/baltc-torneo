@@ -82,6 +82,14 @@
                                 <td><?=$p->email?></td>
                                 <td><?=$p->gender == 'M' ? '<span class="badge badge-primary">M</span>' : '<span class="badge badge-danger">F</span>'?></td>
                                 <td nowrap>
+                                    <button class="btn btn-xs btn-warning btn-editar-partner"
+                                        data-id="<?=$p->id?>"
+                                        data-name="<?=$p->name?>"
+                                        data-dni="<?=$p->dni?>"
+                                        data-email="<?=$p->email?>"
+                                        data-gender="<?=$p->gender?>">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
                                     <button class="btn btn-xs btn-danger btn-eliminar-partner" data-id="<?=$p->id?>" data-name="<?=strtolower($p->name)?>">
                                         <i class="fas fa-trash"></i>
                                     </button>
@@ -97,6 +105,46 @@
                 </table>
             </div>
         </section>
+    </div>
+</div>
+
+<!-- MODAL EDITAR PARTNER -->
+<div class="modal fade" id="modalEditPartner" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Editar Partner</h5>
+                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <form id="formEditPartner">
+                    <input type="hidden" id="edit-partner-id">
+                    <div class="form-group">
+                        <label>Nombre</label>
+                        <input type="text" id="edit-partner-name" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>DNI</label>
+                        <input type="text" id="edit-partner-dni" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Género</label>
+                        <select id="edit-partner-gender" class="form-control" required>
+                            <option value="M">Caballero (M)</option>
+                            <option value="F">Dama (F)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="edit-partner-email" class="form-control">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="btn-save-partner">Guardar</button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -144,6 +192,60 @@ $(function() {
             },
             complete: function() {
                 $('#btn-add-partner').prop('disabled', false).removeClass('loading');
+            }
+        });
+    });
+
+    // Editar partner
+    $(document).on('click', '.btn-editar-partner', function() {
+        var d = $(this).data();
+        $('#edit-partner-id').val(d.id);
+        $('#edit-partner-name').val(d.name);
+        $('#edit-partner-dni').val(d.dni);
+        $('#edit-partner-gender').val(d.gender);
+        $('#edit-partner-email').val(d.email);
+        $('#modalEditPartner').modal('show');
+    });
+
+    // Guardar cambios
+    $('#btn-save-partner').on('click', function() {
+        var id = $('#edit-partner-id').val();
+        var name = $('#edit-partner-name').val().trim();
+        var dni = $('#edit-partner-dni').val().trim();
+        var gender = $('#edit-partner-gender').val();
+        var email = $('#edit-partner-email').val().trim();
+
+        if (!name || !dni || !gender) {
+            alert('Completa los campos requeridos');
+            return;
+        }
+
+        $(this).prop('disabled', true).addClass('loading');
+
+        $.ajax({
+            url: adminurl + '/editPartner',
+            type: 'POST',
+            data: {
+                id: id,
+                name: name,
+                dni: dni,
+                gender: gender,
+                email: email
+            },
+            headers: {'X-Auth-Token': token},
+            success: function(res) {
+                if(res.action) {
+                    alert('Partner actualizado correctamente');
+                    location.reload();
+                } else {
+                    alert('Error: ' + (res.msg || 'Error desconocido'));
+                }
+            },
+            error: function() {
+                alert('Error al actualizar partner');
+            },
+            complete: function() {
+                $('#btn-save-partner').prop('disabled', false).removeClass('loading');
             }
         });
     });
