@@ -15,12 +15,12 @@
                         <form id="formAddPartner">
                             <div class="form-row">
                                 <div class="form-group col-md-4">
-                                    <label>Nombre</label>
-                                    <input type="text" id="partner-name" class="form-control" placeholder="Apellido, Nombre" required>
+                                    <label>Nombre <small style="color:#999;">(Apellido, Nombre)</small></label>
+                                    <input type="text" id="partner-name" class="form-control" placeholder="Ej: García, María" required>
                                 </div>
                                 <div class="form-group col-md-2">
-                                    <label>DNI</label>
-                                    <input type="text" id="partner-dni" class="form-control" placeholder="12345678" required>
+                                    <label>DNI <small style="color:#999;">(sin puntos)</small></label>
+                                    <input type="text" id="partner-dni" class="form-control" placeholder="25021881" required>
                                 </div>
                                 <div class="form-group col-md-2">
                                     <label>Género</label>
@@ -120,12 +120,12 @@
                 <form id="formEditPartner">
                     <input type="hidden" id="edit-partner-id">
                     <div class="form-group">
-                        <label>Nombre</label>
-                        <input type="text" id="edit-partner-name" class="form-control" required>
+                        <label>Nombre <small style="color:#999;">(Apellido, Nombre)</small></label>
+                        <input type="text" id="edit-partner-name" class="form-control" placeholder="Ej: García, María" required>
                     </div>
                     <div class="form-group">
-                        <label>DNI</label>
-                        <input type="text" id="edit-partner-dni" class="form-control" required>
+                        <label>DNI <small style="color:#999;">(sin puntos)</small></label>
+                        <input type="text" id="edit-partner-dni" class="form-control" placeholder="25021881" required>
                     </div>
                     <div class="form-group">
                         <label>Género</label>
@@ -163,12 +163,17 @@ $(function() {
     $('#formAddPartner').on('submit', function(e) {
         e.preventDefault();
         var name = $('#partner-name').val().trim();
-        var dni = $('#partner-dni').val().trim();
+        var dni = $('#partner-dni').val().trim().replace(/\D/g, '');
         var gender = $('#partner-gender').val();
         var email = $('#partner-email').val().trim();
 
         if (!name || !dni || !gender) {
             alert('Completa los campos requeridos');
+            return false;
+        }
+
+        if (dni.length !== 8) {
+            alert('El DNI debe tener 8 dígitos');
             return false;
         }
 
@@ -217,12 +222,17 @@ $(function() {
     $('#btn-save-partner').on('click', function() {
         var id = $('#edit-partner-id').val();
         var name = $('#edit-partner-name').val().trim();
-        var dni = $('#edit-partner-dni').val().trim();
+        var dni = $('#edit-partner-dni').val().trim().replace(/\D/g, '');
         var gender = $('#edit-partner-gender').val();
         var email = $('#edit-partner-email').val().trim();
 
         if (!name || !dni || !gender) {
             alert('Completa los campos requeridos');
+            return;
+        }
+
+        if (dni.length !== 8) {
+            alert('El DNI debe tener 8 dígitos');
             return;
         }
 
