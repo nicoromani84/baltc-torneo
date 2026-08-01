@@ -33,9 +33,11 @@ class User extends CI_Model
 
 	//chequea existencia del usuario
 	public function check( $dni ) {
+		// Remover puntos del DNI para buscar
+		$dni_clean = preg_replace('/\D/', '', $dni);
 		//Buscamos el usuario y la contraseña
 		$q = $this->db->select('*')
-			->where('dni',$dni)
+			->where('dni',$dni_clean)
 			->get('partners');
 		//Retornamos
 		return ( $q->num_rows() == 1 ) ? $q->row() : false;
