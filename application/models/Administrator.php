@@ -245,4 +245,14 @@ class Administrator extends CI_Model
 		$this->db->where('id', $id)->delete('category');
 		return $this->db->affected_rows() > 0;
 	}
+
+	public function addPartner($name, $dni, $gender, $email = '') {
+		$data = array(
+			'name' => $name,
+			'dni' => $dni,
+			'gender' => $gender,
+			'email' => $email
+		);
+		return $this->db->insert('partners', $data);
+	}
 }

@@ -1975,4 +1975,24 @@ public function enviarNotificacion() {
 		print_r($q->result());
 		echo '</pre>';
 	}
+
+	public function addPartnerQuick() {
+		$this->protect->setAjax();
+		$this->protect->setRequest('POST');
+		if (!$this->Administrator->isLogged()) {
+			$this->protect->ajaxDie(array('action' => false, 'msg' => 'No autorizado'));
+		}
+
+		$name = $this->input->post('name', true);
+		$dni = $this->input->post('dni', true);
+		$gender = $this->input->post('gender', true);
+		$email = $this->input->post('email', true);
+
+		if (!$name || !$dni || !$gender) {
+			$this->protect->ajaxDie(array('action' => false, 'msg' => 'Campos requeridos: nombre, DNI, género'));
+		}
+
+		$result = $this->Administrator->addPartner($name, $dni, $gender, $email);
+		$this->protect->ajaxDie(array('action' => $result, 'msg' => $result ? 'Partner agregado correctamente' : 'Error al agregar partner'));
+	}
 }
