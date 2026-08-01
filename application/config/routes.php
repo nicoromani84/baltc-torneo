@@ -27,6 +27,7 @@ $route['admin/loginLogs'] = 'admin/loginLogs';
 $route['admin/partners'] = 'admin/partners';
 $route['admin/addPartnerQuick'] = 'admin/addPartnerQuick';
 $route['admin/editPartner'] = 'admin/editPartner';
+$route['admin/editParejaCategory'] = 'admin/editParejaCategory';
 $route['admin/deletePartner'] = 'admin/deletePartner';
 $route['admin/jugadores'] = 'admin/jugadores';
 $route['admin/toggleInscripciones'] = 'admin/toggleInscripciones';

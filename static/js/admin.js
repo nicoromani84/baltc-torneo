@@ -136,6 +136,53 @@ var admin = {
 				$('html,body').animate({scrollTop:0}, 300);
 			});
 
+			$(document).on('click', '.btn-editar-categoria', function(){
+				var reservationId = $(this).data('id');
+				var categoryId = $(this).data('category');
+				var pairsName = $(this).data('name');
+
+				var categories = that.getCategories();
+				var html = '<select id="new-category" class="form-control" style="margin-bottom:10px;">';
+				categories.forEach(function(cat) {
+					html += '<option value="' + cat.id + '" ' + (cat.id == categoryId ? 'selected' : '') + '>' + cat.name + '</option>';
+				});
+				html += '</select>';
+
+				var modal = $('<div class="modal fade" id="modalEditCategoria" tabindex="-1" role="dialog">' +
+					'<div class="modal-dialog" role="document">' +
+					'<div class="modal-content">' +
+					'<div class="modal-header"><h5 class="modal-title">Cambiar Categoría</h5><button type="button" class="close" data-dismiss="modal"><span>&times;</span></button></div>' +
+					'<div class="modal-body">' + html + '</div>' +
+					'<div class="modal-footer"><button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button><button type="button" class="btn btn-primary" id="btn-save-categoria">Guardar</button></div>' +
+					'</div></div></div>');
+
+				$('body').append(modal);
+				modal.modal('show');
+
+				$('#btn-save-categoria').on('click', function(){
+					var newCategoryId = $('#new-category').val();
+					$.ajax({
+						url: adminurl + '/editParejaCategory',
+						type: 'POST',
+						data: { reservation_id: reservationId, category_id: newCategoryId },
+						headers: {'X-Auth-Token': token},
+						success: function(res) {
+							if(res.action) {
+								modal.modal('hide');
+								modal.remove();
+								that.getReservations(function(){ showNotification('success', 'Categoría actualizada.'); });
+							} else {
+								alert('Error: ' + (res.msg || 'Error desconocido'));
+							}
+						}
+					});
+				});
+
+				modal.on('hidden.bs.modal', function() {
+					modal.remove();
+				});
+			});
+
 			$(document).on('click', '.btn-borrar-jugador', function(){
 				var jugadorId = $(this).data('id');
 				var jugador = that.jugadoresCache[jugadorId];
@@ -411,6 +458,7 @@ var admin = {
 							tbody += '<td><span class="badge badge-info">' + pareja.categoria + '</span></td>';
 							tbody += '<td>' + (pareja.gender == 'M' ? '<span class="badge badge-primary">M</span>' : '<span class="badge badge-danger">F</span>') + '</td>';
 							tbody += '<td nowrap>';
+							tbody += '<button class="btn btn-xs btn-warning btn-editar-categoria" data-id="' + pareja.reservation_id + '" data-category="' + pareja.category_id + '" data-name="' + pareja.pareja.toLowerCase() + '"><i class="fas fa-edit"></i></button>';
 							tbody += '<button class="btn btn-xs btn-danger btn-borrar-jugador" data-id="' + pareja.reservation_id + '" data-reserva="' + pareja.reservation_id + '" data-name="' + pareja.pareja.toLowerCase() + '"><i class="fas fa-trash"></i></button>';
 							tbody += '</td>';
 							tbody += '</tr>';

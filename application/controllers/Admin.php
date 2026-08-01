@@ -112,6 +112,24 @@ class Admin extends CI_Controller {
 		$this->protect->ajaxDie(array('action' => $result, 'msg' => $result ? 'Partner actualizado' : 'Error'));
 	}
 
+	public function editParejaCategory() {
+		$this->protect->setAjax();
+		$this->protect->setRequest('POST');
+		if (!$this->Administrator->isLogged()) {
+			$this->protect->ajaxDie(array('action' => false, 'msg' => 'No autorizado'));
+		}
+
+		$reservation_id = $this->input->post('reservation_id', true);
+		$category_id = $this->input->post('category_id', true);
+
+		if (!$reservation_id || !$category_id) {
+			$this->protect->ajaxDie(array('action' => false, 'msg' => 'Parámetros requeridos'));
+		}
+
+		$result = $this->Administrator->editParejaCategory($reservation_id, $category_id);
+		$this->protect->ajaxDie(array('action' => $result, 'msg' => $result ? 'Categoría actualizada' : 'Error'));
+	}
+
 	public function deletePartner() {
 		$this->protect->setAjax();
 		$this->protect->setRequest('POST');
