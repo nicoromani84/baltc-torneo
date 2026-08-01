@@ -79,6 +79,30 @@ class Admin extends CI_Controller {
 		$this->load->view('admin/footer');
 	}
 
+	public function partners() {
+		$this->protect->setRequest('GET');
+		if (!$this->Administrator->isLogged()) redirect(base_url('/admin'));
+		$d['titulo']     = 'Partners - Admin';
+		$d['token']      = $this->protect->eToken();
+		$d['section']    = 'admin-partners';
+		$d['partners']   = $this->db->order_by('name')->get('partners')->result();
+		$this->load->view('admin/header',$d);
+		$this->load->view('admin/partners');
+		$this->load->view('admin/footer');
+	}
+
+	public function deletePartner() {
+		$this->protect->setAjax();
+		$this->protect->setRequest('POST');
+		if (!$this->Administrator->isLogged()) {
+			$this->protect->ajaxDie(array('action' => false, 'msg' => 'No autorizado'));
+		}
+
+		$id = $this->input->post('id', true);
+		$result = $this->db->where('id', $id)->delete('partners');
+		$this->protect->ajaxDie(array('action' => $result, 'msg' => $result ? 'Partner eliminado' : 'Error'));
+	}
+
 	public function validate() {
 		$check = $this->Administrator->check(
 			$this->input->get('username', true),

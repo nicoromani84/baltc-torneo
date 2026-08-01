@@ -124,6 +124,11 @@
 				<i class="fas fa-history"></i> Logs
 			</a>
 		</li>
+		<li class="<?=$section=='admin-partners'?'active':''?>">
+			<a href="<?=base_url('admin/partners')?>">
+				<i class="fas fa-users"></i> Partners
+			</a>
+		</li>
 		<li class="admin-navbar-logout">
 			<a href="<?=base_url('admin/logout')?>">
 				<i class="fas fa-sign-out-alt"></i> Salir
