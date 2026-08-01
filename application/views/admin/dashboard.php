@@ -18,7 +18,6 @@
 						<i class="fas <?=$inscripciones_abiertas ? 'fa-lock-open' : 'fa-lock'?>"></i>
 						Inscripciones: <strong><?=$inscripciones_abiertas ? 'Abiertas' : 'Cerradas'?></strong>
 					</button>
-                	<?php if(empty($readonly)): ?><button class="btn btn-primary btn-sm" id="add"><i class="fas fa-plus"></i> Nuevo jugador</button><?php endif; ?>
                 	<button class="btn btn-success btn-sm" id="btn-descargar-excel"><i class="fas fa-download"></i> Descargar Excel</button>
                 </div>
             </div>
