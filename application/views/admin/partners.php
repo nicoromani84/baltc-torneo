@@ -272,39 +272,31 @@ $(function() {
     var partnersTable = $('#partnersTable').DataTable({
         dom: 'ltp',
         order: [[ 0, "asc" ]],
-        pageLength: -1
+        pageLength: 100
     });
 
-    // Filtrado
-    function filtrar() {
-        var buscar = $('#buscar-partner').val().toLowerCase();
-        var gender = $('#filtro-gender-partners').val();
+    // Filtrado simple
+    $('#buscar-partner').on('keyup', function() {
+        partnersTable.search($(this).val()).draw();
+        actualizarContador();
+    });
 
-        partnersTable.columns(0).search('').columns(1).search('').columns(2).search('').columns(3).search('').draw();
+    $('#filtro-gender-partners').on('change', function() {
+        var gender = $(this).val();
+        if(gender === '') {
+            partnersTable.column(3).search('').draw();
+        } else {
+            partnersTable.column(3).search(gender).draw();
+        }
+        actualizarContador();
+    });
 
-        var visible = 0;
-        partnersTable.rows().every(function() {
-            var data = this.data();
-            var nombre = $(data[0]).text().toLowerCase();
-            var dni = $(data[1]).text();
-            var gen = this.node().getAttribute('data-gender');
-
-            var ok = (!buscar || nombre.indexOf(buscar) >= 0 || dni.indexOf(buscar) >= 0) &&
-                     (!gender || gen === gender);
-
-            if(ok) {
-                visible++;
-                $(this.node()).show();
-            } else {
-                $(this.node()).hide();
-            }
-        });
-
-        $('#contador-partners').text(visible + ' partner' + (visible !== 1 ? 's' : ''));
+    function actualizarContador() {
+        var total = partnersTable.rows({ search: 'applied' }).count();
+        $('#contador-partners').text(total + ' partner' + (total !== 1 ? 's' : ''));
     }
 
-    $('#buscar-partner, #filtro-gender-partners').on('input change', filtrar);
-    filtrar();
+    actualizarContador();
 });
 </script>
 
