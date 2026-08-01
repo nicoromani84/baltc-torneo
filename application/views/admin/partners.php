@@ -78,7 +78,7 @@
                                 data-dni="<?=$p->dni?>"
                                 data-gender="<?=$p->gender?>">
                                 <td style="text-transform:capitalize;"><?=strtolower($p->name)?></td>
-                                <td><?=$p->dni?></td>
+                                <td class="dni-cell"><?=$p->dni?></td>
                                 <td><?=$p->email?></td>
                                 <td><?=$p->gender == 'M' ? '<span class="badge badge-primary">M</span>' : '<span class="badge badge-danger">F</span>'?></td>
                                 <td nowrap>
@@ -151,6 +151,12 @@
 <script type="text/javascript">
 const adminurl = '<?=base_url('admin')?>';
 const token = '<?=$token?>';
+
+function formatDNI(dni) {
+    dni = dni.toString().replace(/\D/g, '');
+    if(dni.length <= 7) return dni;
+    return dni.slice(0, 2) + '.' + dni.slice(2, 5) + '.' + dni.slice(5);
+}
 
 $(function() {
     // Agregar partner
@@ -296,6 +302,14 @@ $(function() {
         $('#contador-partners').text(total + ' partner' + (total !== 1 ? 's' : ''));
     }
 
+    // Formatear DNIs
+    function formatearDNIs() {
+        $('.dni-cell').each(function() {
+            $(this).text(formatDNI($(this).text()));
+        });
+    }
+
+    formatearDNIs();
     actualizarContador();
 });
 </script>
