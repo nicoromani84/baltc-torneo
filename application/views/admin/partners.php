@@ -9,7 +9,7 @@
             <div class="container-fluid" style="padding:20px;">
 
                 <!-- FORM AGREGAR PARTNER -->
-                <div class="card" style="margin-bottom:20px;">
+                <div class="card" style="margin-bottom:20px; display:none;" id="formContainer">
                     <div class="card-body">
                         <h5 class="card-title">Agregar Nuevo Partner</h5>
                         <form id="formAddPartner">
@@ -38,11 +38,14 @@
                             <button type="submit" class="btn btn-primary btn-sm" id="btn-add-partner">
                                 <i class="fas fa-plus"></i> Agregar Partner
                             </button>
+                            <button type="button" class="btn btn-secondary btn-sm" id="btnCancelarPartner">
+                                <i class="fas fa-times"></i> Cancelar
+                            </button>
                         </form>
                     </div>
                 </div>
 
-                <!-- BÚSQUEDA -->
+                <!-- BÚSQUEDA Y BOTÓN -->
                 <div class="admin-filtros-row" style="margin-bottom:20px;">
                     <div class="admin-filtro-buscar">
                         <input type="text" id="buscar-partner" class="form-control" placeholder="Buscar por nombre o DNI...">
@@ -56,6 +59,11 @@
                     </div>
                     <div class="admin-filtro-contador">
                         <span class="text-muted small" id="contador-partners"></span>
+                    </div>
+                    <div>
+                        <button type="button" class="btn btn-primary btn-sm" id="btnNuevoPartner">
+                            <i class="fas fa-plus"></i> Nuevo Partner
+                        </button>
                     </div>
                 </div>
 
@@ -159,6 +167,20 @@ function formatDNI(dni) {
 }
 
 $(function() {
+    // Mostrar/ocultar formulario
+    $('#btnNuevoPartner').on('click', function() {
+        $('#formContainer').slideDown(function() {
+            $('html, body').animate({ scrollTop: $('#formContainer').offset().top - 100 }, 500);
+            $('#partner-name').focus();
+        });
+    });
+
+    // Cancelar formulario
+    $('#btnCancelarPartner').on('click', function() {
+        $('#formContainer').slideUp();
+        $('#formAddPartner')[0].reset();
+    });
+
     // Agregar partner
     $('#formAddPartner').on('submit', function(e) {
         e.preventDefault();
