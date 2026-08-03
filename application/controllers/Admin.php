@@ -2041,13 +2041,13 @@ public function enviarNotificacion() {
 
 	public function getPartnersForPairing() {
 		$this->protect->setAjax();
+		$this->protect->setRequest('POST');
 		if (!$this->Administrator->isLogged()) {
-			$this->protect->ajaxDie(array('action' => false));
+			$this->protect->ajaxDie(array('action' => false, 'msg' => 'Not logged in'));
 		}
 
 		$partners = $this->db->where('active', 1)->order_by('name')->get('partners')->result();
 		$categories = $this->Administrator->getAllCategories();
-
 		$this->protect->ajaxDie(array('action' => true, 'partners' => $partners, 'categories' => $categories));
 	}
 

@@ -437,7 +437,7 @@ $(function() {
     $('#btn-agregar-pareja').on('click', function() {
         $.ajax({
             url: adminurl + '/getPartnersForPairing',
-            type: 'GET',
+            type: 'POST',
             headers: {'X-Auth-Token': token},
             success: function(res) {
                 if(res.action) {
