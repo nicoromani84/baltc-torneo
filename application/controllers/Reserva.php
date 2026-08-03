@@ -63,20 +63,6 @@ class Reserva extends CI_Controller {
 		// Obtener datos del usuario
 		$user = $this->User->getById($this->session->userdata('id'));
 
-		$cat_obj = $this->db->where('id', $post['category'])->get('category')->row();
-		$cat_nombre = $cat_obj ? $cat_obj->name : $post['category'];
-		$cat_desc = $cat_obj && !empty($cat_obj->description) ? ' (' . $cat_obj->description . ')' : '';
-		$email_data = array(
-			'nombre' 		=> $this->session->name,
-			'category'		=> $cat_nombre . $cat_desc,
-			'partner' 		=> $partner->name
-		);
-
-		// Enviar confirmación por email
-		if(filter_var($user->email, FILTER_VALIDATE_EMAIL) !== false) {
-			$this->sendConfirmation($email_data, $user->email);
-		}
-
 		// Validar que ninguno de los dos esté ya inscripto en dobles
 		$userRegistered = $this->Reservation->isPlayerRegistered($this->session->userdata('id'), 'doubles');
 		$partnerRegistered = $this->Reservation->isPlayerRegistered(intval($post['partner']), 'doubles');
@@ -108,6 +94,23 @@ class Reserva extends CI_Controller {
 		}
 
 		$response['action'] = is_integer($add) && $addPartners;
+
+		// Enviar confirmación por email solo si se guardó exitosamente
+		if($response['action']) {
+			$cat_obj = $this->db->where('id', $post['category'])->get('category')->row();
+			$cat_nombre = $cat_obj ? $cat_obj->name : $post['category'];
+			$cat_desc = $cat_obj && !empty($cat_obj->description) ? ' (' . $cat_obj->description . ')' : '';
+			$email_data = array(
+				'nombre' 		=> $this->session->name,
+				'category'		=> $cat_nombre . $cat_desc,
+				'partner' 		=> $partner->name
+			);
+
+			if(filter_var($user->email, FILTER_VALIDATE_EMAIL) !== false) {
+				$this->sendConfirmation($email_data, $user->email);
+			}
+		}
+
 		if(isset($add['code']))
 			$response['error'] = $add;
 		$this->protect->ajaxDie($response);
