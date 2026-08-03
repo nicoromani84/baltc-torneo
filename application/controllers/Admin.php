@@ -2042,12 +2042,19 @@ public function enviarNotificacion() {
 	public function getPartnersForPairing() {
 		$this->protect->setAjax();
 		$this->protect->setRequest('POST');
+
 		if (!$this->Administrator->isLogged()) {
-			$this->protect->ajaxDie(array('action' => false, 'msg' => 'Not logged in'));
+			$this->protect->ajaxDie(array('action' => false));
 		}
 
-		$partners = $this->db->where('active', 1)->order_by('name')->get('partners')->result();
-		$categories = $this->Administrator->getAllCategories();
+		$sql = "SELECT id, name, gender FROM partners WHERE active = 1 ORDER BY name";
+		$query = $this->db->query($sql);
+		$partners = $query->result();
+
+		$sql2 = "SELECT id, name FROM category ORDER BY name";
+		$query2 = $this->db->query($sql2);
+		$categories = $query2->result();
+
 		$this->protect->ajaxDie(array('action' => true, 'partners' => $partners, 'categories' => $categories));
 	}
 
