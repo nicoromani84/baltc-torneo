@@ -2040,7 +2040,7 @@ public function enviarNotificacion() {
 	}
 
 	public function getPartnersForPairing() {
-		$this->protect->setRequest('GET');
+		$this->protect->setAjax();
 		if (!$this->Administrator->isLogged()) {
 			$this->protect->ajaxDie(array('action' => false));
 		}
