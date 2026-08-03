@@ -18,6 +18,7 @@
 						<i class="fas <?=$inscripciones_abiertas ? 'fa-lock-open' : 'fa-lock'?>"></i>
 						Inscripciones: <strong><?=$inscripciones_abiertas ? 'Abiertas' : 'Cerradas'?></strong>
 					</button>
+                	<button class="btn btn-info btn-sm" id="btn-agregar-pareja"><i class="fas fa-plus"></i> Agregar Pareja</button>
                 	<button class="btn btn-success btn-sm" id="btn-descargar-excel"><i class="fas fa-download"></i> Descargar Excel</button>
                 </div>
             </div>
@@ -431,6 +432,89 @@ $(function() {
             $('#sidemodal').removeClass('fixed');
         }
     })
+
+    // Agregar Pareja
+    $('#btn-agregar-pareja').on('click', function() {
+        $.ajax({
+            url: adminurl + '/getPartnersForPairing',
+            type: 'GET',
+            headers: {'X-Auth-Token': token},
+            success: function(res) {
+                if(res.action) {
+                    var html = '';
+                    html += '<div class="form-group"><label>Género</label>';
+                    html += '<select id="newPairingGender" class="form-control"><option value="">Seleccionar...</option><option value="M">Caballeros</option><option value="F">Damas</option></select></div>';
+                    html += '<div class="form-group"><label>Categoría</label>';
+                    html += '<select id="newPairingCategory" class="form-control"><option value="">Seleccionar...</option>';
+                    res.categories.forEach(function(cat) {
+                        html += '<option value="' + cat.id + '">' + cat.name + '</option>';
+                    });
+                    html += '</select></div>';
+                    html += '<div class="form-group"><label>Jugador 1</label>';
+                    html += '<select id="newPairingPlayer1" class="form-control"><option value="">Seleccionar...</option>';
+                    res.partners.forEach(function(p) {
+                        html += '<option value="' + p.id + '">' + p.name + ' (' + p.gender + ')</option>';
+                    });
+                    html += '</select></div>';
+                    html += '<div class="form-group"><label>Jugador 2</label>';
+                    html += '<select id="newPairingPlayer2" class="form-control"><option value="">Seleccionar...</option>';
+                    res.partners.forEach(function(p) {
+                        html += '<option value="' + p.id + '">' + p.name + ' (' + p.gender + ')</option>';
+                    });
+                    html += '</select></div>';
+
+                    var modal = $('<div class="modal fade" id="modalAgregarPareja" tabindex="-1" role="dialog"><div class="modal-dialog" role="document"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">Agregar Pareja</h5><button type="button" class="close" data-dismiss="modal"><span>&times;</span></button></div><div class="modal-body">' + html + '</div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button><button type="button" class="btn btn-primary" id="btn-guardar-pareja">Guardar</button></div></div></div></div>');
+
+                    $('body').append(modal);
+                    modal.modal('show');
+
+                    $('#btn-guardar-pareja').on('click', function() {
+                        var gender = $('#newPairingGender').val();
+                        var category = $('#newPairingCategory').val();
+                        var player1 = $('#newPairingPlayer1').val();
+                        var player2 = $('#newPairingPlayer2').val();
+
+                        if (!gender || !category || !player1 || !player2) {
+                            alert('Completa todos los campos');
+                            return;
+                        }
+
+                        if (player1 === player2) {
+                            alert('Los jugadores deben ser diferentes');
+                            return;
+                        }
+
+                        $.ajax({
+                            url: adminurl + '/addPairing',
+                            type: 'POST',
+                            data: {
+                                gender: gender,
+                                category: category,
+                                player1: player1,
+                                player2: player2
+                            },
+                            headers: {'X-Auth-Token': token},
+                            success: function(res) {
+                                if(res.action) {
+                                    modal.modal('hide');
+                                    modal.remove();
+                                    admin.dashboard.getReservations(function() {
+                                        showNotification('success', 'Pareja agregada correctamente');
+                                    });
+                                } else {
+                                    alert('Error: ' + (res.msg || 'Error desconocido'));
+                                }
+                            }
+                        });
+                    });
+
+                    modal.on('hidden.bs.modal', function() {
+                        modal.remove();
+                    });
+                }
+            }
+        });
+    });
 });
 </script>
 

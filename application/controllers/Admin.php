@@ -2039,6 +2039,55 @@ public function enviarNotificacion() {
 		echo '</pre>';
 	}
 
+	public function getPartnersForPairing() {
+		$this->protect->setRequest('GET');
+		if (!$this->Administrator->isLogged()) {
+			$this->protect->ajaxDie(array('action' => false));
+		}
+
+		$partners = $this->db->where('active', 1)->order_by('name')->get('partners')->result();
+		$categories = $this->Administrator->getAllCategories();
+
+		$this->protect->ajaxDie(array('action' => true, 'partners' => $partners, 'categories' => $categories));
+	}
+
+	public function addPairing() {
+		$this->protect->setAjax();
+		$this->protect->setRequest('POST');
+		if (!$this->Administrator->isLogged()) {
+			$this->protect->ajaxDie(array('action' => false));
+		}
+
+		$gender = $this->input->post('gender', true);
+		$category = $this->input->post('category', true);
+		$player1 = $this->input->post('player1', true);
+		$player2 = $this->input->post('player2', true);
+
+		if (!$gender || !$category || !$player1 || !$player2) {
+			$this->protect->ajaxDie(array('action' => false, 'msg' => 'Campos requeridos'));
+		}
+
+		if ($player1 == $player2) {
+			$this->protect->ajaxDie(array('action' => false, 'msg' => 'Los jugadores deben ser diferentes'));
+		}
+
+		// Crear reserva
+		$resData = array(
+			'category_id' => $category,
+			'gender' => $gender,
+			'tournament_type' => 'doubles'
+		);
+
+		$this->db->insert('reservations', $resData);
+		$reservation_id = $this->db->insert_id();
+
+		// Agregar partners
+		$this->db->insert('reservations_partners', array('reservation_id' => $reservation_id, 'partner_id' => $player1));
+		$this->db->insert('reservations_partners', array('reservation_id' => $reservation_id, 'partner_id' => $player2));
+
+		$this->protect->ajaxDie(array('action' => true, 'msg' => 'Pareja creada correctamente'));
+	}
+
 	public function addPartnerQuick() {
 		$this->protect->setAjax();
 		$this->protect->setRequest('POST');
