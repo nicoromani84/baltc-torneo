@@ -3,7 +3,7 @@
 <div class="draws-admin">
 
 	<div class="partidos-header">
-		<h2><i class="fas fa-sitemap"></i> Draw del Torneo - Dobles</h2>
+		<h2><i class="fas fa-sitemap"></i> Draw del Torneo</h2>
 		<button class="btn btn-danger" id="btn-pdf" style="display:none">
 			<i class="fas fa-file-pdf"></i> Bajar PDF
 		</button>
@@ -209,7 +209,7 @@ $(function(){
 			$('#draw-vacio').html(
 				'<i class="fas fa-sitemap fa-3x" style="margin-bottom:15px;display:block;color:#dee2e6"></i>'
 				+ '<p>Esta categoría aún no fue sorteada.</p>'
-				+ '<a href="'+baseurl+'admin/sorteo?cat='+cat+'&gen='+gen+'&tournament_type=doubles" class="btn btn-warning mt-2">'
+				+ '<a href="'+baseurl+'admin/sorteo?cat='+cat+'&gen='+gen+'" class="btn btn-warning mt-2">'
 				+ '<i class="fas fa-random"></i> Ir a sortear esta categoría</a>'
 			).show();
 			return;
@@ -225,10 +225,8 @@ $(function(){
 			type: 'POST',
 			headers: { 'X-Auth-Token': token },
 			success: function(res) {
-				console.log('getDrawsDisponibles response:', res);
 				var disponibles = {};
 				if(res.draws) res.draws.forEach(function(d){ disponibles[d.category+'_'+d.gender] = true; });
-				console.log('disponibles:', disponibles);
 				var $cont = $('#draws-tabs-container');
 				$cont.html('');
 				categorias.forEach(function(c) {
@@ -247,17 +245,8 @@ $(function(){
 				// Auto-cargar el primero con draw
 				setTimeout(function(){
 					var $primero = $('.draws-tab[data-tiene="1"]').first();
-					console.log('Buscando primer tab con data-tiene=1:', $primero);
-					if($primero.length) {
-						console.log('Encontrado, haciendo trigger click');
-						$primero.trigger('click');
-					} else {
-						console.log('No encontrado ningún tab con data-tiene=1');
-					}
+					if($primero.length) $primero.trigger('click');
 				}, 100);
-			},
-			error: function(err) {
-				console.error('Error en getDrawsDisponibles:', err);
 			}
 		});
 	}
@@ -274,18 +263,15 @@ $(function(){
 			data: { category: cat, gender: gen },
 			headers: { 'X-Auth-Token': token },
 			success: function(res) {
-				var cat = $('#draws-category').val();
-				var gen = $('#draws-gender').val();
 				if(!res.action || !res.partidos.length) {
 					$('#draw-container').hide();
 					$('#draw-vacio').show();
-					$('.draws-tab[data-cat="'+cat+'"][data-gen="'+gen+'"]').data('tiene', 0);
 					return;
 				}
 				$('#draw-vacio').hide();
-				// Marcar tab como sorteado
-				$('.draws-tab[data-cat="'+cat+'"][data-gen="'+gen+'"]').data('tiene', 1);
 				// Resaltar pestaña activa
+				var cat = $('#draws-category').val();
+				var gen = $('#draws-gender').val();
 				$('.draws-tab').removeClass('active');
 				$('.draws-tab[data-cat="'+cat+'"][data-gen="'+gen+'"]').addClass('active');
 				// Mostrar título
@@ -537,7 +523,7 @@ $(function(){
 					pdf.setTextColor(26, 26, 46);
 					pdf.setFontSize(13);
 					pdf.setFont('helvetica', 'bold');
-					pdf.text('TORNEO INTERNO DE DOBLES — BALTC', lw + 10, 13);
+					pdf.text('TORNEO INTERNO DE SINGLES — BALTC', lw + 10, 13);
 					pdf.setFontSize(9);
 					pdf.setFont('helvetica', 'normal');
 					pdf.setTextColor(80, 80, 80);
