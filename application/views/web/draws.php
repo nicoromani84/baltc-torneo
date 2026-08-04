@@ -18,6 +18,13 @@
 		<div class="container">
 			<h1>Draws</h1>
 			<p class="draws-subtitle">Seleccioná categoría y género para ver los cuadros</p>
+
+			<!-- TABS TORNEOS - SOLO DOBLES -->
+			<div class="draws-tournament-tabs">
+				<button class="draws-tab active" data-tournament="singles">Singles</button>
+				<button class="draws-tab" data-tournament="doubles">Dobles</button>
+			</div>
+
 			<!-- SELECTOR -->
 			<div class="draws-selector">
 				<div class="draws-select-wrap">
@@ -101,6 +108,35 @@
 	font-size: 14px;
 	margin: 5px 0 20px 0;
 	text-shadow: 1px 1px 4px rgba(0,0,0,0.8);
+}
+.draws-tournament-tabs {
+	display: flex;
+	justify-content: center;
+	gap: 10px;
+	margin-bottom: 20px;
+}
+.draws-tab {
+	background: rgba(0,0,0,0.5);
+	border: 1px solid rgba(165,208,81,0.4);
+	color: rgba(255,255,255,0.7);
+	border-radius: 6px;
+	padding: 10px 20px;
+	font-size: 14px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: all 0.3s ease;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+.draws-tab:hover {
+	background: rgba(165,208,81,0.1);
+	border-color: #a5d051;
+	color: #a5d051;
+}
+.draws-tab.active {
+	background: rgba(165,208,81,0.2);
+	border-color: #a5d051;
+	color: #a5d051;
 }
 .draws-selector {
 	display: flex;
@@ -324,7 +360,7 @@ $(function(){
 	var todosPartidos = [];
 	var sembradosActivos = {};
 	var rondaActivaIdx = 0;
-	var rondaInicioIdx = 0; // primera ronda real del draw actual
+	var rondaInicioIdx = 0;
 
 	function getRondaInicio() {
 		for(var i = 0; i < RONDAS.length; i++) {
@@ -356,9 +392,7 @@ $(function(){
 				if(miCat && miGen && cat == miCat && gen == miGen) {
 					$('#mi-cat-badge').show();
 				}
-				// Calcular primera ronda real del draw
 				rondaInicioIdx = getRondaInicio();
-				// Determinar ronda activa: primera con pendientes, o última completada
 				rondaActivaIdx = rondaInicioIdx;
 				for(var i = rondaInicioIdx; i < RONDAS.length; i++) {
 					var rp = todosPartidos.filter(function(p){ return p.ronda === RONDAS[i]; });
@@ -375,7 +409,6 @@ $(function(){
 	}
 
 	function renderBracket() {
-		// rondaInicioIdx ya está calculado y disponible acá
 		var rondasMostrar = [RONDAS[rondaActivaIdx]];
 		if(RONDAS[rondaActivaIdx + 1]) rondasMostrar.push(RONDAS[rondaActivaIdx + 1]);
 
@@ -384,7 +417,6 @@ $(function(){
 		$('#draws-ronda-label').text(RONDAS[rondaActivaIdx] + (RONDAS[rondaActivaIdx+1] ? ' + ' + RONDAS[rondaActivaIdx+1] : ''));
 		$('#draw-nav').show();
 
-		// Slots de la primera ronda real
 		var primera = todosPartidos.filter(function(p){ return p.ronda === RONDAS[rondaInicioIdx]; });
 		var totalPrimera = primera.length;
 
@@ -415,7 +447,6 @@ $(function(){
 				var esBYE = p.score === 'BYE';
 				var jugado = p.ganador_id != null;
 				html += '<div class="draws-match' + (jugado ? ' jugado' : '') + '">';
-				// Jugador 1
 				var esBYE1 = !p.jugador1_id || p.jugador1_id == 0;
 				var c1 = (!esBYE1 && jugado) ? (p.ganador_id == p.jugador1_id ? 'ganador' : 'perdedor') : '';
 				var seed1 = !esBYE1 && sembradosActivos[p.jugador1_id] ? sembradosActivos[p.jugador1_id] : 0;
@@ -425,7 +456,6 @@ $(function(){
 				html += '<span class="draws-player-name">' + (p.jugador1 ? p.jugador1.toLowerCase() : 'BYE') + '</span>';
 				if(!esBYE1 && p.ganador_id == p.jugador1_id) html += '<span class="draws-check"><i class="fas fa-check"></i></span>';
 				html += '</div>';
-				// Jugador 2
 				var esBYE2 = !p.jugador2_id || p.jugador2_id == 0;
 				var c2 = (!esBYE2 && jugado) ? (p.ganador_id == p.jugador2_id ? 'ganador' : 'perdedor') : '';
 				var seed2 = !esBYE2 && sembradosActivos[p.jugador2_id] ? sembradosActivos[p.jugador2_id] : 0;
@@ -460,34 +490,44 @@ $(function(){
 	var miGen = '<?=$mi_gender?>';
 	var miPartnerId = '<?=$mi_partner_id?>';
 	var disponibles = {};
+	var currentTournament = 'doubles';
 
-	$.ajax({
-		url: baseurl + 'draws/getDrawsDisponibles',
-		type: 'POST',
-		headers: { 'X-Auth-Token': token },
-		success: function(res) {
-			if(res.draws) {
-				res.draws.forEach(function(d){ disponibles[d.category+'_'+d.gender] = true; });
-			}
-			var initialGen = (miGen && miGen !== '') ? miGen : 'M';
-			$('#draws-gender').val(initialGen);
-			var toLoad = null;
-			if(miCat && miGen && disponibles[miCat+'_'+miGen]) {
-				toLoad = { cat: miCat, gen: miGen };
-			} else if(res.draws && res.draws.length) {
-				var fallback = (miGen && miGen !== '') ? res.draws.find(function(d){ return d.gender === miGen; }) : null;
-				if(!fallback) fallback = res.draws[0];
-				if(fallback) {
-					toLoad = { cat: fallback.category, gen: fallback.gender };
-					$('#draws-gender').val(toLoad.gen);
+	// Mostrar solo tab de dobles
+	$('.draws-tab[data-tournament="singles"]').hide();
+	$('.draws-tab[data-tournament="doubles"]').addClass('active');
+
+	function cargarDrawsDisponibles() {
+		$.ajax({
+			url: baseurl + 'draws/getDrawsDisponibles',
+			type: 'POST',
+			data: { tournament_type: currentTournament },
+			headers: { 'X-Auth-Token': token },
+			success: function(res) {
+				if(res.draws) {
+					res.draws.forEach(function(d){ disponibles[d.category+'_'+d.gender] = true; });
+				}
+				var initialGen = (miGen && miGen !== '') ? miGen : 'M';
+				$('#draws-gender').val(initialGen);
+				var toLoad = null;
+				if(miCat && miGen && disponibles[miCat+'_'+miGen]) {
+					toLoad = { cat: miCat, gen: miGen };
+				} else if(res.draws && res.draws.length) {
+					var fallback = (miGen && miGen !== '') ? res.draws.find(function(d){ return d.gender === miGen; }) : null;
+					if(!fallback) fallback = res.draws[0];
+					if(fallback) {
+						toLoad = { cat: fallback.category, gen: fallback.gender };
+						$('#draws-gender').val(toLoad.gen);
+					}
+				}
+				if(toLoad) {
+					$('#draws-category').val(toLoad.cat);
+					cargarDraw(toLoad.cat, toLoad.gen);
 				}
 			}
-			if(toLoad) {
-				$('#draws-category').val(toLoad.cat);
-				cargarDraw(toLoad.cat, toLoad.gen);
-			}
-		}
-	});
+		});
+	}
+
+	cargarDrawsDisponibles();
 
 	$('#draws-category, #draws-gender').on('change', function(){
 		var cat = $('#draws-category').val();

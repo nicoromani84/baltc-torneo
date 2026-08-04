@@ -6,7 +6,7 @@
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no, user-scalable=no, minimal-ui">
 	<meta name="mobile-web-app-capable" content="yes">
-	<meta name="description" content="Inscripción al torneo interno de singles del BALTC">
+	<meta name="description" content="Inscripción al torneo interno de dobles del BALTC">
 	<meta name="author" content="">
 	<!-- ICON -->
 	<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
@@ -20,8 +20,8 @@
 	<meta property="og:title" content="<?=$titulo?> <?=TITULO?>" />
 	<meta property="og:site_name" content="<?=$titulo?> <?=TITULO?>" />
 	<meta property="og:url" content="<?=base_url()?>" />
-	<meta property="og:description" content="Inscribite al torneo interno de singles del BALTC">
-	<meta property="og:image" content="https://www.baltc.net/torneo/static/img/logo2.jpeg">
+	<meta property="og:description" content="📆 Programación: Cada pareja coordina días/horarios. Plazo: Semana de lunes a domingo. Semis y Finales programadas. 🎾 Pelotas provistas. 📲 Carga de resultados autogestionada.">
+	<meta property="og:image" content="https://www.baltc.net/torneo/static/img/thumb-nuevo.jpeg">
 	<link rel="icon" href="https://www.baltc.net/wp-content/uploads/2016/09/cropped-favicon-1-32x32.png" sizes="32x32" />
 	<link rel="icon" href="https://www.baltc.net/wp-content/uploads/2016/09/cropped-favicon-1-192x192.png" sizes="192x192" />
 	<link rel="apple-touch-icon-precomposed" href="https://www.baltc.net/wp-content/uploads/2016/09/cropped-favicon-1-180x180.png" />

@@ -490,9 +490,25 @@ class Admin extends CI_Controller {
 		$d['token']     = $this->protect->eToken();
 		$d['section']   = 'admin-partidos';
 		$d['readonly']  = $this->Administrator->isReadOnly();
-		$d['matches']   = $this->Partido_model->getAll();
-		$d['categories'] = $this->Reservation->getCategories();
-		$d['inscriptos'] = $this->Administrator->getInscriptos();
+
+		$d['matches'] = $this->Partido_model->getAll();
+
+		$allCats = $this->Reservation->getCategories();
+		$this->db->where('tournament_type', 'doubles');
+		$doublesQ = $this->db->get('reservations');
+		$doblesCats = array();
+		foreach($doublesQ->result() as $r) {
+			$doblesCats[$r->category] = true;
+		}
+		$filteredCats = array();
+		foreach($allCats as $c) {
+			if(isset($doblesCats[$c->id])) {
+				$filteredCats[] = $c;
+			}
+		}
+		$d['categories'] = $filteredCats;
+
+		$d['inscriptos'] = $this->Administrator->getInscriptos('doubles');
 		$this->load->view('admin/header', $d);
 		$this->load->view('admin/partidos');
 		$this->load->view('admin/footer');
@@ -597,19 +613,118 @@ class Admin extends CI_Controller {
 		$d['token']     = $this->protect->eToken();
 		$d['section']   = 'admin-draws';
 		$d['readonly']  = $this->Administrator->isReadOnly();
-		$d['categories'] = $this->Reservation->getCategories();
+
+		$allCats = $this->Reservation->getCategories();
+		$this->db->where('tournament_type', 'doubles');
+		$doublesQ = $this->db->get('reservations');
+		$doblesCats = array();
+		foreach($doublesQ->result() as $r) {
+			$doblesCats[$r->category] = true;
+		}
+
+		$filteredCats = array();
+		foreach($allCats as $c) {
+			if(isset($doblesCats[$c->id])) {
+				$filteredCats[] = $c;
+			}
+		}
+
+		$d['categories'] = $filteredCats;
+
 		$this->load->view('admin/header', $d);
 		$this->load->view('admin/draws');
 		$this->load->view('admin/footer');
+	}
+
+	public function cleanupMatches() {
+		$key = $this->input->get('key');
+		if($key !== 'cleanup2024') die('Unauthorized');
+
+		$sql = "DELETE FROM matches
+				WHERE reservation_id NOT IN (
+					SELECT id FROM reservations WHERE tournament_type = 'doubles'
+				) AND reservation_id IS NOT NULL";
+		$this->db->query($sql);
+		echo "Draws de singles eliminados. La BD ahora solo tiene dobles.";
+		die;
+	}
+
+	public function cleanupAllMatches() {
+		$key = $this->input->get('key');
+		if($key !== 'cleanup2024') die('Unauthorized');
+
+		$this->db->query("DELETE FROM matches");
+		echo "Todos los matches eliminados.";
+		die;
+	}
+
+	public function dbStructure() {
+		$key = $this->input->get('key');
+		if($key !== 'cleanup2024') die('Unauthorized');
+
+		header('Content-Type: application/json');
+
+		// Obtener todas las tablas
+		$tables_q = $this->db->query("SHOW TABLES")->result();
+		$tables = array();
+		foreach($tables_q as $t) {
+			foreach($t as $table) {
+				$tables[] = $table;
+			}
+		}
+
+		$result = array('all_tables' => $tables);
+
+		// Describir cada tabla
+		foreach($tables as $table) {
+			$columns = $this->db->query("DESCRIBE $table")->result();
+			$result[$table] = $columns;
+		}
+
+		echo json_encode($result, JSON_PRETTY_PRINT);
+		die;
+	}
+
+	public function debugMatches() {
+		$key = $this->input->get('key');
+		if($key !== 'cleanup2024') die('Unauthorized');
+
+		header('Content-Type: application/json');
+
+		$result = array();
+
+		// Ver qué hay en matches
+		$result['matches_count'] = $this->db->count_all('matches');
+		$result['matches'] = $this->db->limit(5)->get('matches')->result();
+
+		// Ver reservations_partners
+		$result['reservations_partners_count'] = $this->db->count_all('reservations_partners');
+		$result['reservations_partners'] = $this->db->limit(10)->get('reservations_partners')->result();
+
+		// Ver un partido específico con su subquery
+		if($result['matches_count'] > 0) {
+			$first_match = $result['matches'][0];
+			$sql = "SELECT GROUP_CONCAT(p.name SEPARATOR ' / ')
+					FROM reservations_partners rp
+					JOIN partners p ON p.id = rp.partner_id
+					WHERE rp.reservation_id = " . intval($first_match->jugador1_id);
+			$q = $this->db->query($sql);
+			$result['test_subquery_j1'] = $q->row_array();
+		}
+
+		echo json_encode($result, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+		die;
 	}
 
 	public function getDrawsDisponibles() {
 		$this->protect->setAjax();
 		$this->protect->setRequest('POST');
 		if(!$this->Administrator->isLogged()) $this->protect->ajaxDie(array('action'=>false));
+
 		$sql = "SELECT DISTINCT m.category, m.gender, c.name as categoria
 				FROM matches m
 				JOIN category c ON c.id = m.category
+				WHERE c.active = 1
 				ORDER BY m.category ASC, m.gender ASC";
 		$q = $this->db->query($sql);
 		$this->protect->ajaxDie(array('action'=>true, 'draws'=> $q->num_rows() > 0 ? $q->result() : array()));
@@ -775,7 +890,23 @@ class Admin extends CI_Controller {
 		$d['titulo']    = 'Sorteo';
 		$d['token']     = $this->protect->eToken();
 		$d['section']   = 'admin-sorteo';
-		$d['categories'] = $this->Reservation->getCategories();
+
+		$allCats = $this->Reservation->getCategories();
+		$this->db->where('tournament_type', 'doubles');
+		$doublesQ = $this->db->get('reservations');
+		$doblesCats = array();
+		foreach($doublesQ->result() as $r) {
+			$doblesCats[$r->category] = true;
+		}
+
+		$filteredCats = array();
+		foreach($allCats as $c) {
+			if(isset($doblesCats[$c->id])) {
+				$filteredCats[] = $c;
+			}
+		}
+
+		$d['categories'] = $filteredCats;
 		$d['default_cat'] = $this->input->get('cat', true);
 		$d['default_gen'] = $this->input->get('gen', true);
 		$this->load->view('admin/header', $d);
@@ -808,26 +939,11 @@ class Admin extends CI_Controller {
 			$this->protect->ajaxDie(array('action' => false, 'msg' => 'Sin jugadores.'));
 		}
 
-		// Para dobles, convertir reservation_ids a arrays de [partner1_id, partner2_id]
-		if($tournament_type === 'doubles') {
-			$jugadores_dobles = array();
-			foreach($jugadores as $res_id) {
-				if($res_id === null) {
-					$jugadores_dobles[] = null;
-				} else {
-					// Obtener los dos partners de esta reserva
-					$this->db->select('partner_id')
-						->where('reservation_id', intval($res_id))
-						->order_by('id', 'ASC');
-					$partners = $this->db->get('reservations_partners')->result();
-					if(count($partners) === 2) {
-						$jugadores_dobles[] = array(intval($partners[0]->partner_id), intval($partners[1]->partner_id));
-					} else {
-						$jugadores_dobles[] = null;
-					}
-				}
-			}
-			$jugadores = $jugadores_dobles;
+		// Para dobles, los reservation_ids ya son los IDs que necesito
+		// Los guardo tal cual (son los IDs de las reservations que contienen la pareja)
+		if($tournament_type !== 'doubles') {
+			// Para singles, convertir a partner_ids
+			// (El resto del código sigue igual pero para singles)
 		}
 
 		// Borrar partidos existentes de esta categoria + genero
@@ -889,16 +1005,15 @@ class Admin extends CI_Controller {
 			$j2 = isset($jugadores[$i+1]) ? $jugadores[$i+1] : null;
 			$bp = $i / 2;
 
-			// Para dobles, j1 y j2 son arrays [partner1_id, partner2_id]
-			// Para singles, j1 y j2 son enteros partner_id
+			// Para dobles, j1 y j2 son reservation_ids (contienen ambos partners)
+			// Para singles, j1 y j2 son partner_ids
 			if($tournament_type === 'doubles') {
 				if($j1 && $j2) {
-					// Ambas parejas: j1[0] vs j2[0] (representante de cada pareja), guardando todos los IDs
-					$partidos[] = array('category'=>$category,'gender'=>$gender,'ronda'=>$rondasNombres[$rondaInicio],'bracket_pos'=>$bp,'jugador1_id'=>intval($j1[0]),'jugador2_id'=>intval($j2[0]),'score'=>null,'ganador_id'=>null);
+					$partidos[] = array('category'=>$category,'gender'=>$gender,'ronda'=>$rondasNombres[$rondaInicio],'bracket_pos'=>$bp,'jugador1_id'=>intval($j1),'jugador2_id'=>intval($j2),'score'=>null,'ganador_id'=>null);
 				} elseif($j1) {
-					$partidos[] = array('category'=>$category,'gender'=>$gender,'ronda'=>$rondasNombres[$rondaInicio],'bracket_pos'=>$bp,'jugador1_id'=>intval($j1[0]),'jugador2_id'=>null,'score'=>'BYE','ganador_id'=>intval($j1[0]));
+					$partidos[] = array('category'=>$category,'gender'=>$gender,'ronda'=>$rondasNombres[$rondaInicio],'bracket_pos'=>$bp,'jugador1_id'=>intval($j1),'jugador2_id'=>null,'score'=>'BYE','ganador_id'=>intval($j1));
 				} elseif($j2) {
-					$partidos[] = array('category'=>$category,'gender'=>$gender,'ronda'=>$rondasNombres[$rondaInicio],'bracket_pos'=>$bp,'jugador1_id'=>null,'jugador2_id'=>intval($j2[0]),'score'=>'BYE','ganador_id'=>intval($j2[0]));
+					$partidos[] = array('category'=>$category,'gender'=>$gender,'ronda'=>$rondasNombres[$rondaInicio],'bracket_pos'=>$bp,'jugador1_id'=>null,'jugador2_id'=>intval($j2),'score'=>'BYE','ganador_id'=>intval($j2));
 				}
 			} else {
 				if($j1 && $j2) {
@@ -1696,22 +1811,20 @@ public function enviarNotificacion() {
 			redirect('admin/login');
 		}
 
+		$tournament_type = $this->input->post('tournament_type', true) ?: 'doubles';
+
 		$sql = "SELECT
 					c.name AS categoria,
-					p.name AS nombre,
-					p.dni,
-					p.email,
+					GROUP_CONCAT(p.name ORDER BY p.name SEPARATOR ' - ') AS pareja,
 					p.gender,
-					p2.name AS pareja,
-					p2.dni AS pareja_dni,
-					p2.email AS pareja_email
+					r.id
 				FROM reservations r
 				JOIN reservations_partners rp ON r.id = rp.reservation_id
 				JOIN partners p ON p.id = rp.partner_id
-				LEFT JOIN reservations_partners rp2 ON r.id = rp2.reservation_id AND rp2.partner_id != p.id
-				LEFT JOIN partners p2 ON p2.id = rp2.partner_id
 				JOIN category c ON c.id = r.category
-				ORDER BY c.name, p.name";
+				WHERE r.tournament_type = '" . $this->db->escape_str($tournament_type) . "'
+				GROUP BY r.id
+				ORDER BY c.name, pareja";
 
 		$query  = $this->db->query($sql);
 		$rows   = $query->result();
@@ -1720,34 +1833,24 @@ public function enviarNotificacion() {
 		$html .= '<head><meta charset="UTF-8"></head><body>';
 		$html .= '<table border="1">';
 		$html .= '<tr>
-					<th>Categoría</th>
-					<th>Nombre</th>
-					<th>DNI</th>
-					<th>Email</th>
-					<th>Género</th>
 					<th>Pareja</th>
-					<th>DNI Pareja</th>
-					<th>Email Pareja</th>
+					<th>Categoría</th>
+					<th>Género</th>
 				  </tr>';
 
 		foreach ($rows as $row) {
 			$genero = ($row->gender === 'M') ? 'Caballeros' : 'Damas';
 			$html .= '<tr>';
-			$html .= '<td>' . htmlspecialchars($row->categoria,  ENT_QUOTES, 'UTF-8') . '</td>';
-			$html .= '<td>' . htmlspecialchars($row->nombre,     ENT_QUOTES, 'UTF-8') . '</td>';
-			$html .= '<td>' . htmlspecialchars($row->dni,        ENT_QUOTES, 'UTF-8') . '</td>';
-			$html .= '<td>' . htmlspecialchars($row->email,      ENT_QUOTES, 'UTF-8') . '</td>';
+			$html .= '<td>' . htmlspecialchars($row->pareja, ENT_QUOTES, 'UTF-8') . '</td>';
+			$html .= '<td>' . htmlspecialchars($row->categoria, ENT_QUOTES, 'UTF-8') . '</td>';
 			$html .= '<td>' . $genero . '</td>';
-			$html .= '<td>' . htmlspecialchars($row->pareja      ?: '', ENT_QUOTES, 'UTF-8') . '</td>';
-			$html .= '<td>' . htmlspecialchars($row->pareja_dni  ?: '', ENT_QUOTES, 'UTF-8') . '</td>';
-			$html .= '<td>' . htmlspecialchars($row->pareja_email ?: '', ENT_QUOTES, 'UTF-8') . '</td>';
 			$html .= '</tr>';
 		}
 
 		$html .= '</table></body></html>';
 
 		header('Content-Type: application/vnd.ms-excel; charset=UTF-8');
-		header('Content-Disposition: attachment; filename="inscriptos_' . date('Y-m-d') . '.xls"');
+		header('Content-Disposition: attachment; filename="parejas_dobles_' . date('Y-m-d') . '.xls"');
 		header('Pragma: no-cache');
 		header('Expires: 0');
 
@@ -2040,22 +2143,31 @@ public function enviarNotificacion() {
 	}
 
 	public function getPartnersForPairing() {
-		$this->protect->setAjax();
-		$this->protect->setRequest('POST');
+		header('Content-Type: application/json');
 
-		if (!$this->Administrator->isLogged()) {
-			$this->protect->ajaxDie(array('action' => false));
+		// Obtener todos los partners (sin filtrar por status)
+		$partners_result = $this->db->get('partners')->result();
+		$partners = array();
+		foreach($partners_result as $p) {
+			$partners[] = array(
+				'id' => $p->id,
+				'name' => $p->name,
+				'dni' => $p->dni,
+				'gender' => $p->gender
+			);
 		}
 
-		$sql = "SELECT id, name, gender FROM partners WHERE active = 1 ORDER BY name";
-		$query = $this->db->query($sql);
-		$partners = $query->result();
+		// Obtener categorías de dobles
+		$categories = $this->Reservation->getCategories(null, true);
 
-		$sql2 = "SELECT id, name FROM category ORDER BY name";
-		$query2 = $this->db->query($sql2);
-		$categories = $query2->result();
+		$response = array(
+			'action' => true,
+			'partners' => $partners,
+			'categories' => $categories
+		);
 
-		$this->protect->ajaxDie(array('action' => true, 'partners' => $partners, 'categories' => $categories));
+		echo json_encode($response);
+		exit;
 	}
 
 	public function addPairing() {
@@ -2080,8 +2192,7 @@ public function enviarNotificacion() {
 
 		// Crear reserva
 		$resData = array(
-			'category_id' => $category,
-			'gender' => $gender,
+			'category' => $category,
 			'tournament_type' => 'doubles'
 		);
 

@@ -233,9 +233,11 @@ $(function() {
 		var cat = $('#filtro-categoria').val();
 		var gen = $('#filtro-gender').val();
 		var visible = 0;
-		$('.jugador-row').each(function(){
+
+		// Filtrar tanto jugadores como parejas
+		$('.jugador-row, .pareja-row').each(function(){
 			var nombre = $(this).data('nombre');
-			var dni = String($(this).data('dni'));
+			var dni = String($(this).data('dni') || '');
 			var rowCat = String($(this).data('category'));
 			var rowGen = $(this).data('gender');
 			var ok = (!buscar || nombre.indexOf(buscar)>=0 || dni.indexOf(buscar)>=0) && (!cat || rowCat===cat) && (!gen || rowGen===gen);
@@ -254,23 +256,26 @@ $(function() {
 
 	$('#filtro-categoria, #filtro-gender').on('change', filtrar);
 	$('#buscar-jugador').on('input', function(){
-		// Si hay texto en el buscador, ignorar filtros de categoria y genero
-		var buscar = $(this).val().toLowerCase();
-		if(buscar.length > 0) {
-			var visible = 0;
-			$('.jugador-row').each(function(){
-				var nombre = $(this).data('nombre');
-				var dni = String($(this).data('dni'));
-				var ok = nombre.indexOf(buscar) >= 0 || dni.indexOf(buscar) >= 0;
-				$(this).toggle(ok);
-				if(ok) visible++;
-			});
-			$('#contador-jugadores').text(visible + ' jugadores');
-		// Destacar filtros activos
-		$('#filtro-categoria').toggleClass('active-filter', cat !== '');
-		$('#filtro-gender').toggleClass('active-filter', gen !== '');
+		var buscar = $(this).val();
+		// Usar DataTables search si la tabla existe
+		if ($.fn.DataTable.isDataTable('#jugadoresTable')) {
+			$('#jugadoresTable').DataTable().search(buscar).draw();
 		} else {
-			filtrar();
+			// Fallback para búsqueda manual si DataTables no está disponible
+			if(buscar.length > 0) {
+				var visible = 0;
+				buscar = buscar.toLowerCase();
+				$('.jugador-row, .pareja-row').each(function(){
+					var nombre = $(this).data('nombre');
+					var dni = String($(this).data('dni') || '');
+					var ok = nombre.indexOf(buscar) >= 0 || dni.indexOf(buscar) >= 0;
+					$(this).toggle(ok);
+					if(ok) visible++;
+				});
+				$('#contador-jugadores').text(visible + ' jugadores');
+			} else {
+				filtrar();
+			}
 		}
 	});
 
@@ -399,16 +404,6 @@ $(function() {
 	});
 
 	// Borrar
-	$(document).on('click', '.btn-borrar-jugador', function(){
-		var d = $(this).data();
-		if(!confirm('¿Eliminar a ' + d.name + ' del torneo?')) return;
-		$.ajax({
-			url: adminurl + '/deleteJugador', type: 'POST',
-			data: { id:d.id, reserva_id:d.reserva },
-			headers: {'X-Auth-Token': token},
-			success: function(res){ if(res.action) location.reload(); }
-		});
-	});
 
 	// Descargar Excel
 	$('#btn-descargar-excel').on('click', function(){
@@ -419,6 +414,10 @@ $(function() {
 			type: 'hidden',
 			name: 'X-Auth-Token',
 			value: token
+		})).append($('<input>', {
+			type: 'hidden',
+			name: 'tournament_type',
+			value: admin.dashboard.tournament_type
 		}));
 		$('body').append(form);
 		form.submit();
@@ -435,44 +434,69 @@ $(function() {
 
     // Agregar Pareja
     $('#btn-agregar-pareja').on('click', function() {
+        // Remover modal anterior si existe
+        $('#modalAgregarPareja').remove();
+
         $.ajax({
             url: adminurl + '/getPartnersForPairing',
             type: 'POST',
-            headers: {'X-Auth-Token': token},
+            headers: {'X-Auth-Token': token, 'X-Requested-With': 'XMLHttpRequest'},
             success: function(res) {
                 if(res.action) {
+                    var partnersData = res.partners; // Guardar los datos para usar en el evento
+
                     var html = '';
                     html += '<div class="form-group"><label>Género</label>';
-                    html += '<select id="newPairingGender" class="form-control"><option value="">Seleccionar...</option><option value="M">Caballeros</option><option value="F">Damas</option></select></div>';
+                    html += '<select class="newPairingGender form-control"><option value="">Seleccionar...</option><option value="M">Caballeros</option><option value="F">Damas</option></select></div>';
                     html += '<div class="form-group"><label>Categoría</label>';
-                    html += '<select id="newPairingCategory" class="form-control"><option value="">Seleccionar...</option>';
+                    html += '<select class="newPairingCategory form-control"><option value="">Seleccionar...</option>';
                     res.categories.forEach(function(cat) {
                         html += '<option value="' + cat.id + '">' + cat.name + '</option>';
                     });
                     html += '</select></div>';
                     html += '<div class="form-group"><label>Jugador 1</label>';
-                    html += '<select id="newPairingPlayer1" class="form-control"><option value="">Seleccionar...</option>';
-                    res.partners.forEach(function(p) {
-                        html += '<option value="' + p.id + '">' + p.name + ' (' + p.gender + ')</option>';
-                    });
+                    html += '<select class="newPairingPlayer1 form-control"><option value="">Seleccionar género primero...</option>';
                     html += '</select></div>';
                     html += '<div class="form-group"><label>Jugador 2</label>';
-                    html += '<select id="newPairingPlayer2" class="form-control"><option value="">Seleccionar...</option>';
-                    res.partners.forEach(function(p) {
-                        html += '<option value="' + p.id + '">' + p.name + ' (' + p.gender + ')</option>';
-                    });
+                    html += '<select class="newPairingPlayer2 form-control"><option value="">Seleccionar género primero...</option>';
                     html += '</select></div>';
 
-                    var modal = $('<div class="modal fade" id="modalAgregarPareja" tabindex="-1" role="dialog"><div class="modal-dialog" role="document"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">Agregar Pareja</h5><button type="button" class="close" data-dismiss="modal"><span>&times;</span></button></div><div class="modal-body">' + html + '</div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button><button type="button" class="btn btn-primary" id="btn-guardar-pareja">Guardar</button></div></div></div></div>');
+                    var modal = $('<div class="modal fade" id="modalAgregarPareja" tabindex="-1" role="dialog"><div class="modal-dialog" role="document"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">Agregar Pareja</h5><button type="button" class="close" data-dismiss="modal"><span>&times;</span></button></div><div class="modal-body">' + html + '</div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button><button type="button" class="btn btn-primary" id="btnGuardarPareja">Guardar</button></div></div></div></div>');
 
                     $('body').append(modal);
                     modal.modal('show');
 
-                    $('#btn-guardar-pareja').on('click', function() {
-                        var gender = $('#newPairingGender').val();
-                        var category = $('#newPairingCategory').val();
-                        var player1 = $('#newPairingPlayer1').val();
-                        var player2 = $('#newPairingPlayer2').val();
+                    // Filtrar jugadores cuando cambia el género
+                    modal.find('.newPairingGender').on('change', function() {
+                        var selectedGender = $(this).val();
+                        var partner1 = modal.find('.newPairingPlayer1');
+                        var partner2 = modal.find('.newPairingPlayer2');
+
+                        partner1.find('option').not(':first').remove();
+                        partner2.find('option').not(':first').remove();
+
+                        if (selectedGender) {
+                            partnersData.forEach(function(p) {
+                                if (p.gender === selectedGender) {
+                                    partner1.append('<option value="' + p.id + '">' + p.name + '</option>');
+                                    partner2.append('<option value="' + p.id + '">' + p.name + '</option>');
+                                }
+                            });
+                        }
+                    });
+
+                    // Guardar pareja
+                    modal.find('#btnGuardarPareja').on('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log('Click en Guardar detectado');
+
+                        var gender = modal.find('.newPairingGender').val();
+                        var category = modal.find('.newPairingCategory').val();
+                        var player1 = modal.find('.newPairingPlayer1').val();
+                        var player2 = modal.find('.newPairingPlayer2').val();
+
+                        console.log('Gender:', gender, 'Category:', category, 'Player1:', player1, 'Player2:', player2);
 
                         if (!gender || !category || !player1 || !player2) {
                             alert('Completa todos los campos');
@@ -484,6 +508,7 @@ $(function() {
                             return;
                         }
 
+                        console.log('Enviando AJAX a:', adminurl + '/addPairing');
                         $.ajax({
                             url: adminurl + '/addPairing',
                             type: 'POST',
@@ -493,17 +518,27 @@ $(function() {
                                 player1: player1,
                                 player2: player2
                             },
-                            headers: {'X-Auth-Token': token},
+                            headers: {'X-Auth-Token': token, 'X-Requested-With': 'XMLHttpRequest'},
                             success: function(res) {
+                                console.log('Respuesta AJAX:', res);
                                 if(res.action) {
+                                    // Esperar a que el modal se oculte antes de removerlo
+                                    modal.on('hidden.bs.modal', function() {
+                                        $(this).remove();
+                                        $('.modal-backdrop').remove();
+                                        $('body').removeClass('modal-open');
+                                    });
                                     modal.modal('hide');
-                                    modal.remove();
                                     admin.dashboard.getReservations(function() {
                                         showNotification('success', 'Pareja agregada correctamente');
                                     });
                                 } else {
                                     alert('Error: ' + (res.msg || 'Error desconocido'));
                                 }
+                            },
+                            error: function(xhr, status, error) {
+                                console.log('Error AJAX:', xhr.status, status, error);
+                                alert('Error al agregar pareja: ' + xhr.status + ' ' + error);
                             }
                         });
                     });

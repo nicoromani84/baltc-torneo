@@ -68,7 +68,7 @@ class Login extends CI_Controller {
 				$this->load->view('web/footer');
 			}
 		} else {
-			$d['titulo'] 	= 'Interno de Singles ';
+			$d['titulo'] 	= 'Interno de Dobles ';
 			$d['token']		= $this->protect->eToken();
 			$d['classname'] = 'login';
 			$this->load->view('web/header',$d);

@@ -12,9 +12,8 @@
 			<div class="form-row align-items-end">
 				<div class="form-group col-md-2 mb-0">
 					<label>Torneo</label>
-					<select id="sorteo-tournament" class="form-control">
-						<option value="singles">Singles</option>
-						<option value="doubles">Dobles</option>
+					<select id="sorteo-tournament" class="form-control" disabled>
+						<option value="doubles" selected>Dobles</option>
 					</select>
 				</div>
 				<div class="form-group col-md-3 mb-0">
@@ -165,7 +164,7 @@ $(function(){
 	var jugadores = [];
 	var categoryId = null;
 	var gender = null;
-	var tournament_type = 'singles';
+	var tournament_type = 'doubles';
 	var numSembrados = 0;
 	var bracketFinal = [];
 	var RONDAS = ['1ra Ronda','2da Ronda','Cuartos de Final','Semifinal','Final'];

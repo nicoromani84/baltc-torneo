@@ -3,7 +3,7 @@
 <div class="draws-admin">
 
 	<div class="partidos-header">
-		<h2><i class="fas fa-sitemap"></i> Draw del Torneo</h2>
+		<h2><i class="fas fa-sitemap"></i> Draw del Torneo - Dobles</h2>
 		<button class="btn btn-danger" id="btn-pdf" style="display:none">
 			<i class="fas fa-file-pdf"></i> Bajar PDF
 		</button>
@@ -209,7 +209,7 @@ $(function(){
 			$('#draw-vacio').html(
 				'<i class="fas fa-sitemap fa-3x" style="margin-bottom:15px;display:block;color:#dee2e6"></i>'
 				+ '<p>Esta categoría aún no fue sorteada.</p>'
-				+ '<a href="'+baseurl+'admin/sorteo?cat='+cat+'&gen='+gen+'" class="btn btn-warning mt-2">'
+				+ '<a href="'+baseurl+'admin/sorteo?cat='+cat+'&gen='+gen+'&tournament_type=doubles" class="btn btn-warning mt-2">'
 				+ '<i class="fas fa-random"></i> Ir a sortear esta categoría</a>'
 			).show();
 			return;
@@ -217,37 +217,20 @@ $(function(){
 		$('#btn-ver-draw').trigger('click');
 	});
 
-	// Cargar pestañas: todas las categorías, con indicador si tienen draw o no
+	// Cargar pestañas: todas las categorías como sin sortear (van a buscar si existen draws al hacer click)
 	var categorias = <?=json_encode($categories)?>;
 	function cargarTabs() {
-		$.ajax({
-			url: baseurl + 'admin/getDrawsDisponibles',
-			type: 'POST',
-			headers: { 'X-Auth-Token': token },
-			success: function(res) {
-				var disponibles = {};
-				if(res.draws) res.draws.forEach(function(d){ disponibles[d.category+'_'+d.gender] = true; });
-				var $cont = $('#draws-tabs-container');
-				$cont.html('');
-				categorias.forEach(function(c) {
-					['M','F'].forEach(function(gen) {
-						var icono = gen == 'M' ? 'fa-male' : 'fa-female';
-						var label = gen == 'M' ? 'Cab.' : 'Dam.';
-						var tiene = disponibles[c.id+'_'+gen];
-						var cls = tiene ? 'draws-tab' : 'draws-tab draws-tab-pending';
-						var title = tiene ? '' : ' title="Sin sortear"';
-						$cont.append('<button class="'+cls+'" data-cat="'+c.id+'" data-gen="'+gen+'" data-tiene="'+(tiene?1:0)+'"'+title+'>'
-							+ '<i class="fas '+icono+'"></i> '+c.name+' '+label
-							+ (tiene ? '' : ' <i class="fas fa-exclamation-circle" style="font-size:10px;opacity:0.6;margin-left:3px"></i>')
-							+ '</button>');
-					});
-				});
-				// Auto-cargar el primero con draw
-				setTimeout(function(){
-					var $primero = $('.draws-tab[data-tiene="1"]').first();
-					if($primero.length) $primero.trigger('click');
-				}, 100);
-			}
+		var $cont = $('#draws-tabs-container');
+		$cont.html('');
+		categorias.forEach(function(c) {
+			['M','F'].forEach(function(gen) {
+				var icono = gen == 'M' ? 'fa-male' : 'fa-female';
+				var label = gen == 'M' ? 'Cab.' : 'Dam.';
+				$cont.append('<button class="draws-tab draws-tab-pending" data-cat="'+c.id+'" data-gen="'+gen+'" data-tiene="0" title="Sin sortear">'
+					+ '<i class="fas '+icono+'"></i> '+c.name+' '+label
+					+ ' <i class="fas fa-exclamation-circle" style="font-size:10px;opacity:0.6;margin-left:3px"></i>'
+					+ '</button>');
+			});
 		});
 	}
 	cargarTabs();
@@ -523,7 +506,7 @@ $(function(){
 					pdf.setTextColor(26, 26, 46);
 					pdf.setFontSize(13);
 					pdf.setFont('helvetica', 'bold');
-					pdf.text('TORNEO INTERNO DE SINGLES — BALTC', lw + 10, 13);
+					pdf.text('TORNEO INTERNO DE DOBLES — BALTC', lw + 10, 13);
 					pdf.setFontSize(9);
 					pdf.setFont('helvetica', 'normal');
 					pdf.setTextColor(80, 80, 80);

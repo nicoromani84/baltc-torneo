@@ -30,7 +30,12 @@ class Draws extends CI_Controller {
 		$this->protect->setAjax();
 		$this->protect->setRequest('POST');
 		if(!$this->User->isLogged()) $this->protect->ajaxDie(array('action'=>false));
-		$sql = "SELECT DISTINCT m.category, m.gender FROM matches m ORDER BY m.category ASC, m.gender ASC";
+
+		$sql = "SELECT DISTINCT c.id as category, g.gender
+				FROM category c
+				CROSS JOIN (SELECT 'M' as gender UNION SELECT 'F') g
+				WHERE c.active = 1
+				ORDER BY c.id ASC, g.gender ASC";
 		$q = $this->db->query($sql);
 		$this->protect->ajaxDie(array('action'=>true, 'draws'=> $q->num_rows() > 0 ? $q->result() : array()));
 	}
@@ -48,6 +53,6 @@ class Draws extends CI_Controller {
 				$sembrados[$s->partner_id] = $s->numero;
 			}
 		}
-		$this->protect->ajaxDie(array('action' => !empty($partidos), 'partidos' => $partidos ?: array(), 'sembrados' => $sembrados));
+		$this->protect->ajaxDie(array('action' => !empty($partidos), 'partidos' => $partidos ?: array(), 'sembrados' => $sembrados, 'debug' => array('category' => $category, 'gender' => $gender, 'partidos_count' => count($partidos))));
 	}
 }

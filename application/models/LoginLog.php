@@ -27,9 +27,16 @@ class LoginLog extends CI_Model {
 	}
 
 	public function getLogs($limit = 100, $offset = 0) {
-		$query = $this->db->order_by('login_time', 'DESC')
-			->limit($limit, $offset)
-			->get('login_logs');
+		$sql = "SELECT ll.*,
+				CASE WHEN EXISTS(
+					SELECT 1 FROM reservations_partners rp
+					INNER JOIN reservations r ON r.id = rp.reservation_id
+					WHERE rp.partner_id = ll.user_id AND r.tournament_type = 'doubles'
+				) THEN 'YES' ELSE 'NO' END as is_inscripto_dobles
+				FROM login_logs ll
+				ORDER BY ll.login_time DESC
+				LIMIT " . intval($offset) . ", " . intval($limit);
+		$query = $this->db->query($sql);
 		return $query->result();
 	}
 
