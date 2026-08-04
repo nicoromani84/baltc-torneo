@@ -724,9 +724,6 @@ class Admin extends CI_Controller {
 		$sql = "SELECT DISTINCT m.category, m.gender, c.name as categoria
 				FROM matches m
 				JOIN category c ON c.id = m.category
-				INNER JOIN reservations_partners rp ON rp.reservation_id = m.jugador1_id
-				INNER JOIN reservations r ON r.id = rp.reservation_id
-				WHERE c.active = 1 AND r.tournament_type = 'doubles'
 				ORDER BY m.category ASC, m.gender ASC";
 		$q = $this->db->query($sql);
 		$this->protect->ajaxDie(array('action'=>true, 'draws'=> $q->num_rows() > 0 ? $q->result() : array()));
