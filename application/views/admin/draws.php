@@ -246,15 +246,18 @@ $(function(){
 			data: { category: cat, gender: gen },
 			headers: { 'X-Auth-Token': token },
 			success: function(res) {
+				var cat = $('#draws-category').val();
+				var gen = $('#draws-gender').val();
 				if(!res.action || !res.partidos.length) {
 					$('#draw-container').hide();
 					$('#draw-vacio').show();
+					$('.draws-tab[data-cat="'+cat+'"][data-gen="'+gen+'"]').data('tiene', 0);
 					return;
 				}
 				$('#draw-vacio').hide();
+				// Marcar tab como sorteado
+				$('.draws-tab[data-cat="'+cat+'"][data-gen="'+gen+'"]').data('tiene', 1);
 				// Resaltar pestaña activa
-				var cat = $('#draws-category').val();
-				var gen = $('#draws-gender').val();
 				$('.draws-tab').removeClass('active');
 				$('.draws-tab[data-cat="'+cat+'"][data-gen="'+gen+'"]').addClass('active');
 				// Mostrar título
