@@ -235,6 +235,20 @@ $(function(){
 	}
 	cargarTabs();
 
+	// Auto-cargar primer draw disponible
+	$.ajax({
+		url: baseurl + 'admin/getAvailableDraws',
+		type: 'POST',
+		headers: { 'X-Auth-Token': token },
+		success: function(res) {
+			if(res.action && res.draw) {
+				$('#draws-category').val(res.draw.category);
+				$('#draws-gender').val(res.draw.gender);
+				$('#btn-ver-draw').trigger('click');
+			}
+		}
+	});
+
 	$('#btn-ver-draw').on('click', function(){
 		var cat = $('#draws-category').val();
 		var gen = $('#draws-gender').val();

@@ -746,6 +746,18 @@ class Admin extends CI_Controller {
 		$this->protect->ajaxDie(array('action' => !empty($partidos), 'partidos' => $partidos ?: array(), 'sembrados' => $sembrados));
 	}
 
+	public function getAvailableDraws() {
+		$this->protect->setAjax();
+		$this->protect->setRequest('POST');
+		$sql = "SELECT DISTINCT m.category, m.gender
+				FROM matches m
+				ORDER BY m.category ASC, m.gender ASC
+				LIMIT 1";
+		$q = $this->db->query($sql);
+		$draw = ($q->num_rows() > 0) ? $q->row() : null;
+		$this->protect->ajaxDie(array('action' => !empty($draw), 'draw' => $draw));
+	}
+
 	public function toggleInscripciones() {
 		$this->protect->setAjax();
 		$this->protect->setRequest('POST');
