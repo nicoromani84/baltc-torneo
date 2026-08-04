@@ -751,11 +751,14 @@ class Admin extends CI_Controller {
 		$this->protect->setRequest('POST');
 		$sql = "SELECT DISTINCT m.category, m.gender
 				FROM matches m
+				INNER JOIN reservations_partners rp ON rp.reservation_id = m.jugador1_id
+				INNER JOIN reservations r ON r.id = rp.reservation_id
+				WHERE r.tournament_type = 'doubles'
 				ORDER BY m.category ASC, m.gender ASC
 				LIMIT 1";
 		$q = $this->db->query($sql);
 		$draw = ($q->num_rows() > 0) ? $q->row() : null;
-		$this->protect->ajaxDie(array('action' => !empty($draw), 'draw' => $draw));
+		$this->protect->ajaxDie(array('action' => $q->num_rows() > 0, 'draw' => $draw));
 	}
 
 	public function toggleInscripciones() {
