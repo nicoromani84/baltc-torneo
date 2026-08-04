@@ -225,8 +225,10 @@ $(function(){
 			type: 'POST',
 			headers: { 'X-Auth-Token': token },
 			success: function(res) {
+				console.log('getDrawsDisponibles response:', res);
 				var disponibles = {};
 				if(res.draws) res.draws.forEach(function(d){ disponibles[d.category+'_'+d.gender] = true; });
+				console.log('disponibles:', disponibles);
 				var $cont = $('#draws-tabs-container');
 				$cont.html('');
 				categorias.forEach(function(c) {
@@ -245,8 +247,17 @@ $(function(){
 				// Auto-cargar el primero con draw
 				setTimeout(function(){
 					var $primero = $('.draws-tab[data-tiene="1"]').first();
-					if($primero.length) $primero.trigger('click');
+					console.log('Buscando primer tab con data-tiene=1:', $primero);
+					if($primero.length) {
+						console.log('Encontrado, haciendo trigger click');
+						$primero.trigger('click');
+					} else {
+						console.log('No encontrado ningún tab con data-tiene=1');
+					}
 				}, 100);
+			},
+			error: function(err) {
+				console.error('Error en getDrawsDisponibles:', err);
 			}
 		});
 	}
