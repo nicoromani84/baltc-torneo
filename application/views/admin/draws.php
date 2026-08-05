@@ -187,7 +187,9 @@
 </style>
 
 <script>
+console.log('admin/draws.php script loaded');
 $(function(){
+	console.log('jQuery ready - baseurl:', '<?=base_url()?>');
 	var baseurl = '<?=base_url()?>';
 	var token = '<?=$token?>';
 	var RONDAS = ['1ra Ronda','2da Ronda','Cuartos de Final','Semifinal','Final'];
@@ -225,6 +227,7 @@ $(function(){
 			type: 'POST',
 			headers: { 'X-Auth-Token': token },
 			success: function(res) {
+				console.log('getDrawsDisponibles OK:', res);
 				var disponibles = {};
 				if(res.draws) res.draws.forEach(function(d){ disponibles[d.category+'_'+d.gender] = true; });
 				var $cont = $('#draws-tabs-container');
@@ -247,6 +250,9 @@ $(function(){
 					var $primero = $('.draws-tab[data-tiene="1"]').first();
 					if($primero.length) $primero.trigger('click');
 				}, 100);
+			},
+			error: function(xhr, status, err) {
+				console.error('ERROR en getDrawsDisponibles:', status, err, xhr.responseText);
 			}
 		});
 	}

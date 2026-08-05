@@ -613,23 +613,7 @@ class Admin extends CI_Controller {
 		$d['token']     = $this->protect->eToken();
 		$d['section']   = 'admin-draws';
 		$d['readonly']  = $this->Administrator->isReadOnly();
-
-		$allCats = $this->Reservation->getCategories();
-		$this->db->where('tournament_type', 'doubles');
-		$doublesQ = $this->db->get('reservations');
-		$doblesCats = array();
-		foreach($doublesQ->result() as $r) {
-			$doblesCats[$r->category] = true;
-		}
-
-		$filteredCats = array();
-		foreach($allCats as $c) {
-			if(isset($doblesCats[$c->id])) {
-				$filteredCats[] = $c;
-			}
-		}
-
-		$d['categories'] = $filteredCats;
+		$d['categories'] = $this->Reservation->getCategories();
 
 		$this->load->view('admin/header', $d);
 		$this->load->view('admin/draws');
@@ -721,12 +705,25 @@ class Admin extends CI_Controller {
 		$this->protect->setRequest('POST');
 		if(!$this->Administrator->isLogged()) $this->protect->ajaxDie(array('action'=>false));
 
+		// Debug: check raw matches
+		$allQ = $this->db->get('matches');
+		$all = $allQ->result();
+
 		$sql = "SELECT DISTINCT m.category, m.gender, c.name as categoria
 				FROM matches m
 				JOIN category c ON c.id = m.category
 				ORDER BY m.category ASC, m.gender ASC";
 		$q = $this->db->query($sql);
-		$this->protect->ajaxDie(array('action'=>true, 'draws'=> $q->num_rows() > 0 ? $q->result() : array()));
+
+		$this->protect->ajaxDie(array(
+			'action'=>true,
+			'draws'=> $q->num_rows() > 0 ? $q->result() : array(),
+			'debug' => array(
+				'total_matches' => count($all),
+				'query_matches' => $q->num_rows(),
+				'sample' => count($all) > 0 ? $all[0] : null
+			)
+		));
 	}
 
 	public function getDrawData() {

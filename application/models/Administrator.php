@@ -267,7 +267,7 @@ class Administrator extends CI_Model
 	}
 
 	public function editParejaCategory($reservation_id, $category_id) {
-		$data = array('category_id' => $category_id);
+		$data = array('category' => $category_id);
 		return $this->db->where('id', $reservation_id)->update('reservations', $data);
 	}
 }
