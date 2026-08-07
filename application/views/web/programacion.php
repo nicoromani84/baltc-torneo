@@ -19,7 +19,7 @@
 	<div id="programacion-page" class="container">
 		<div class="container">
 			<h1>Programación</h1>
-			<p>Torneo Interno de Singles</p>
+			<p>Torneo Interno de Dobles</p>
 
 			<?php if(!empty($partidos)): ?>
 			<?php

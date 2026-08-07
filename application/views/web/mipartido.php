@@ -19,7 +19,7 @@
 	<div id="mipartido-page" class="container">
 		<div class="container">
 			<h1>Mi Partido</h1>
-			<p>Torneo Interno de Singles</p>
+			<p>Torneo Interno de Dobles</p>
 
 			<?php if(empty($partidos)): ?>
 			<div class="resultado-vacio">
