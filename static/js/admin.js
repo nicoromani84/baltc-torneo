@@ -76,10 +76,20 @@ var admin = {
 		selectedPartners: [],
 		tournament_type: 'doubles',
 		jugadoresCache: {},
+		allCategories: [],
 
 		// Inicializamos el módulo
 		run: function() {
 			var that = this;
+
+			// Obtener categorías del dropdown que ya existe en la página
+			$('#filtro-categoria option').each(function(){
+				var val = $(this).val();
+				var text = $(this).text();
+				if(val) {
+					that.allCategories.push({id: parseInt(val), name: text});
+				}
+			});
 
 			// Overlay click
 			$(document).on('click', '#overlay', function(){
@@ -141,11 +151,13 @@ var admin = {
 				var categoryId = $(this).data('category');
 				var pairsName = $(this).data('name');
 
-				var categories = that.getCategories();
+				var categories = that.allCategories;
 				var html = '<select id="new-category" class="form-control" style="margin-bottom:10px;">';
-				categories.forEach(function(cat) {
-					html += '<option value="' + cat.id + '" ' + (cat.id == categoryId ? 'selected' : '') + '>' + cat.name + '</option>';
-				});
+				if(categories && categories.length) {
+					categories.forEach(function(cat) {
+						html += '<option value="' + cat.id + '" ' + (cat.id == categoryId ? 'selected' : '') + '>' + cat.name + '</option>';
+					});
+				}
 				html += '</select>';
 
 				var modal = $('<div class="modal fade" id="modalEditCategoria" tabindex="-1" role="dialog">' +
@@ -169,7 +181,9 @@ var admin = {
 						success: function(res) {
 							if(res.action) {
 								modal.modal('hide');
+								$('.modal-backdrop').remove();
 								modal.remove();
+								$('#buscador').val('');
 								that.getReservations(function(){ showNotification('success', 'Categoría actualizada.'); });
 							} else {
 								alert('Error: ' + (res.msg || 'Error desconocido'));

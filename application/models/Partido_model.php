@@ -4,19 +4,22 @@ class Partido_model extends CI_Model {
 
 	// Obtener todos los partidos con nombres y gender
 	public function getAllWithGender() {
-		$q = $this->db
-			->select('m.id, m.ronda, m.bracket_pos, m.score, m.fecha, m.hora, m.category, m.gender,
+		$sql = "SELECT m.id, m.ronda, m.bracket_pos, m.score, m.fecha, m.hora, m.category, m.gender,
 				c.name as categoria,
-				p1.name as jugador1, m.jugador1_id,
-				p2.name as jugador2, m.jugador2_id,
-				g.name as ganador, m.ganador_id')
-			->from('matches m')
-			->join('category c', 'c.id = m.category')
-			->join('partners p1', 'p1.id = m.jugador1_id')
-			->join('partners p2', 'p2.id = m.jugador2_id')
-			->join('partners g', 'g.id = m.ganador_id', 'left')
-			->order_by('m.category ASC, m.gender ASC, m.ronda ASC, m.bracket_pos ASC, m.id ASC')
-			->get();
+				(SELECT GROUP_CONCAT(p.name SEPARATOR ' / ')
+					FROM reservations_partners rp
+					JOIN partners p ON p.id = rp.partner_id
+					WHERE rp.reservation_id = m.jugador1_id) as jugador1, m.jugador1_id,
+				(SELECT GROUP_CONCAT(p.name SEPARATOR ' / ')
+					FROM reservations_partners rp
+					JOIN partners p ON p.id = rp.partner_id
+					WHERE rp.reservation_id = m.jugador2_id) as jugador2, m.jugador2_id,
+				g.name as ganador, m.ganador_id
+			FROM matches m
+			LEFT JOIN category c ON c.id = m.category
+			LEFT JOIN partners g ON g.id = m.ganador_id
+			ORDER BY m.category ASC, m.gender ASC, m.ronda ASC, m.bracket_pos ASC, m.id ASC";
+		$q = $this->db->query($sql);
 		return ($q->num_rows() > 0) ? $q->result() : array();
 	}
 
@@ -43,18 +46,21 @@ class Partido_model extends CI_Model {
 
 	// Obtener partidos por categoría (para vista pública)
 	public function getByCategory($category_id) {
-		$q = $this->db
-			->select('m.id, m.ronda, m.score,
-				p1.name as jugador1, m.jugador1_id,
-				p2.name as jugador2, m.jugador2_id,
-				g.name as ganador, m.ganador_id')
-			->from('matches m')
-			->join('partners p1', 'p1.id = m.jugador1_id')
-			->join('partners p2', 'p2.id = m.jugador2_id')
-			->join('partners g', 'g.id = m.ganador_id', 'left')
-			->where('m.category', $category_id)
-			->order_by('m.ronda ASC, m.id ASC')
-			->get();
+		$sql = "SELECT m.id, m.ronda, m.score,
+				(SELECT GROUP_CONCAT(p.name SEPARATOR ' / ')
+					FROM reservations_partners rp
+					JOIN partners p ON p.id = rp.partner_id
+					WHERE rp.reservation_id = m.jugador1_id) as jugador1, m.jugador1_id,
+				(SELECT GROUP_CONCAT(p.name SEPARATOR ' / ')
+					FROM reservations_partners rp
+					JOIN partners p ON p.id = rp.partner_id
+					WHERE rp.reservation_id = m.jugador2_id) as jugador2, m.jugador2_id,
+				g.name as ganador, m.ganador_id
+			FROM matches m
+			LEFT JOIN partners g ON g.id = m.ganador_id
+			WHERE m.category = " . intval($category_id) . "
+			ORDER BY m.ronda ASC, m.id ASC";
+		$q = $this->db->query($sql);
 		return ($q->num_rows() > 0) ? $q->result() : array();
 	}
 
