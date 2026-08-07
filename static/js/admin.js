@@ -198,17 +198,18 @@ var admin = {
 			});
 
 			$(document).on('click', '.btn-borrar-jugador', function(){
-				var jugadorId = $(this).data('id');
+				var isPareja = $(this).data('is-pareja');
+				var jugadorId = isPareja ? $(this).data('reserva') : $(this).data('id');
 				var jugador = that.jugadoresCache[jugadorId];
 				if(!jugador) return;
-				if(!confirm('¿Eliminar a ' + jugador.name + ' del torneo?')) return;
+				if(!confirm('¿Eliminar a ' + jugador.pareja + ' del torneo?')) return;
 				$.ajax({
 					url: adminurl + '/deleteJugador',
 					type: 'POST',
-					data: { id: jugador.id, reserva_id: jugador.reserva_id },
+					data: { id: isPareja ? 0 : jugador.id, reserva_id: isPareja ? jugadorId : jugador.reserva_id },
 					headers: {'X-Auth-Token': token},
 					success: function(res) {
-						if(res.action) that.getReservations(function(){ showNotification('success', 'Jugador eliminado correctamente.'); });
+						if(res.action) that.getReservations(function(){ showNotification('success', 'Pareja eliminada correctamente.'); });
 					}
 				});
 			});
