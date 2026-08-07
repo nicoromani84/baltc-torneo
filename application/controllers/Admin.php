@@ -1007,17 +1007,17 @@ class Admin extends CI_Controller {
 				if($j1 && $j2) {
 					$partidos[] = array('category'=>$category,'gender'=>$gender,'ronda'=>$rondasNombres[$rondaInicio],'bracket_pos'=>$bp,'jugador1_id'=>intval($j1),'jugador2_id'=>intval($j2),'score'=>null,'ganador_id'=>null);
 				} elseif($j1) {
-					$partidos[] = array('category'=>$category,'gender'=>$gender,'ronda'=>$rondasNombres[$rondaInicio],'bracket_pos'=>$bp,'jugador1_id'=>intval($j1),'jugador2_id'=>null,'score'=>'BYE','ganador_id'=>intval($j1));
+					$partidos[] = array('category'=>$category,'gender'=>$gender,'ronda'=>$rondasNombres[$rondaInicio],'bracket_pos'=>$bp,'jugador1_id'=>intval($j1),'jugador2_id'=>null,'score'=>'BYE','ganador_id'=>null);
 				} elseif($j2) {
-					$partidos[] = array('category'=>$category,'gender'=>$gender,'ronda'=>$rondasNombres[$rondaInicio],'bracket_pos'=>$bp,'jugador1_id'=>null,'jugador2_id'=>intval($j2),'score'=>'BYE','ganador_id'=>intval($j2));
+					$partidos[] = array('category'=>$category,'gender'=>$gender,'ronda'=>$rondasNombres[$rondaInicio],'bracket_pos'=>$bp,'jugador1_id'=>null,'jugador2_id'=>intval($j2),'score'=>'BYE','ganador_id'=>null);
 				}
 			} else {
 				if($j1 && $j2) {
 					$partidos[] = array('category'=>$category,'gender'=>$gender,'ronda'=>$rondasNombres[$rondaInicio],'bracket_pos'=>$bp,'jugador1_id'=>intval($j1),'jugador2_id'=>intval($j2),'score'=>null,'ganador_id'=>null);
 				} elseif($j1) {
-					$partidos[] = array('category'=>$category,'gender'=>$gender,'ronda'=>$rondasNombres[$rondaInicio],'bracket_pos'=>$bp,'jugador1_id'=>intval($j1),'jugador2_id'=>null,'score'=>'BYE','ganador_id'=>intval($j1));
+					$partidos[] = array('category'=>$category,'gender'=>$gender,'ronda'=>$rondasNombres[$rondaInicio],'bracket_pos'=>$bp,'jugador1_id'=>intval($j1),'jugador2_id'=>null,'score'=>'BYE','ganador_id'=>null);
 				} elseif($j2) {
-					$partidos[] = array('category'=>$category,'gender'=>$gender,'ronda'=>$rondasNombres[$rondaInicio],'bracket_pos'=>$bp,'jugador1_id'=>null,'jugador2_id'=>intval($j2),'score'=>'BYE','ganador_id'=>intval($j2));
+					$partidos[] = array('category'=>$category,'gender'=>$gender,'ronda'=>$rondasNombres[$rondaInicio],'bracket_pos'=>$bp,'jugador1_id'=>null,'jugador2_id'=>intval($j2),'score'=>'BYE','ganador_id'=>null);
 				}
 			}
 			// null+null → slot vacío, no se guarda
@@ -1057,15 +1057,21 @@ class Admin extends CI_Controller {
 		for($i = 0; $i < $totalSlots; $i += 2) {
 			$p1 = isset($porPos[$i])   ? $porPos[$i]   : null;
 			$p2 = isset($porPos[$i+1]) ? $porPos[$i+1] : null;
-			// Solo crear si AMBOS tienen ganador_id
-			if($p1 && $p2 && !empty($p1['ganador_id']) && !empty($p2['ganador_id'])) {
+			if(!$p1 || !$p2) continue;
+
+			// Para BYEs (score='BYE'), el "ganador" es jugador1_id. Para partidos normales es ganador_id.
+			$g1 = ($p1['score'] === 'BYE') ? $p1['jugador1_id'] : $p1['ganador_id'];
+			$g2 = ($p2['score'] === 'BYE') ? $p2['jugador1_id'] : $p2['ganador_id'];
+
+			// Solo crear si AMBOS tienen ganador definido
+			if(!empty($g1) && !empty($g2)) {
 				$nuevos[] = array(
 					'category'    => $category,
 					'gender'      => $gender,
 					'ronda'       => $siguiente_ronda,
 					'bracket_pos' => (int)($i / 2),
-					'jugador1_id' => intval($p1['ganador_id']),
-					'jugador2_id' => intval($p2['ganador_id']),
+					'jugador1_id' => intval($g1),
+					'jugador2_id' => intval($g2),
 					'score'       => null,
 					'ganador_id'  => null
 				);
