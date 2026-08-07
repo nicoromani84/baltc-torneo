@@ -159,20 +159,44 @@ class Partido_model extends CI_Model {
 	public function getPendientesByPlayer($user_id) {
 		$sql = "SELECT m.id, m.ronda, m.score, m.gender, m.category, m.deadline, m.fecha, m.hora,
 				c.name as categoria,
-				p1.name as jugador1, m.jugador1_id,
-				p2.name as jugador2, m.jugador2_id,
-				CASE WHEN m.jugador1_id = ? THEN p1.name ELSE p2.name END as yo,
-				CASE WHEN m.jugador1_id = ? THEN p2.name ELSE p1.name END as rival,
+				(SELECT GROUP_CONCAT(p.name SEPARATOR ' / ')
+					FROM reservations_partners rp
+					JOIN partners p ON p.id = rp.partner_id
+					WHERE rp.reservation_id = m.jugador1_id) as jugador1, m.jugador1_id,
+				(SELECT GROUP_CONCAT(p.name SEPARATOR ' / ')
+					FROM reservations_partners rp
+					JOIN partners p ON p.id = rp.partner_id
+					WHERE rp.reservation_id = m.jugador2_id) as jugador2, m.jugador2_id,
+				CASE WHEN m.jugador1_id = ? THEN
+					(SELECT GROUP_CONCAT(p.name SEPARATOR ' / ')
+						FROM reservations_partners rp
+						JOIN partners p ON p.id = rp.partner_id
+						WHERE rp.reservation_id = m.jugador1_id)
+					ELSE
+					(SELECT GROUP_CONCAT(p.name SEPARATOR ' / ')
+						FROM reservations_partners rp
+						JOIN partners p ON p.id = rp.partner_id
+						WHERE rp.reservation_id = m.jugador2_id)
+				END as yo,
+				CASE WHEN m.jugador1_id = ? THEN
+					(SELECT GROUP_CONCAT(p.name SEPARATOR ' / ')
+						FROM reservations_partners rp
+						JOIN partners p ON p.id = rp.partner_id
+						WHERE rp.reservation_id = m.jugador2_id)
+					ELSE
+					(SELECT GROUP_CONCAT(p.name SEPARATOR ' / ')
+						FROM reservations_partners rp
+						JOIN partners p ON p.id = rp.partner_id
+						WHERE rp.reservation_id = m.jugador1_id)
+				END as rival,
 				CASE WHEN m.jugador1_id = ? THEN m.jugador1_id ELSE m.jugador2_id END as yo_id,
-				CASE WHEN m.jugador1_id = ? THEN p2.whatsapp ELSE p1.whatsapp END as rival_wa
+				NULL as rival_wa
 				FROM matches m
 				JOIN category c ON c.id = m.category
-				JOIN partners p1 ON p1.id = m.jugador1_id
-				JOIN partners p2 ON p2.id = m.jugador2_id
 				WHERE (m.jugador1_id = ? OR m.jugador2_id = ?)
 				AND m.ganador_id IS NULL
 				ORDER BY CASE WHEN c.name LIKE '%2nd chance%' THEN 0 ELSE 1 END ASC, m.id ASC";
-		$q = $this->db->query($sql, array($user_id, $user_id, $user_id, $user_id, $user_id, $user_id));
+		$q = $this->db->query($sql, array($user_id, $user_id, $user_id, $user_id, $user_id));
 		return ($q->num_rows() > 0) ? $q->result() : array();
 	}
 
