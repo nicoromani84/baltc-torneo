@@ -125,17 +125,22 @@ class Administrator extends CI_Model
 		$gender_filter = $gender ? " AND p.gender = '" . $this->db->escape_str($gender) . "'" : "";
 
 		if($tournament_type === 'doubles') {
-			// Para dobles: agrupar partners por reservation, filtrar por gender del primer partner
+			// Para dobles: agrupar partners por reservation
+			// Obtener el gender del primer partner y verificar que todos tengan el mismo
 			$sql = "SELECT r.id as jugador_id, GROUP_CONCAT(p.name SEPARATOR ' / ') as jugador,
 					(SELECT p2.gender FROM reservations_partners rp2
 					 JOIN partners p2 ON p2.id = rp2.partner_id
-					 WHERE rp2.reservation_id = r.id LIMIT 1) as gender
+					 WHERE rp2.reservation_id = r.id
+					 ORDER BY rp2.id ASC LIMIT 1) as gender
 					FROM reservations r
 					JOIN reservations_partners rp ON rp.reservation_id = r.id
 					JOIN partners p ON p.id = rp.partner_id
 					WHERE r.category = $category_id AND r.tournament_type = 'doubles'
-					$gender_filter
-					GROUP BY r.id
+					GROUP BY r.id" . ($gender ? "
+					HAVING (SELECT COUNT(DISTINCT p3.gender) FROM reservations_partners rp3
+					        JOIN partners p3 ON p3.id = rp3.partner_id
+					        WHERE rp3.reservation_id = r.id) = 1
+					AND gender = '" . $this->db->escape_str($gender) . "'" : "") . "
 					ORDER BY r.id ASC";
 			$q = $this->db->query($sql);
 			return ($q->num_rows() > 0) ? $q->result() : array();
@@ -206,7 +211,9 @@ class Administrator extends CI_Model
 
 	// Eliminar jugador del torneo
 	public function deleteJugador($partner_id, $reserva_id) {
-		$this->db->delete('reservations_partners', array('partner_id' => $partner_id, 'reservation_id' => $reserva_id));
+		if($partner_id > 0) {
+			$this->db->delete('reservations_partners', array('partner_id' => $partner_id, 'reservation_id' => $reserva_id));
+		}
 		$this->db->delete('reservations', array('id' => $reserva_id));
 		return true;
 	}
