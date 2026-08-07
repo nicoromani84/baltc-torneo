@@ -14,7 +14,14 @@ class Partido_model extends CI_Model {
 					FROM reservations_partners rp
 					JOIN partners p ON p.id = rp.partner_id
 					WHERE rp.reservation_id = m.jugador2_id) as jugador2, m.jugador2_id,
-				g.name as ganador, m.ganador_id
+				CASE
+					WHEN m.jugador2_id IS NULL THEN (SELECT GROUP_CONCAT(p.name SEPARATOR ' / ')
+						FROM reservations_partners rp
+						JOIN partners p ON p.id = rp.partner_id
+						WHERE rp.reservation_id = m.jugador1_id)
+					WHEN m.ganador_id IS NOT NULL THEN g.name
+					ELSE NULL
+				END as ganador, m.ganador_id
 			FROM matches m
 			LEFT JOIN category c ON c.id = m.category
 			LEFT JOIN partners g ON g.id = m.ganador_id
@@ -55,7 +62,14 @@ class Partido_model extends CI_Model {
 					FROM reservations_partners rp
 					JOIN partners p ON p.id = rp.partner_id
 					WHERE rp.reservation_id = m.jugador2_id) as jugador2, m.jugador2_id,
-				g.name as ganador, m.ganador_id
+				CASE
+					WHEN m.jugador2_id IS NULL THEN (SELECT GROUP_CONCAT(p.name SEPARATOR ' / ')
+						FROM reservations_partners rp
+						JOIN partners p ON p.id = rp.partner_id
+						WHERE rp.reservation_id = m.jugador1_id)
+					WHEN m.ganador_id IS NOT NULL THEN g.name
+					ELSE NULL
+				END as ganador, m.ganador_id
 			FROM matches m
 			LEFT JOIN partners g ON g.id = m.ganador_id
 			WHERE m.category = " . intval($category_id) . "
@@ -75,7 +89,14 @@ class Partido_model extends CI_Model {
 					FROM reservations_partners rp
 					JOIN partners p ON p.id = rp.partner_id
 					WHERE rp.reservation_id = m.jugador2_id) as jugador2, m.jugador2_id,
-				g.name as ganador, m.ganador_id
+				CASE
+					WHEN m.jugador2_id IS NULL THEN (SELECT GROUP_CONCAT(p.name SEPARATOR ' / ')
+						FROM reservations_partners rp
+						JOIN partners p ON p.id = rp.partner_id
+						WHERE rp.reservation_id = m.jugador1_id)
+					WHEN m.ganador_id IS NOT NULL THEN g.name
+					ELSE NULL
+				END as ganador, m.ganador_id
 			FROM matches m
 			LEFT JOIN partners g ON g.id = m.ganador_id
 			WHERE m.category = " . $this->db->escape($category_id) . "
