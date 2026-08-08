@@ -1009,7 +1009,7 @@ class Admin extends CI_Controller {
 				} elseif($j1) {
 					$partidos[] = array('category'=>$category,'gender'=>$gender,'ronda'=>$rondasNombres[$rondaInicio],'bracket_pos'=>$bp,'jugador1_id'=>intval($j1),'jugador2_id'=>null,'score'=>'BYE','ganador_id'=>null);
 				} elseif($j2) {
-					$partidos[] = array('category'=>$category,'gender'=>$gender,'ronda'=>$rondasNombres[$rondaInicio],'bracket_pos'=>$bp,'jugador1_id'=>null,'jugador2_id'=>intval($j2),'score'=>'BYE','ganador_id'=>null);
+					$partidos[] = array('category'=>$category,'gender'=>$gender,'ronda'=>$rondasNombres[$rondaInicio],'bracket_pos'=>$bp,'jugador1_id'=>intval($j2),'jugador2_id'=>null,'score'=>'BYE','ganador_id'=>null);
 				}
 			} else {
 				if($j1 && $j2) {
@@ -1017,7 +1017,7 @@ class Admin extends CI_Controller {
 				} elseif($j1) {
 					$partidos[] = array('category'=>$category,'gender'=>$gender,'ronda'=>$rondasNombres[$rondaInicio],'bracket_pos'=>$bp,'jugador1_id'=>intval($j1),'jugador2_id'=>null,'score'=>'BYE','ganador_id'=>null);
 				} elseif($j2) {
-					$partidos[] = array('category'=>$category,'gender'=>$gender,'ronda'=>$rondasNombres[$rondaInicio],'bracket_pos'=>$bp,'jugador1_id'=>null,'jugador2_id'=>intval($j2),'score'=>'BYE','ganador_id'=>null);
+					$partidos[] = array('category'=>$category,'gender'=>$gender,'ronda'=>$rondasNombres[$rondaInicio],'bracket_pos'=>$bp,'jugador1_id'=>intval($j2),'jugador2_id'=>null,'score'=>'BYE','ganador_id'=>null);
 				}
 			}
 			// null+null → slot vacío, no se guarda
