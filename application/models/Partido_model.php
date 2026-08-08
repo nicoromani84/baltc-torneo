@@ -199,6 +199,7 @@ class Partido_model extends CI_Model {
 					(SELECT COUNT(*) FROM reservations_partners WHERE reservation_id = m.jugador2_id AND partner_id = ?)
 				)
 				AND m.ganador_id IS NULL
+				AND m.jugador2_id IS NOT NULL
 				ORDER BY CASE WHEN c.name LIKE '%2nd chance%' THEN 0 ELSE 1 END ASC, m.id ASC";
 		$q = $this->db->query($sql, array($user_id, $user_id, $user_id, $user_id, $user_id));
 		return ($q->num_rows() > 0) ? $q->result() : array();
