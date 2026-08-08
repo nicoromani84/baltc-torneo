@@ -1209,9 +1209,14 @@ class Admin extends CI_Controller {
 				$rival_names = $j2_user ? $j2_user->name : 'Tu rival';
 			}
 
-			// Enviar a todos
+			// Enviar a todos (sin duplicados por email)
+			$emails_enviados = array();
 			foreach($all_partners as $partner) {
 				if(!$partner || !filter_var($partner->email, FILTER_VALIDATE_EMAIL)) continue;
+				// Evitar enviar duplicados al mismo email
+				if(in_array($partner->email, $emails_enviados)) continue;
+				$emails_enviados[] = $partner->email;
+
 				$data = array(
 					'nombre'    => $partner->name,
 					'rival'     => $rival_names ?: 'Tu rival',
