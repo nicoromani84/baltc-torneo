@@ -1132,10 +1132,10 @@ class Admin extends CI_Controller {
 				array($p->jugador2_id)
 			)->result();
 
-			// Si hay partners, es dobles. Si no, es singles.
-			if(!empty($j1_partners) && !empty($j2_partners)) {
-				$j1_name = implode(' / ', array_map(function($x) { return $x->name; }, $j1_partners));
-				$j2_name = implode(' / ', array_map(function($x) { return $x->name; }, $j2_partners));
+			// Si hay partners en cualquiera, es dobles
+			if(!empty($j1_partners) || !empty($j2_partners)) {
+				$j1_name = !empty($j1_partners) ? implode(' / ', array_map(function($x) { return $x->name; }, $j1_partners)) : '?';
+				$j2_name = !empty($j2_partners) ? implode(' / ', array_map(function($x) { return $x->name; }, $j2_partners)) : '?';
 			} else {
 				// Singles: obtener jugadores individuales
 				$j1 = $this->User->getById($p->jugador1_id);
