@@ -1115,39 +1115,32 @@ class Admin extends CI_Controller {
 		// Lista de enfrentamientos j1 vs j2
 		$partidos_lista = array();
 		foreach($partidos as $p) {
-			// Obtener todos los partners de ambos equipos
+			// Intentar como dobles (reservation_id), luego como singles (partner_id)
 			$j1_partners = $this->db->query(
 				"SELECT p.name FROM reservations_partners rp
 				 JOIN partners p ON p.id = rp.partner_id
-				 WHERE rp.reservation_id = ?
-				 ORDER BY p.name ASC",
+				 WHERE rp.reservation_id = ?",
 				array($p->jugador1_id)
 			)->result();
+
+			$j1_name = !empty($j1_partners)
+				? implode(' / ', array_map(function($x) { return $x->name; }, $j1_partners))
+				: ($this->User->getById($p->jugador1_id) ? $this->User->getById($p->jugador1_id)->name : '?');
 
 			$j2_partners = $this->db->query(
 				"SELECT p.name FROM reservations_partners rp
 				 JOIN partners p ON p.id = rp.partner_id
-				 WHERE rp.reservation_id = ?
-				 ORDER BY p.name ASC",
+				 WHERE rp.reservation_id = ?",
 				array($p->jugador2_id)
 			)->result();
 
-			// Si no hay partners (singles), obtener nombre individual
-			if(empty($j1_partners)) {
-				$j1_p = $this->db->query("SELECT name FROM partners WHERE id = ?", array($p->jugador1_id))->row();
-				$j1_partners = $j1_p ? array($j1_p) : array();
-			}
-			if(empty($j2_partners)) {
-				$j2_p = $this->db->query("SELECT name FROM partners WHERE id = ?", array($p->jugador2_id))->row();
-				$j2_partners = $j2_p ? array($j2_p) : array();
-			}
-
-			$j1_names = array_map(function($x) { return $x->name; }, $j1_partners);
-			$j2_names = array_map(function($x) { return $x->name; }, $j2_partners);
+			$j2_name = !empty($j2_partners)
+				? implode(' / ', array_map(function($x) { return $x->name; }, $j2_partners))
+				: ($this->User->getById($p->jugador2_id) ? $this->User->getById($p->jugador2_id)->name : '?');
 
 			$partidos_lista[] = array(
-				'j1' => implode(' / ', $j1_names) ?: '?',
-				'j2' => implode(' / ', $j2_names) ?: '?'
+				'j1' => $j1_name,
+				'j2' => $j2_name
 			);
 		}
 		$this->protect->ajaxDie(array(
@@ -1179,42 +1172,38 @@ class Admin extends CI_Controller {
 		$this->load->library('email');
 		$enviados = 0;
 		foreach($partidos as $p) {
-			// Determinar si es dobles o singles y obtener partners correspondientes
-			$jugadores_a_contactar = array();
-
-			// Intenta como reservation (dobles)
+			// Obtener partners de dobles o jugadores de singles
 			$j1_partners = $this->db->query(
-				"SELECT p.id, p.name, p.email FROM reservations_partners rp
+				"SELECT p.name, p.email FROM reservations_partners rp
 				 JOIN partners p ON p.id = rp.partner_id
-				 WHERE rp.reservation_id = ?
-				 ORDER BY p.name ASC",
+				 WHERE rp.reservation_id = ?",
 				array($p->jugador1_id)
 			)->result();
 
 			$j2_partners = $this->db->query(
-				"SELECT p.id, p.name, p.email FROM reservations_partners rp
+				"SELECT p.name, p.email FROM reservations_partners rp
 				 JOIN partners p ON p.id = rp.partner_id
-				 WHERE rp.reservation_id = ?
-				 ORDER BY p.name ASC",
+				 WHERE rp.reservation_id = ?",
 				array($p->jugador2_id)
 			)->result();
 
-			// Si no hay partners (singles), obtiene el partner_id directamente
+			// Si no hay partners (singles), usar User
 			if(empty($j1_partners)) {
-				$j1_p = $this->db->query("SELECT id, name, email FROM partners WHERE id = ?", array($p->jugador1_id))->result();
-				$j1_partners = $j1_p ?: array();
+				$j1_user = $this->User->getById($p->jugador1_id);
+				$j1_partners = $j1_user ? array($j1_user) : array();
 			}
 			if(empty($j2_partners)) {
-				$j2_p = $this->db->query("SELECT id, name, email FROM partners WHERE id = ?", array($p->jugador2_id))->result();
-				$j2_partners = $j2_p ?: array();
+				$j2_user = $this->User->getById($p->jugador2_id);
+				$j2_partners = $j2_user ? array($j2_user) : array();
 			}
 
-			// Enviar emails a todos los partners
+			// Enviar a todos
 			foreach(array_merge($j1_partners, $j2_partners) as $partner) {
-				if(!filter_var($partner->email, FILTER_VALIDATE_EMAIL)) continue;
+				if(!$partner || !filter_var($partner->email, FILTER_VALIDATE_EMAIL)) continue;
+				$rival_names = implode(' / ', array_map(function($x) { return $x->name; }, $j2_partners));
 				$data = array(
 					'nombre'    => $partner->name,
-					'rival'     => ($p->jugador2 ?: 'Tu rival'),
+					'rival'     => $rival_names ?: 'Tu rival',
 					'categoria' => $p->categoria,
 					'ronda'     => $p->ronda,
 					'deadline'  => $fecha_str,
@@ -1234,29 +1223,15 @@ class Admin extends CI_Controller {
 	}
 
 	private function _getPartidosPendientes($category = '', $gender = '', $ronda = '') {
-		$sql = "SELECT m.*, c.name as categoria,
-				COALESCE(
-					(SELECT GROUP_CONCAT(p.name SEPARATOR ' / ')
-						FROM reservations_partners rp
-						JOIN partners p ON p.id = rp.partner_id
-						WHERE rp.reservation_id = m.jugador1_id),
-					(SELECT p.name FROM partners p WHERE p.id = m.jugador1_id)
-				) as jugador1,
-				COALESCE(
-					(SELECT GROUP_CONCAT(p.name SEPARATOR ' / ')
-						FROM reservations_partners rp
-						JOIN partners p ON p.id = rp.partner_id
-						WHERE rp.reservation_id = m.jugador2_id),
-					(SELECT p.name FROM partners p WHERE p.id = m.jugador2_id)
-				) as jugador2
-				FROM matches m
-				JOIN category c ON c.id = m.category
-				WHERE m.ganador_id IS NULL
-				AND m.score IS NULL";
-		if($category) $sql .= " AND m.category = " . intval($category);
-		if($gender)   $sql .= " AND m.gender = '" . $this->db->escape_str($gender) . "'";
-		if($ronda)    $sql .= " AND m.ronda = '" . $this->db->escape_str($ronda) . "'";
-		$q = $this->db->query($sql);
+		$this->db->select('m.*, c.name as categoria')
+			->from('matches m')
+			->join('category c', 'c.id = m.category')
+			->where('m.ganador_id IS NULL')
+			->where('m.score IS NULL');
+		if($category) $this->db->where('m.category', $category);
+		if($gender)   $this->db->where('m.gender', $gender);
+		if($ronda)    $this->db->where('m.ronda', $ronda);
+		$q = $this->db->get();
 		return $q->num_rows() > 0 ? $q->result() : array();
 	}
 
