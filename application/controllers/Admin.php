@@ -2367,6 +2367,44 @@ public function enviarNotificacion() {
 		$this->load->view('debug_bracket', $data);
 	}
 
+	public function checkBracket() {
+		if(!$this->Administrator->isLogged()) redirect(base_url());
+
+		// Últimos resultados cargados
+		$ultimosResultados = $this->db->query("
+			SELECT id, ronda, bracket_pos, jugador1_id, jugador2_id, ganador_id, score,
+				(SELECT name FROM category WHERE id=matches.category) as categoria
+			FROM matches
+			WHERE ganador_id IS NOT NULL
+			ORDER BY id DESC
+			LIMIT 10
+		")->result();
+
+		// Partidos sin resultado en 1ra Ronda
+		$sin1ra = $this->db->query("
+			SELECT id, bracket_pos, jugador1_id, jugador2_id, score
+			FROM matches
+			WHERE ronda='1ra Ronda' AND category=(SELECT id FROM category WHERE name='1ra')
+			AND ganador_id IS NULL
+			ORDER BY bracket_pos
+		")->result();
+
+		// Partidos en 2da Ronda
+		$seg2da = $this->db->query("
+			SELECT id, bracket_pos, jugador1_id, jugador2_id, ganador_id, score
+			FROM matches
+			WHERE ronda='2da Ronda' AND category=(SELECT id FROM category WHERE name='1ra')
+			ORDER BY bracket_pos
+		")->result();
+
+		$d = array(
+			'ultimosResultados' => $ultimosResultados,
+			'sin1ra' => $sin1ra,
+			'seg2da' => $seg2da
+		);
+		$this->load->view('check_bracket', $d);
+	}
+
 	public function testResultado() {
 		if(!$this->Administrator->isLogged()) redirect(base_url());
 
