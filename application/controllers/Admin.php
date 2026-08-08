@@ -1158,13 +1158,24 @@ class Admin extends CI_Controller {
 				'j2' => $j2_name
 			);
 		}
+		// Debug completo
+		$full_debug = array(
+			'total_matches' => count($partidos),
+			'first_match' => isset($partidos[0]) ? array(
+				'id' => $partidos[0]->id,
+				'j1_id' => $partidos[0]->jugador1_id,
+				'j2_id' => $partidos[0]->jugador2_id
+			) : null,
+			'first_preview' => isset($partidos_lista[0]) ? $partidos_lista[0] : null
+		);
+
 		$this->protect->ajaxDie(array(
 			'action'         => true,
 			'partidos'       => count($partidos),
 			'total'          => count($jugadores_ids),
 			'rondas'         => $rondas_arr,
 			'partidos_lista' => $partidos_lista,
-			'debug'          => $debug_info
+			'debug'          => $full_debug
 		));
 	}
 
