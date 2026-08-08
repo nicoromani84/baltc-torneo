@@ -19,11 +19,14 @@ class Partido_model extends CI_Model {
 						FROM reservations_partners rp
 						JOIN partners p ON p.id = rp.partner_id
 						WHERE rp.reservation_id = m.jugador1_id)
-					ELSE g.name
+					WHEN m.ganador_id IS NULL THEN ''
+					ELSE (SELECT GROUP_CONCAT(p.name SEPARATOR ' / ')
+						FROM reservations_partners rp
+						JOIN partners p ON p.id = rp.partner_id
+						WHERE rp.reservation_id = m.ganador_id)
 				END as ganador, m.ganador_id
 			FROM matches m
 			LEFT JOIN category c ON c.id = m.category
-			LEFT JOIN partners g ON g.id = m.ganador_id
 			ORDER BY m.category ASC, m.gender ASC, m.ronda ASC, m.bracket_pos ASC, m.id ASC";
 		$q = $this->db->query($sql);
 		return ($q->num_rows() > 0) ? $q->result() : array();
@@ -46,11 +49,14 @@ class Partido_model extends CI_Model {
 						FROM reservations_partners rp
 						JOIN partners p ON p.id = rp.partner_id
 						WHERE rp.reservation_id = m.jugador1_id)
-					ELSE g.name
+					WHEN m.ganador_id IS NULL THEN ''
+					ELSE (SELECT GROUP_CONCAT(p.name SEPARATOR ' / ')
+						FROM reservations_partners rp
+						JOIN partners p ON p.id = rp.partner_id
+						WHERE rp.reservation_id = m.ganador_id)
 				END as ganador, m.ganador_id
 			FROM matches m
 			LEFT JOIN category c ON c.id = m.category
-			LEFT JOIN partners g ON g.id = m.ganador_id
 			ORDER BY m.category ASC, m.ronda ASC, m.id ASC";
 		$q = $this->db->query($sql);
 		return ($q->num_rows() > 0) ? $q->result() : array();
@@ -72,10 +78,13 @@ class Partido_model extends CI_Model {
 						FROM reservations_partners rp
 						JOIN partners p ON p.id = rp.partner_id
 						WHERE rp.reservation_id = m.jugador1_id)
-					ELSE g.name
+					WHEN m.ganador_id IS NULL THEN ''
+					ELSE (SELECT GROUP_CONCAT(p.name SEPARATOR ' / ')
+						FROM reservations_partners rp
+						JOIN partners p ON p.id = rp.partner_id
+						WHERE rp.reservation_id = m.ganador_id)
 				END as ganador, m.ganador_id
 			FROM matches m
-			LEFT JOIN partners g ON g.id = m.ganador_id
 			WHERE m.category = " . intval($category_id) . "
 			ORDER BY m.ronda ASC, m.id ASC";
 		$q = $this->db->query($sql);
@@ -98,10 +107,13 @@ class Partido_model extends CI_Model {
 						FROM reservations_partners rp
 						JOIN partners p ON p.id = rp.partner_id
 						WHERE rp.reservation_id = m.jugador1_id)
-					ELSE g.name
+					WHEN m.ganador_id IS NULL THEN ''
+					ELSE (SELECT GROUP_CONCAT(p.name SEPARATOR ' / ')
+						FROM reservations_partners rp
+						JOIN partners p ON p.id = rp.partner_id
+						WHERE rp.reservation_id = m.ganador_id)
 				END as ganador, m.ganador_id
 			FROM matches m
-			LEFT JOIN partners g ON g.id = m.ganador_id
 			WHERE m.category = " . $this->db->escape($category_id) . "
 			AND m.gender = " . $this->db->escape($gender) . "
 			ORDER BY m.ronda ASC, m.bracket_pos ASC, m.id ASC";
