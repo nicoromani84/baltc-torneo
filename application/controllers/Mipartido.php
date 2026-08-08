@@ -22,28 +22,6 @@ class Mipartido extends CI_Controller {
 		$d['classname'] = 'reserva';
 		$d['partidos']  = $this->Partido_model->getPendientesByPlayer($user_id);
 
-		// Debug: mostrar todos los partidos pendientes (sin filtrar por jugador)
-		$todos_pendientes = $this->db->query("
-			SELECT m.id, m.ronda, m.jugador1_id, m.jugador2_id, m.score, m.ganador_id, c.name as categoria
-			FROM matches m
-			JOIN category c ON c.id = m.category
-			WHERE m.ganador_id IS NULL AND m.jugador2_id IS NOT NULL
-			ORDER BY m.ronda, m.id
-			LIMIT 20
-		")->result();
-
-		// Debug: mostrar qué reservations tiene este usuario como partner
-		$mis_reservations = $this->db->query("
-			SELECT DISTINCT r.id, r.user_id, c.name as categoria
-			FROM reservations r
-			JOIN reservations_partners rp ON rp.reservation_id = r.id
-			JOIN category c ON c.id = r.category
-			WHERE rp.partner_id = ?
-		", array($user_id))->result();
-
-		$d['debug_todos_pendientes'] = $todos_pendientes;
-		$d['debug_mis_reservations'] = $mis_reservations;
-
 		$this->load->view('web/header', $d);
 		$this->load->view('web/mipartido');
 		$this->load->view('web/footer');
