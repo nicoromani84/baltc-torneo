@@ -1114,6 +1114,7 @@ class Admin extends CI_Controller {
 		}
 		// Lista de enfrentamientos j1 vs j2
 		$partidos_lista = array();
+		$debug_info = array();
 		foreach($partidos as $p) {
 			// Detectar si es dobles intentando obtener partners
 			$j1_partners = $this->db->query(
@@ -1142,6 +1143,14 @@ class Admin extends CI_Controller {
 				$j2 = $this->User->getById($p->jugador2_id);
 				$j1_name = $j1 ? $j1->name : '?';
 				$j2_name = $j2 ? $j2->name : '?';
+				// Log para debug
+				$debug_info[] = array(
+					'partido_id' => $p->id,
+					'j1_id' => $p->jugador1_id,
+					'j1_name' => $j1_name,
+					'j1_found_in_reservations_partners' => count($j1_partners),
+					'j1_found_in_users' => ($j1 ? 1 : 0)
+				);
 			}
 
 			$partidos_lista[] = array(
@@ -1154,7 +1163,8 @@ class Admin extends CI_Controller {
 			'partidos'       => count($partidos),
 			'total'          => count($jugadores_ids),
 			'rondas'         => $rondas_arr,
-			'partidos_lista' => $partidos_lista
+			'partidos_lista' => $partidos_lista,
+			'debug'          => $debug_info
 		));
 	}
 

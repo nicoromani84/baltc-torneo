@@ -629,6 +629,7 @@ $(function(){
 					if(!n) return '?';
 					return n.split(',')[0].trim().toLowerCase().replace(/\b\w/g,function(l){return l.toUpperCase();});
 				}
+				if(res.debug) console.log('Debug:', res.debug);
 				if(res.total === 0) {
 					$('#rec-preview-text').html('<i class="fas fa-exclamation-circle" style="color:#e74c3c"></i> No hay partidos pendientes con esos filtros.');
 					$('#rec-partidos-list').html('');
