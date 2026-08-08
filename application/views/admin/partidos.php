@@ -627,6 +627,15 @@ $(function(){
 			success: function(res) {
 				function apellido(n) {
 					if(!n) return '?';
+					// Si tiene " / ", es dobles: extraer apellidos de ambos (parte antes de coma)
+					if(n.indexOf(' / ') !== -1) {
+						var partes = n.split(' / ');
+						var apellidos = partes.map(function(p) {
+							return p.split(',')[0].trim().toLowerCase().replace(/\b\w/g, function(l){return l.toUpperCase();});
+						});
+						return apellidos.join(' / ');
+					}
+					// Si no tiene " / ", es singles: extraer solo apellido
 					return n.split(',')[0].trim().toLowerCase().replace(/\b\w/g,function(l){return l.toUpperCase();});
 				}
 				if(res.debug) console.log('Debug:', res.debug);
