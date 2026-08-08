@@ -2451,7 +2451,7 @@ public function enviarNotificacion() {
 	public function testResultado() {
 		if(!$this->Administrator->isLogged()) redirect(base_url());
 
-		// Obtener todos los partidos sin resultado
+		// Obtener todos los partidos sin resultado (incluyendo BYEs)
 		$partidos = $this->db->query("
 			SELECT m.id, m.jugador1_id, m.jugador2_id, m.ronda, c.name as categoria, m.gender, m.score, m.ganador_id,
 				(SELECT GROUP_CONCAT(p.name SEPARATOR ' / ')
@@ -2464,7 +2464,7 @@ public function enviarNotificacion() {
 					WHERE rp.reservation_id = m.jugador2_id) as j2_name
 			FROM matches m
 			JOIN category c ON c.id = m.category
-			WHERE m.ganador_id IS NULL AND m.score IS NULL
+			WHERE m.ganador_id IS NULL AND (m.score IS NULL OR m.score = 'BYE')
 			ORDER BY c.name, m.ronda, m.id
 			LIMIT 50
 		")->result();
