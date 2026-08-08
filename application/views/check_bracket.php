@@ -39,34 +39,35 @@
 			</tbody>
 		</table>
 
-		<h2>1️⃣ Partidos sin resultado en 1ra Ronda</h2>
+		<h2>🏆 Cuartos de Final (1ra)</h2>
 		<table class="table table-bordered table-sm">
 			<thead class="thead-dark">
-				<tr><th>ID</th><th>BP</th><th>J1</th><th>J2</th><th>Score</th></tr>
+				<tr><th>ID</th><th>BP</th><th>J1</th><th>J2</th><th>Ganador</th><th>Score</th></tr>
 			</thead>
 			<tbody>
-				<?php foreach($sin1ra as $p): ?>
-					<tr class="<?= $p->score === 'BYE' ? 'bye' : '' ?>">
+				<?php foreach($cuartos as $p): ?>
+					<tr class="<?= $p->score === 'BYE' ? 'bye' : (!empty($p->ganador_id) ? 'con-ganador' : '') ?>">
 						<td><?=$p->id?></td>
 						<td><?=$p->bracket_pos?></td>
 						<td><?=$p->jugador1_id?></td>
-						<td><?=$p->jugador2_id?> <?= $p->jugador2_id === null ? '<span class="badge badge-warning">NULL</span>' : '' ?></td>
+						<td><?=$p->jugador2_id?> <?= $p->jugador2_id === null ? '<span class="badge badge-warning">BYE</span>' : '' ?></td>
+						<td><?=$p->ganador_id?></td>
 						<td><?=$p->score?></td>
 					</tr>
 				<?php endforeach; ?>
 			</tbody>
 		</table>
 
-		<h2>2️⃣ Partidos en 2da Ronda (deberían estar aquí)</h2>
+		<h2>🥊 Semifinal (deberían estar aquí)</h2>
 		<table class="table table-bordered table-sm">
 			<thead class="thead-dark">
 				<tr><th>ID</th><th>BP</th><th>J1</th><th>J2</th><th>Ganador</th><th>Score</th></tr>
 			</thead>
 			<tbody>
-				<?php if(empty($seg2da)): ?>
+				<?php if(empty($semifinal)): ?>
 					<tr><td colspan="6" class="text-danger"><strong>❌ No hay partidos</strong></td></tr>
 				<?php else: ?>
-					<?php foreach($seg2da as $p): ?>
+					<?php foreach($semifinal as $p): ?>
 						<tr class="<?= !empty($p->ganador_id) ? 'con-ganador' : '' ?>">
 							<td><?=$p->id?></td>
 							<td><?=$p->bracket_pos?></td>
@@ -79,6 +80,15 @@
 				<?php endif; ?>
 			</tbody>
 		</table>
+
+		<?php if(!empty($debug)): ?>
+			<h2>🔍 Debug Info</h2>
+			<div class="alert alert-info">
+				<?php foreach($debug as $line): ?>
+					<div><?=$line?></div>
+				<?php endforeach; ?>
+			</div>
+		<?php endif; ?>
 	</div>
 </body>
 </html>

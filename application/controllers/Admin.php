@@ -2380,27 +2380,45 @@ public function enviarNotificacion() {
 			LIMIT 10
 		")->result();
 
-		// Partidos sin resultado en 1ra Ronda
-		$sin1ra = $this->db->query("
-			SELECT id, bracket_pos, jugador1_id, jugador2_id, score
+		// Últimos resultados en Cuartos de Final
+		$cuartos = $this->db->query("
+			SELECT id, bracket_pos, jugador1_id, jugador2_id, ganador_id, score
 			FROM matches
-			WHERE ronda='1ra Ronda' AND category=(SELECT id FROM category WHERE name='1ra')
-			AND ganador_id IS NULL
+			WHERE ronda='Cuartos de Final' AND category=(SELECT id FROM category WHERE name='1ra')
 			ORDER BY bracket_pos
 		")->result();
 
-		// Partidos en 2da Ronda
-		$seg2da = $this->db->query("
+		// Partidos en Semifinal (la siguiente ronda)
+		$semifinal = $this->db->query("
 			SELECT id, bracket_pos, jugador1_id, jugador2_id, ganador_id, score
 			FROM matches
-			WHERE ronda='2da Ronda' AND category=(SELECT id FROM category WHERE name='1ra')
+			WHERE ronda='Semifinal' AND category=(SELECT id FROM category WHERE name='1ra')
 			ORDER BY bracket_pos
 		")->result();
+
+		// Ver los hermanos de los últimos resultados
+		$debug = array();
+		foreach($ultimosResultados as $r) {
+			if($r->ronda === 'Cuartos de Final') {
+				$bp = intval($r->bracket_pos);
+				$hermano_bp = ($bp % 2 === 0) ? $bp + 1 : $bp - 1;
+				$hermano = $this->db->query("
+					SELECT id, bracket_pos, score, jugador1_id, jugador2_id, ganador_id
+					FROM matches
+					WHERE ronda='Cuartos de Final' AND category={$r->category} AND bracket_pos=$hermano_bp
+				")->row();
+
+				if($hermano) {
+					$debug[] = "Partido {$r->id} (BP={$bp}): Ganador={$r->ganador_id}, Hermano BP={$hermano_bp}: score='{$hermano->score}', ganador={$hermano->ganador_id}, j1={$hermano->jugador1_id}";
+				}
+			}
+		}
 
 		$d = array(
 			'ultimosResultados' => $ultimosResultados,
-			'sin1ra' => $sin1ra,
-			'seg2da' => $seg2da
+			'cuartos' => $cuartos,
+			'semifinal' => $semifinal,
+			'debug' => $debug
 		);
 		$this->load->view('check_bracket', $d);
 	}
