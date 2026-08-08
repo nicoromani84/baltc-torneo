@@ -2373,6 +2373,36 @@ public function enviarNotificacion() {
 		$this->load->view('test_resultado', $d);
 	}
 
+	public function revertirResultado() {
+		$this->protect->setAjax();
+		$this->protect->setRequest('POST');
+		if(!$this->Administrator->isLogged()) $this->protect->ajaxDie(array('action'=>false));
+
+		$partido_id = intval($this->input->post('id'));
+		$partido = $this->Partido_model->getById($partido_id);
+		if(!$partido) $this->protect->ajaxDie(array('action'=>false, 'msg'=>'Partido no encontrado'));
+
+		// Limpiar resultado
+		$this->Partido_model->edit($partido_id, array('score' => null, 'ganador_id' => null));
+
+		// Eliminar partidos de rondas posteriores que dependían de este
+		$rondas = array('1ra Ronda','2da Ronda','Cuartos de Final','Semifinal','Final');
+		$ronda_idx = array_search($partido->ronda, $rondas);
+		if($ronda_idx !== false && $ronda_idx < count($rondas) - 1) {
+			$siguiente_ronda = $rondas[$ronda_idx + 1];
+			$bp = intval($partido->bracket_pos);
+			$new_bp = (int)floor($bp / 2);
+			$this->db->delete('matches', array(
+				'category' => $partido->category,
+				'gender' => $partido->gender,
+				'ronda' => $siguiente_ronda,
+				'bracket_pos' => $new_bp
+			));
+		}
+
+		$this->protect->ajaxDie(array('action'=>true, 'msg'=>'Resultado revertido correctamente'));
+	}
+
 	public function testCargarResultado() {
 		$this->protect->setAjax();
 		$this->protect->setRequest('POST');

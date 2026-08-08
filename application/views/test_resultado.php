@@ -48,6 +48,8 @@
 			<button type="submit" class="btn btn-lg btn-block">Cargar Resultado</button>
 		</form>
 
+		<button class="btn btn-warning btn-lg btn-block" id="btn-revertir" style="margin-top: 10px;">Revertir Resultado</button>
+
 		<div id="resultado"></div>
 	</div>
 
@@ -80,6 +82,31 @@
 					error: function(){
 						$('#resultado').html('<div class="alert alert-danger"><strong>Error</strong><br>No se pudo conectar al servidor</div>');
 						btn.prop('disabled', false).html('Cargar Resultado');
+					}
+				});
+			});
+
+			$('#btn-revertir').on('click', function(){
+				if(!confirm('¿Revertir resultado del partido?')) return;
+				var btn = $(this);
+				btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Revirtiendo...');
+
+				$.ajax({
+					url: '<?=base_url('admin/revertirResultado')?>',
+					type: 'POST',
+					data: { id: $('#partido_id').val() },
+					headers: { 'X-Auth-Token': '<?=$token?>' },
+					success: function(res){
+						var html = '<div class="alert ' + (res.action ? 'alert-info' : 'alert-danger') + '">';
+						html += '<strong>' + (res.action ? '↩️ Revertido' : '❌ Error') + '</strong><br>';
+						html += res.msg || 'Operación completada';
+						html += '</div>';
+						$('#resultado').html(html);
+						btn.prop('disabled', false).html('Revertir Resultado');
+					},
+					error: function(){
+						$('#resultado').html('<div class="alert alert-danger"><strong>Error</strong><br>No se pudo conectar al servidor</div>');
+						btn.prop('disabled', false).html('Revertir Resultado');
 					}
 				});
 			});
