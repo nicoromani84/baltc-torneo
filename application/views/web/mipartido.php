@@ -132,6 +132,42 @@
 			<?php endif; ?>
 		</div>
 	</div>
+
+	<?php if(isset($debug_todos_pendientes) && !empty($debug_todos_pendientes)): ?>
+	<div style="margin-top: 50px; padding: 20px; background: #f0f0f0; border-radius: 8px;">
+		<h3>🔍 DEBUG</h3>
+		<p><strong>Tus reservations (como partner):</strong></p>
+		<?php if(!empty($debug_mis_reservations)): ?>
+			<ul>
+			<?php foreach($debug_mis_reservations as $r): ?>
+				<li>ID <?=$r->id?> - <?=$r->categoria?></li>
+			<?php endforeach; ?>
+			</ul>
+		<?php else: ?>
+			<p>❌ No hay reservations</p>
+		<?php endif; ?>
+
+		<p style="margin-top: 15px;"><strong>Todos los partidos pendientes (BD):</strong></p>
+		<table style="border-collapse: collapse; width: 100%; margin-top: 10px;">
+			<tr style="background: #ddd;">
+				<th style="border: 1px solid #999; padding: 5px;">ID</th>
+				<th style="border: 1px solid #999; padding: 5px;">Ronda</th>
+				<th style="border: 1px solid #999; padding: 5px;">J1</th>
+				<th style="border: 1px solid #999; padding: 5px;">J2</th>
+				<th style="border: 1px solid #999; padding: 5px;">Categoría</th>
+			</tr>
+			<?php foreach($debug_todos_pendientes as $p): ?>
+			<tr>
+				<td style="border: 1px solid #999; padding: 5px;"><?=$p->id?></td>
+				<td style="border: 1px solid #999; padding: 5px;"><?=$p->ronda?></td>
+				<td style="border: 1px solid #999; padding: 5px;"><?=$p->jugador1_id?></td>
+				<td style="border: 1px solid #999; padding: 5px;"><?=$p->jugador2_id?></td>
+				<td style="border: 1px solid #999; padding: 5px;"><?=$p->categoria?></td>
+			</tr>
+			<?php endforeach; ?>
+		</table>
+	</div>
+	<?php endif; ?>
 </div>
 
 <style>
