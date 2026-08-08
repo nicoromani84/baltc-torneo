@@ -2369,7 +2369,27 @@ public function enviarNotificacion() {
 
 	public function testResultado() {
 		if(!$this->Administrator->isLogged()) redirect(base_url());
+
+		// Obtener todos los partidos sin resultado
+		$partidos = $this->db->query("
+			SELECT m.id, m.jugador1_id, m.jugador2_id, m.ronda, c.name as categoria, m.gender,
+				(SELECT GROUP_CONCAT(p.name SEPARATOR ' / ')
+					FROM reservations_partners rp
+					JOIN partners p ON p.id = rp.partner_id
+					WHERE rp.reservation_id = m.jugador1_id) as j1_name,
+				(SELECT GROUP_CONCAT(p.name SEPARATOR ' / ')
+					FROM reservations_partners rp
+					JOIN partners p ON p.id = rp.partner_id
+					WHERE rp.reservation_id = m.jugador2_id) as j2_name
+			FROM matches m
+			JOIN category c ON c.id = m.category
+			WHERE m.ganador_id IS NULL AND m.score IS NULL
+			ORDER BY c.name, m.ronda, m.id
+			LIMIT 50
+		")->result();
+
 		$d['token'] = $this->protect->eToken();
+		$d['partidos'] = $partidos;
 		$this->load->view('test_resultado', $d);
 	}
 

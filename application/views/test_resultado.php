@@ -21,17 +21,23 @@
 
 		<form id="form-test">
 			<div class="form-group">
-				<label>ID Partido</label>
-				<input type="number" class="form-control" id="partido_id" value="1667" required>
-				<small class="text-muted">Loketek/Sacerdote vs Polla/Pierini (Cuartos de Final, 1ra)</small>
+				<label>Partido</label>
+				<select class="form-control" id="partido_select" required>
+					<option value="">Seleccionar partido...</option>
+					<?php foreach($partidos as $p): ?>
+						<option value="<?=$p->id?>" data-j1="<?=$p->jugador1_id?>" data-j2="<?=$p->jugador2_id?>" data-j1-name="<?=htmlspecialchars($p->j1_name)?>" data-j2-name="<?=htmlspecialchars($p->j2_name)?>">
+							<?=$p->categoria?> - <?=$p->ronda?> - <?=$p->j1_name?> vs <?=$p->j2_name?>
+						</option>
+					<?php endforeach; ?>
+				</select>
 			</div>
 
+			<input type="hidden" id="partido_id">
+
 			<div class="form-group">
-				<label>Ganador (Reservation ID)</label>
-				<select class="form-control" id="ganador_id" required>
-					<option value="">Seleccionar...</option>
-					<option value="238">238 - Loketek, Sebastian / Sacerdote, Diego Raul</option>
-					<option value="233">233 - Polla, Damian / Pierini, Alfredo Santiago</option>
+				<label>Ganador</label>
+				<select class="form-control" id="ganador_id" required disabled>
+					<option value="">Seleccionar ganador...</option>
 				</select>
 			</div>
 
@@ -56,6 +62,22 @@
 	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 	<script>
 		$(function(){
+			// Cuando selecciona un partido, actualizar opciones de ganador
+			$('#partido_select').on('change', function(){
+				var $opt = $(this).find(':selected');
+				var partido_id = $opt.val();
+				var j1 = $opt.data('j1');
+				var j2 = $opt.data('j2');
+				var j1_name = $opt.data('j1-name');
+				var j2_name = $opt.data('j2-name');
+
+				$('#partido_id').val(partido_id);
+				var html = '<option value="">Seleccionar ganador...</option>';
+				if(j1) html += '<option value="' + j1 + '">' + j1_name + '</option>';
+				if(j2) html += '<option value="' + j2 + '">' + j2_name + '</option>';
+				$('#ganador_id').html(html).prop('disabled', !partido_id);
+			});
+
 			$('#form-test').on('submit', function(e){
 				e.preventDefault();
 				var btn = $(this).find('button[type=submit]');
