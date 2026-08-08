@@ -57,6 +57,24 @@
 		<button class="btn btn-warning btn-lg btn-block" id="btn-revertir" style="margin-top: 10px;">Revertir Resultado</button>
 
 		<div id="resultado"></div>
+
+		<hr>
+		<h3>🔍 Debug: Todos los partidos (1ra Ronda + Cuartos)</h3>
+		<table class="table table-sm table-bordered">
+			<thead class="thead-dark"><tr><th>ID</th><th>Ronda</th><th>J1</th><th>J2</th><th>Score</th><th>Ganador</th></tr></thead>
+			<tbody>
+				<?php foreach($todos as $p): ?>
+					<tr class="<?= empty($p->ganador_id) && empty($p->score) ? 'table-success' : 'table-danger' ?>">
+						<td><?=$p->id?></td>
+						<td><?=$p->ronda?></td>
+						<td><?=$p->jugador1_id?></td>
+						<td><?=$p->jugador2_id?></td>
+						<td><?=$p->score?></td>
+						<td><?=$p->ganador_id?></td>
+					</tr>
+				<?php endforeach; ?>
+			</tbody>
+		</table>
 	</div>
 
 	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
