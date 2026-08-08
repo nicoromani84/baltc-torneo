@@ -2484,6 +2484,45 @@ public function enviarNotificacion() {
 		$this->load->view('test_resultado', $d);
 	}
 
+	public function revertirPartido($id = 0) {
+		if(!$this->Administrator->isLogged()) redirect(base_url());
+
+		$id = intval($id);
+		if($id <= 0) {
+			echo "❌ ID inválido";
+			return;
+		}
+
+		$partido = $this->Partido_model->getById($id);
+		if(!$partido) {
+			echo "❌ Partido no encontrado";
+			return;
+		}
+
+		// Limpiar resultado
+		$this->db->where('id', $id)->update('matches', array(
+			'score' => NULL,
+			'ganador_id' => NULL
+		));
+
+		// Eliminar partidos de rondas posteriores
+		$rondas = array('1ra Ronda','2da Ronda','Cuartos de Final','Semifinal','Final');
+		$ronda_idx = array_search($partido->ronda, $rondas);
+		if($ronda_idx !== false && $ronda_idx < count($rondas) - 1) {
+			$siguiente_ronda = $rondas[$ronda_idx + 1];
+			$bp = intval($partido->bracket_pos);
+			$new_bp = (int)floor($bp / 2);
+			$this->db->delete('matches', array(
+				'category' => $partido->category,
+				'gender' => $partido->gender,
+				'ronda' => $siguiente_ronda,
+				'bracket_pos' => $new_bp
+			));
+		}
+
+		echo "✅ Partido $id revertido correctamente";
+	}
+
 	public function revertirResultado() {
 		$this->protect->setAjax();
 		$this->protect->setRequest('POST');
