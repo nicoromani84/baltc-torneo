@@ -58,6 +58,16 @@
 				<div id="rec-preview-text" style="margin-bottom:8px; font-weight:600;"></div>
 				<div id="rec-partidos-list"></div>
 			</div>
+
+			<!-- Modo test -->
+			<div style="margin-bottom:12px; padding:10px; background:#fff3cd; border-radius:4px; border:1px solid #ffc107; display:none;" id="rec-test-section">
+				<label style="margin:0; cursor:pointer; font-size:13px;">
+					<input type="checkbox" id="rec-test-mode">
+					<strong>Modo de prueba:</strong> Enviar a un email diferente
+				</label>
+				<input type="email" id="rec-test-email" class="form-control" placeholder="tu-email@example.com" style="margin-top:8px; display:none;">
+			</div>
+
 			<div style="display:flex; gap:8px; justify-content:flex-end; margin-top:10px;">
 				<button class="btn btn-secondary" id="btn-rec-cancelar">Cancelar</button>
 				<button class="btn btn-success" id="btn-rec-enviar" style="display:none"><i class="fas fa-paper-plane"></i> Enviar <span id="rec-count"></span></button>
@@ -656,6 +666,7 @@ $(function(){
 						});
 					}
 					$('#rec-partidos-list').html(html);
+					$('#rec-test-section').show();
 					$('#btn-rec-enviar').show();
 				}
 				$('#rec-preview').show();
@@ -672,6 +683,10 @@ $(function(){
 	});
 	$('#btn-rec-cancelar').on('click', function(){
 		$('#modal-recordatorio').hide();
+		// Reset test mode
+		$('#rec-test-mode').prop('checked', false);
+		$('#rec-test-email').val('').hide();
+		$('#rec-test-section').hide();
 	});
 	$('#modal-recordatorio').on('click', function(e){
 		if($(e.target).is('#modal-recordatorio')) $(this).hide();
@@ -686,9 +701,26 @@ $(function(){
 	$('#rec-deadline').on('change', function(){
 		recActualizarPreview();
 	});
+
+	// Mostrar/ocultar campo de email de prueba
+	$('#rec-test-mode').on('change', function(){
+		$('#rec-test-email').toggle(this.checked).focus();
+	});
+
 	$('#btn-rec-enviar').on('click', function(){
 		var deadline = $('#rec-deadline').val();
 		if(!deadline){ alert('Seleccioná una fecha límite.'); return; }
+
+		var testEmail = $('#rec-test-mode').is(':checked') ? $('#rec-test-email').val() : '';
+		if($('#rec-test-mode').is(':checked') && !testEmail){
+			alert('Ingresá un email para la prueba.');
+			$('#rec-test-email').focus();
+			return;
+		}
+
+		var msg = testEmail ? '⚠️ Modo de prueba: Los emails se enviarán a ' + testEmail + '\n\n¿Continuar?' : '¿Enviar los recordatorios a todos los jugadores?';
+		if(!confirm(msg)) return;
+
 		$(this).prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Enviando...');
 		$.ajax({
 			url: baseurl + 'admin/enviarRecordatorio',
@@ -697,7 +729,8 @@ $(function(){
 				deadline: deadline,
 				category: $('#rec-category').val(),
 				gender: $('#rec-gender').val(),
-				ronda: $('#rec-ronda').val()
+				ronda: $('#rec-ronda').val(),
+				test_email: testEmail
 			},
 			headers: { 'X-Auth-Token': token },
 			success: function(res){

@@ -1167,6 +1167,7 @@ class Admin extends CI_Controller {
 		$category = $this->input->post('category', true);
 		$gender   = $this->input->post('gender', true);
 		$ronda    = $this->input->post('ronda', true);
+		$test_email = $this->input->post('test_email', true);
 		if(!$deadline) $this->protect->ajaxDie(array('action'=>false, 'msg'=>'Fecha requerida.'));
 		$meses = array('01'=>'enero','02'=>'febrero','03'=>'marzo','04'=>'abril','05'=>'mayo','06'=>'junio','07'=>'julio','08'=>'agosto','09'=>'septiembre','10'=>'octubre','11'=>'noviembre','12'=>'diciembre');
 		$parts = explode('-', $deadline);
@@ -1222,7 +1223,7 @@ class Admin extends CI_Controller {
 				$this->email->initialize(array());
 				$this->email
 					->from('secretaria@baltc.net', 'Secretaría BALTC')
-					->to($partner->email)
+					->to($test_email ?: $partner->email)
 					->subject('Recordatorio: fecha límite para tu partido - Torneo BALTC')
 					->message($body)
 					->send();
