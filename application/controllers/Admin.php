@@ -1115,9 +1115,13 @@ class Admin extends CI_Controller {
 		// Lista de enfrentamientos j1 vs j2
 		$partidos_lista = array();
 		foreach($partidos as $p) {
+			// Si contiene " / ", es una pareja; mostrar ambos nombres
+			$j1_display = !empty($p->jugador1) ? $p->jugador1 : '?';
+			$j2_display = !empty($p->jugador2) ? $p->jugador2 : '?';
+
 			$partidos_lista[] = array(
-				'j1' => !empty($p->jugador1) ? $p->jugador1 : '?',
-				'j2' => !empty($p->jugador2) ? $p->jugador2 : '?'
+				'j1' => $j1_display,
+				'j2' => $j2_display
 			);
 		}
 		$this->protect->ajaxDie(array(

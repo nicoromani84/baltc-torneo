@@ -627,6 +627,14 @@ $(function(){
 			success: function(res) {
 				function apellido(n) {
 					if(!n) return '?';
+					// Si contiene " / ", es una pareja: mostrar ambos apellidos
+					if(n.indexOf(' / ') >= 0) {
+						var nombres = n.split(' / ');
+						return nombres.map(function(nom) {
+							return nom.split(',')[0].trim().toLowerCase().replace(/\b\w/g, function(l) { return l.toUpperCase(); });
+						}).join('-');
+					}
+					// Si no, es un jugador individual
 					return n.split(',')[0].trim().toLowerCase().replace(/\b\w/g,function(l){return l.toUpperCase();});
 				}
 				if(res.total === 0) {
@@ -641,7 +649,7 @@ $(function(){
 						res.partidos_lista.forEach(function(p) {
 							html += '<div style="padding:3px 0; border-bottom:1px solid #e9ecef; font-size:12px;">'
 								+ '<span style="font-weight:700; color:#2d6a00;">' + apellido(p.j1) + '</span>'
-								+ '<span style="color:#aaa; margin:0 5px; font-size:10px;">vs</span>'
+								+ ' <span style="color:#aaa; font-size:10px;">vs</span> '
 								+ '<span style="font-weight:700; color:#2d6a00;">' + apellido(p.j2) + '</span>'
 								+ '</div>';
 						});
