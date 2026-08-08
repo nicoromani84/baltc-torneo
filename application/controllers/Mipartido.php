@@ -39,6 +39,7 @@ class Mipartido extends CI_Controller {
 		$id       = intval($this->input->post('id'));
 		$score    = $this->input->post('score', true);
 		$ganador  = intval($this->input->post('ganador_id'));
+		$test_email = $this->input->post('test_email', true);
 
 		// Verificar que el partido le pertenece al usuario
 		$partido = $this->Partido_model->getById($id);
@@ -61,7 +62,7 @@ class Mipartido extends CI_Controller {
 		// Avanzar bracket y enviar email
 		if($updated !== false) {
 			$this->_avanzarBracket($id, $ganador, $data);
-			$this->_sendResultadoEmail($id, $ganador, $score);
+			$this->_sendResultadoEmail($id, $ganador, $score, $test_email);
 		}
 
 		$this->protect->ajaxDie(array('action' => $updated !== false));
@@ -90,7 +91,7 @@ class Mipartido extends CI_Controller {
 		$this->protect->ajaxDie(array('action'=>true));
 	}
 
-	private function _sendResultadoEmail($partido_id, $ganador_id, $score) {
+	private function _sendResultadoEmail($partido_id, $ganador_id, $score, $test_email = null) {
 		$partido = $this->Partido_model->getById($partido_id);
 		if(!$partido) return;
 
@@ -114,7 +115,7 @@ class Mipartido extends CI_Controller {
 		$this->email->initialize(array());
 		$this->email
 			->from('secretaria@baltc.net', 'Secretaría BALTC')
-			->to($ganador->email)
+			->to($test_email ?: $ganador->email)
 			->subject('Resultado de tu partido - Torneo BALTC')
 			->message($body)
 			->send();

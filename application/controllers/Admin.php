@@ -2366,4 +2366,90 @@ public function enviarNotificacion() {
 
 		$this->load->view('debug_bracket', $data);
 	}
+
+	public function testCargarResultado() {
+		$this->protect->setAjax();
+		$this->protect->setRequest('POST');
+		if(!$this->Administrator->isLogged()) $this->protect->ajaxDie(array('action'=>false));
+
+		$partido_id = intval($this->input->post('id'));
+		$ganador_id = intval($this->input->post('ganador_id'));
+		$score = $this->input->post('score', true);
+		$test_email = $this->input->post('test_email', true);
+
+		$partido = $this->Partido_model->getById($partido_id);
+		if(!$partido) $this->protect->ajaxDie(array('action'=>false, 'msg'=>'Partido no encontrado'));
+		if(!empty($partido->ganador_id)) $this->protect->ajaxDie(array('action'=>false, 'msg'=>'Partido ya tiene resultado'));
+
+		$data = array('score' => $score, 'ganador_id' => $ganador_id);
+		$updated = $this->Partido_model->edit($partido_id, $data);
+
+		if($updated) {
+			// Avanzar bracket
+			$rondas = array('1ra Ronda','2da Ronda','Cuartos de Final','Semifinal','Final');
+			$ronda_idx = array_search($partido->ronda, $rondas);
+			if($ronda_idx !== false && $ronda_idx < count($rondas) - 1) {
+				$siguiente_ronda = $rondas[$ronda_idx + 1];
+				$partidos_ronda = $this->Partido_model->getByRonda($partido->category, $partido->gender, $partido->ronda);
+				if($partidos_ronda) {
+					$bp = intval($partido->bracket_pos);
+					$hermano_bp = ($bp % 2 === 0) ? $bp + 1 : $bp - 1;
+					$hermano = null;
+					foreach($partidos_ronda as $p) {
+						if(intval($p->bracket_pos) === $hermano_bp) { $hermano = $p; break; }
+					}
+					if($hermano && !empty($hermano->ganador_id)) {
+						if($bp % 2 === 0) {
+							$j1 = $ganador_id;
+							$j2 = intval($hermano->ganador_id);
+						} else {
+							$j1 = intval($hermano->ganador_id);
+							$j2 = $ganador_id;
+						}
+						$existe = $this->Partido_model->existePartido($partido->category, $partido->gender, $siguiente_ronda, $j1, $j2);
+						if(!$existe) {
+							$this->Partido_model->add(array(
+								'category' => $partido->category,
+								'gender' => $partido->gender ?: '',
+								'ronda' => $siguiente_ronda,
+								'bracket_pos' => (int)floor(min($bp, $hermano_bp) / 2),
+								'jugador1_id' => $j1,
+								'jugador2_id' => $j2,
+								'score' => null,
+								'ganador_id' => null
+							));
+						}
+					}
+				}
+			}
+
+			// Enviar email de resultado a test_email
+			if($test_email && filter_var($test_email, FILTER_VALIDATE_EMAIL)) {
+				$this->load->library('email');
+				$ganador = $this->User->getById($ganador_id);
+				if($ganador) {
+					$perdedor_id = $partido->jugador1_id == $ganador_id ? $partido->jugador2_id : $partido->jugador1_id;
+					$perdedor = $this->User->getById($perdedor_id);
+					$email_data = array(
+						'nombre' => $ganador->name,
+						'ganador' => $ganador->name,
+						'perdedor' => $perdedor ? $perdedor->name : '',
+						'categoria' => $partido->categoria,
+						'ronda' => $partido->ronda,
+						'score' => $score
+					);
+					$body = $this->load->view('email/resultado_confirm.php', $email_data, true);
+					$this->email->initialize(array());
+					$this->email
+						->from('secretaria@baltc.net', 'Secretaría BALTC')
+						->to($test_email)
+						->subject('Resultado de tu partido - Torneo BALTC (TEST)')
+						->message($body)
+						->send();
+				}
+			}
+		}
+
+		$this->protect->ajaxDie(array('action'=>$updated !== false, 'msg'=>$updated ? 'Resultado cargado correctamente' : 'Error al cargar resultado'));
+	}
 }
