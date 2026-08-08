@@ -127,6 +127,11 @@
 			});
 
 			$('#btn-revertir').on('click', function(){
+				var partido_id = $('#partido_id').val();
+				if(!partido_id) {
+					alert('Selecciona un partido primero');
+					return;
+				}
 				if(!confirm('¿Revertir resultado del partido?')) return;
 				var btn = $(this);
 				btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Revirtiendo...');
@@ -134,7 +139,7 @@
 				$.ajax({
 					url: '<?=base_url('admin/revertirResultado')?>',
 					type: 'POST',
-					data: { id: $('#partido_id').val() },
+					data: { id: partido_id },
 					headers: { 'X-Auth-Token': '<?=$token?>' },
 					success: function(res){
 						var html = '<div class="alert ' + (res.action ? 'alert-info' : 'alert-danger') + '">';
@@ -143,6 +148,10 @@
 						html += '</div>';
 						$('#resultado').html(html);
 						btn.prop('disabled', false).html('Revertir Resultado');
+						if(res.action) {
+							// Recargar dropdown
+							location.reload();
+						}
 					},
 					error: function(){
 						$('#resultado').html('<div class="alert alert-danger"><strong>Error</strong><br>No se pudo conectar al servidor</div>');
