@@ -1199,40 +1199,89 @@ class Admin extends CI_Controller {
 
 			// Si hay partners, es dobles. Si no, es singles.
 			if(!empty($j1_partners) && !empty($j2_partners)) {
-				$all_partners = array_merge($j1_partners, $j2_partners);
-				$rival_names = implode(' / ', array_map(function($x) { return $x->name; }, $j2_partners));
+				$j1_names = implode(' / ', array_map(function($x) { return $x->name; }, $j1_partners));
+				$j2_names = implode(' / ', array_map(function($x) { return $x->name; }, $j2_partners));
+
+				// Enviar a J1
+				$emails_enviados = array();
+				foreach($j1_partners as $partner) {
+					if(!$partner || !filter_var($partner->email, FILTER_VALIDATE_EMAIL)) continue;
+					if(in_array($partner->email, $emails_enviados)) continue;
+					$emails_enviados[] = $partner->email;
+
+					$data = array(
+						'nombre'    => $partner->name,
+						'rival'     => $j2_names,
+						'categoria' => $p->categoria,
+						'ronda'     => $p->ronda,
+						'deadline'  => $fecha_str,
+					);
+					$body = $this->load->view('email/recordatorio_deadline.php', $data, true);
+					$this->email->initialize(array());
+					$this->email
+						->from('secretaria@baltc.net', 'Secretaría BALTC')
+						->to($test_email ?: $partner->email)
+						->subject('Recordatorio: fecha límite para tu partido - Torneo BALTC')
+						->message($body)
+						->send();
+					$enviados++;
+				}
+
+				// Enviar a J2
+				foreach($j2_partners as $partner) {
+					if(!$partner || !filter_var($partner->email, FILTER_VALIDATE_EMAIL)) continue;
+					if(in_array($partner->email, $emails_enviados)) continue;
+					$emails_enviados[] = $partner->email;
+
+					$data = array(
+						'nombre'    => $partner->name,
+						'rival'     => $j1_names,
+						'categoria' => $p->categoria,
+						'ronda'     => $p->ronda,
+						'deadline'  => $fecha_str,
+					);
+					$body = $this->load->view('email/recordatorio_deadline.php', $data, true);
+					$this->email->initialize(array());
+					$this->email
+						->from('secretaria@baltc.net', 'Secretaría BALTC')
+						->to($test_email ?: $partner->email)
+						->subject('Recordatorio: fecha límite para tu partido - Torneo BALTC')
+						->message($body)
+						->send();
+					$enviados++;
+				}
 			} else {
 				// Singles: obtener jugadores individuales
 				$j1_user = $this->User->getById($p->jugador1_id);
 				$j2_user = $this->User->getById($p->jugador2_id);
 				$all_partners = array_filter(array($j1_user, $j2_user));
 				$rival_names = $j2_user ? $j2_user->name : 'Tu rival';
-			}
 
-			// Enviar a todos (sin duplicados por email)
-			$emails_enviados = array();
-			foreach($all_partners as $partner) {
-				if(!$partner || !filter_var($partner->email, FILTER_VALIDATE_EMAIL)) continue;
-				// Evitar enviar duplicados al mismo email
-				if(in_array($partner->email, $emails_enviados)) continue;
-				$emails_enviados[] = $partner->email;
+				// Enviar a todos (sin duplicados por email)
+				$emails_enviados = array();
+				foreach($all_partners as $partner) {
+					if(!$partner || !filter_var($partner->email, FILTER_VALIDATE_EMAIL)) continue;
+					// Evitar enviar duplicados al mismo email
+					if(in_array($partner->email, $emails_enviados)) continue;
+					$emails_enviados[] = $partner->email;
 
-				$data = array(
-					'nombre'    => $partner->name,
-					'rival'     => $rival_names ?: 'Tu rival',
-					'categoria' => $p->categoria,
-					'ronda'     => $p->ronda,
-					'deadline'  => $fecha_str,
-				);
-				$body = $this->load->view('email/recordatorio_deadline.php', $data, true);
-				$this->email->initialize(array());
-				$this->email
-					->from('secretaria@baltc.net', 'Secretaría BALTC')
-					->to($test_email ?: $partner->email)
-					->subject('Recordatorio: fecha límite para tu partido - Torneo BALTC')
-					->message($body)
-					->send();
-				$enviados++;
+					$data = array(
+						'nombre'    => $partner->name,
+						'rival'     => $rival_names ?: 'Tu rival',
+						'categoria' => $p->categoria,
+						'ronda'     => $p->ronda,
+						'deadline'  => $fecha_str,
+					);
+					$body = $this->load->view('email/recordatorio_deadline.php', $data, true);
+					$this->email->initialize(array());
+					$this->email
+						->from('secretaria@baltc.net', 'Secretaría BALTC')
+						->to($test_email ?: $partner->email)
+						->subject('Recordatorio: fecha límite para tu partido - Torneo BALTC')
+						->message($body)
+						->send();
+					$enviados++;
+				}
 			}
 		}
 		$this->protect->ajaxDie(array('action'=>true, 'enviados'=>$enviados));
