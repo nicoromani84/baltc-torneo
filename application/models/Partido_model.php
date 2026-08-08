@@ -219,7 +219,7 @@ class Partido_model extends CI_Model {
 	// Obtener partidos de una ronda específica ordenados por id
 	public function getByRonda($category_id, $gender, $ronda) {
 		$q = $this->db
-			->select('m.id, m.jugador1_id, m.jugador2_id, m.ganador_id, m.ronda, m.category, m.gender, m.bracket_pos')
+			->select('m.id, m.jugador1_id, m.jugador2_id, m.ganador_id, m.ronda, m.category, m.gender, m.bracket_pos, m.score')
 			->from('matches m')
 			->where('m.category', $category_id)
 			->where('m.gender', $gender)
