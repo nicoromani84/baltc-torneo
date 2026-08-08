@@ -172,11 +172,18 @@ class Mipartido extends CI_Controller {
 		foreach($partidos_ronda as $p) {
 			if(intval($p->bracket_pos) === $hermano_bp) { $hermano = $p; break; }
 		}
-		if(!$hermano) return;
+		if(!$hermano) {
+			error_log("DEBUG: No encontró hermano. bp=$bp, hermano_bp=$hermano_bp, partidos_ronda=" . json_encode($partidos_ronda));
+			return;
+		}
 
 		// Si hermano es BYE, usar jugador1_id; si no, usar ganador_id
 		$hermano_ganador = ($hermano->score === 'BYE') ? $hermano->jugador1_id : $hermano->ganador_id;
-		if(empty($hermano_ganador)) return;
+		error_log("DEBUG: hermano score='{$hermano->score}', ganador_id='{$hermano->ganador_id}', jugador1_id='{$hermano->jugador1_id}', hermano_ganador=$hermano_ganador");
+		if(empty($hermano_ganador)) {
+			error_log("DEBUG: hermano_ganador vacío");
+			return;
+		}
 
 		if($bp % 2 === 0) {
 			$j1 = $ganador_id;
@@ -186,12 +193,17 @@ class Mipartido extends CI_Controller {
 			$j2 = $ganador_id;
 		}
 
+		error_log("DEBUG: Avanzando a $siguiente_ronda. j1=$j1, j2=$j2, next_pos=" . (int)floor(min($bp, $hermano_bp) / 2));
+
 		$existe = $this->Partido_model->existePartido($partido->category, $partido->gender, $siguiente_ronda, $j1, $j2);
-		if($existe) return;
+		if($existe) {
+			error_log("DEBUG: Partido ya existe en siguiente ronda");
+			return;
+		}
 
 		$gender_val = !empty($partido->gender) ? $partido->gender : '';
 		$next_pos = (int)floor(min($bp, $hermano_bp) / 2);
-		$this->Partido_model->add(array(
+		$result = $this->Partido_model->add(array(
 			'category'    => $partido->category,
 			'gender'      => $gender_val,
 			'ronda'       => $siguiente_ronda,
@@ -201,5 +213,6 @@ class Mipartido extends CI_Controller {
 			'score'       => null,
 			'ganador_id'  => null
 		));
+		error_log("DEBUG: Partido agregado. Result=$result");
 	}
 }
