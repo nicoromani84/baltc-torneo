@@ -1116,8 +1116,8 @@ class Admin extends CI_Controller {
 		$partidos_lista = array();
 		foreach($partidos as $p) {
 			$partidos_lista[] = array(
-				'j1' => !empty($p->pareja1) ? $p->pareja1 : '?',
-				'j2' => !empty($p->pareja2) ? $p->pareja2 : '?'
+				'j1' => !empty($p->jugador1) ? $p->jugador1 : '?',
+				'j2' => !empty($p->jugador2) ? $p->jugador2 : '?'
 			);
 		}
 		$this->protect->ajaxDie(array(
