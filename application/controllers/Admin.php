@@ -1115,13 +1115,39 @@ class Admin extends CI_Controller {
 		// Lista de enfrentamientos j1 vs j2
 		$partidos_lista = array();
 		foreach($partidos as $p) {
-			// Si contiene " / ", es una pareja; mostrar ambos nombres
-			$j1_display = !empty($p->jugador1) ? $p->jugador1 : '?';
-			$j2_display = !empty($p->jugador2) ? $p->jugador2 : '?';
+			// Obtener todos los partners de ambos equipos
+			$j1_partners = $this->db->query(
+				"SELECT p.name FROM reservations_partners rp
+				 JOIN partners p ON p.id = rp.partner_id
+				 WHERE rp.reservation_id = ?
+				 ORDER BY p.name ASC",
+				array($p->jugador1_id)
+			)->result();
+
+			$j2_partners = $this->db->query(
+				"SELECT p.name FROM reservations_partners rp
+				 JOIN partners p ON p.id = rp.partner_id
+				 WHERE rp.reservation_id = ?
+				 ORDER BY p.name ASC",
+				array($p->jugador2_id)
+			)->result();
+
+			// Si no hay partners (singles), obtener nombre individual
+			if(empty($j1_partners)) {
+				$j1_p = $this->db->query("SELECT name FROM partners WHERE id = ?", array($p->jugador1_id))->row();
+				$j1_partners = $j1_p ? array($j1_p) : array();
+			}
+			if(empty($j2_partners)) {
+				$j2_p = $this->db->query("SELECT name FROM partners WHERE id = ?", array($p->jugador2_id))->row();
+				$j2_partners = $j2_p ? array($j2_p) : array();
+			}
+
+			$j1_names = array_map(function($x) { return $x->name; }, $j1_partners);
+			$j2_names = array_map(function($x) { return $x->name; }, $j2_partners);
 
 			$partidos_lista[] = array(
-				'j1' => $j1_display,
-				'j2' => $j2_display
+				'j1' => implode(' / ', $j1_names) ?: '?',
+				'j2' => implode(' / ', $j2_names) ?: '?'
 			);
 		}
 		$this->protect->ajaxDie(array(
