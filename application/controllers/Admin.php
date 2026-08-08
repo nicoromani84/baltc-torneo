@@ -1115,11 +1115,9 @@ class Admin extends CI_Controller {
 		// Lista de enfrentamientos j1 vs j2
 		$partidos_lista = array();
 		foreach($partidos as $p) {
-			$j1 = !empty($p->jugador1_id) ? $this->User->getById($p->jugador1_id) : null;
-			$j2 = !empty($p->jugador2_id) ? $this->User->getById($p->jugador2_id) : null;
 			$partidos_lista[] = array(
-				'j1' => $j1 ? $j1->name : '?',
-				'j2' => $j2 ? $j2->name : '?'
+				'j1' => !empty($p->pareja1) ? $p->pareja1 : '?',
+				'j2' => !empty($p->pareja2) ? $p->pareja2 : '?'
 			);
 		}
 		$this->protect->ajaxDie(array(
@@ -1151,44 +1149,64 @@ class Admin extends CI_Controller {
 		$this->load->library('email');
 		$enviados = 0;
 		foreach($partidos as $p) {
-			$jugadores_partido = array();
-			if(!empty($p->jugador1_id)) $jugadores_partido[] = array('jug' => $this->User->getById($p->jugador1_id), 'rival_id' => $p->jugador2_id);
-			if(!empty($p->jugador2_id)) $jugadores_partido[] = array('jug' => $this->User->getById($p->jugador2_id), 'rival_id' => $p->jugador1_id);
-			foreach($jugadores_partido as $item) {
-				$jug = $item['jug'];
-				if(!$jug || !filter_var($jug->email, FILTER_VALIDATE_EMAIL)) continue;
-				$rival = !empty($item['rival_id']) ? $this->User->getById($item['rival_id']) : null;
-				$data = array(
-					'nombre'    => $jug->name,
-					'rival'     => $rival ? $rival->name : 'Tu rival',
-					'categoria' => $p->categoria,
-					'ronda'     => $p->ronda,
-					'deadline'  => $fecha_str,
-				);
-				$body = $this->load->view('email/recordatorio_deadline.php', $data, true);
-				$this->email->initialize(array());
-				$this->email
-					->from('secretaria@baltc.net', 'Secretaría BALTC')
-					->to($jug->email)
-					->subject('Recordatorio: fecha límite para tu partido - Torneo BALTC')
-					->message($body)
-					->send();
-				$enviados++;
+			// Obtener partners de ambas parejas
+			$parejas = array(
+				array('reservation_id' => $p->jugador1_id, 'rival_pareja' => $p->pareja2),
+				array('reservation_id' => $p->jugador2_id, 'rival_pareja' => $p->pareja1)
+			);
+
+			foreach($parejas as $pareja) {
+				$partners = $this->db->query(
+					"SELECT p.name, p.email FROM reservations_partners rp
+					 JOIN partners p ON p.id = rp.partner_id
+					 WHERE rp.reservation_id = ?
+					 ORDER BY p.name ASC",
+					array($pareja['reservation_id'])
+				)->result();
+
+				foreach($partners as $partner) {
+					if(!filter_var($partner->email, FILTER_VALIDATE_EMAIL)) continue;
+					$data = array(
+						'nombre'    => $partner->name,
+						'rival'     => $pareja['rival_pareja'] ?: 'Tu rival',
+						'categoria' => $p->categoria,
+						'ronda'     => $p->ronda,
+						'deadline'  => $fecha_str,
+					);
+					$body = $this->load->view('email/recordatorio_deadline.php', $data, true);
+					$this->email->initialize(array());
+					$this->email
+						->from('secretaria@baltc.net', 'Secretaría BALTC')
+						->to($partner->email)
+						->subject('Recordatorio: fecha límite para tu partido - Torneo BALTC')
+						->message($body)
+						->send();
+					$enviados++;
+				}
 			}
 		}
 		$this->protect->ajaxDie(array('action'=>true, 'enviados'=>$enviados));
 	}
 
 	private function _getPartidosPendientes($category = '', $gender = '', $ronda = '') {
-		$this->db->select('m.*, c.name as categoria')
-			->from('matches m')
-			->join('category c', 'c.id = m.category')
-			->where('m.ganador_id IS NULL')
-			->where('m.score IS NULL');
-		if($category) $this->db->where('m.category', $category);
-		if($gender)   $this->db->where('m.gender', $gender);
-		if($ronda)    $this->db->where('m.ronda', $ronda);
-		$q = $this->db->get();
+		$sql = "SELECT m.*, c.name as categoria,
+				(SELECT GROUP_CONCAT(p.name SEPARATOR ' / ')
+					FROM reservations_partners rp
+					JOIN partners p ON p.id = rp.partner_id
+					WHERE rp.reservation_id = m.jugador1_id) as pareja1,
+				(SELECT GROUP_CONCAT(p.name SEPARATOR ' / ')
+					FROM reservations_partners rp
+					JOIN partners p ON p.id = rp.partner_id
+					WHERE rp.reservation_id = m.jugador2_id) as pareja2
+				FROM matches m
+				JOIN category c ON c.id = m.category
+				WHERE m.tournament_type = 'doubles'
+				AND m.ganador_id IS NULL
+				AND m.score IS NULL";
+		if($category) $sql .= " AND m.category = " . intval($category);
+		if($gender)   $sql .= " AND m.gender = '" . $this->db->escape_str($gender) . "'";
+		if($ronda)    $sql .= " AND m.ronda = '" . $this->db->escape_str($ronda) . "'";
+		$q = $this->db->query($sql);
 		return $q->num_rows() > 0 ? $q->result() : array();
 	}
 
@@ -1218,7 +1236,7 @@ class Admin extends CI_Controller {
 		return array(
 			'bienvenida' => array(
 				'nombre' => '🎾 Bienvenida al torneo',
-				'asunto' => '¡Bienvenido al Torneo Interno de Singles - Open BALTC!',
+				'asunto' => '¡Bienvenido al Torneo Interno de Dobles - Open BALTC!',
 			),
 		);
 	}
@@ -1742,7 +1760,7 @@ class Admin extends CI_Controller {
 		$partner_id = intval($this->input->post('partner_id'));
 		$jugadores  = array();
 		if($tipo === 'todos') {
-			$jugadores = $this->Administrator->getJugadores();
+			$jugadores = $this->Administrator->getJugadoresByTournament(false, false, 'doubles');
 		} elseif($tipo === 'categoria' && $category) {
 			$jugadores = $this->Administrator->getJugadoresByCategory($category);
 		} elseif($tipo === 'individual' && $partner_id) {
@@ -1780,7 +1798,7 @@ public function enviarNotificacion() {
 		$asunto = $templates[$template_id]['asunto'];
 		$jugadores = array();
 		if($tipo === 'todos') {
-			$jugadores = $this->Administrator->getJugadores();
+			$jugadores = $this->Administrator->getJugadoresByTournament(false, false, 'doubles');
 		} elseif($tipo === 'categoria' && $category) {
 			$jugadores = $this->Administrator->getJugadoresByCategory($category);
 		} elseif($tipo === 'individual' && $partner_id) {
