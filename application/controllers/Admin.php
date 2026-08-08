@@ -2490,11 +2490,16 @@ public function enviarNotificacion() {
 		if(!$this->Administrator->isLogged()) $this->protect->ajaxDie(array('action'=>false));
 
 		$partido_id = intval($this->input->post('id'));
+		if($partido_id <= 0) $this->protect->ajaxDie(array('action'=>false, 'msg'=>'ID inválido'));
+
 		$partido = $this->Partido_model->getById($partido_id);
 		if(!$partido) $this->protect->ajaxDie(array('action'=>false, 'msg'=>'Partido no encontrado'));
 
-		// Limpiar resultado
-		$this->Partido_model->edit($partido_id, array('score' => null, 'ganador_id' => null));
+		// Limpiar resultado directamente (no usar edit para evitar problemas de intersect_key)
+		$this->db->where('id', $partido_id)->update('matches', array(
+			'score' => NULL,
+			'ganador_id' => NULL
+		));
 
 		// Eliminar partidos de rondas posteriores que dependían de este
 		$rondas = array('1ra Ronda','2da Ronda','Cuartos de Final','Semifinal','Final');
