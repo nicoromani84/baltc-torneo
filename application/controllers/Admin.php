@@ -2304,6 +2304,17 @@ public function enviarNotificacion() {
 		$pierini = $this->db->query("SELECT m.id, m.jugador1_id, m.jugador2_id, m.ronda, c.name FROM matches m JOIN category c ON c.id = m.category WHERE m.jugador1_id IN (SELECT DISTINCT reservation_id FROM reservations_partners WHERE partner_id IN (SELECT id FROM partners WHERE name LIKE '%Pierini%')) OR m.jugador2_id IN (SELECT DISTINCT reservation_id FROM reservations_partners WHERE partner_id IN (SELECT id FROM partners WHERE name LIKE '%Pierini%')) ORDER BY m.ronda DESC LIMIT 30")->result();
 		$data['pierini'] = $pierini;
 
+		// 4. Partners en cada reservations para verificar si hay duplicados
+		$dupcheck = $this->db->query("
+			SELECT r.id, GROUP_CONCAT(p.name SEPARATOR ', ') as partners
+			FROM reservations r
+			LEFT JOIN reservations_partners rp ON rp.reservation_id = r.id
+			LEFT JOIN partners p ON p.id = rp.partner_id
+			WHERE r.id IN (194, 208, 204, 205, 240, 238, 233, 226, 230, 235, 218)
+			GROUP BY r.id
+		")->result();
+		$data['dupcheck'] = $dupcheck;
+
 		$this->load->view('debug_bracket', $data);
 	}
 }

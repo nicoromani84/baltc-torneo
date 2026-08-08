@@ -65,6 +65,21 @@
 		<p class="empty">Vacío</p>
 	<?php endif; ?>
 
+	<h2>4. Partners en cada Reservation (Dupcheck)</h2>
+	<?php if(!empty($dupcheck)): ?>
+		<table>
+			<tr><th>Reservation ID</th><th>Partners</th></tr>
+			<?php foreach($dupcheck as $r): ?>
+				<tr>
+					<td><?=$r->id?></td>
+					<td><?=$r->partners ?: '<em style="color:#999">Vacío</em>'?></td>
+				</tr>
+			<?php endforeach; ?>
+		</table>
+	<?php else: ?>
+		<p class="empty">Vacío</p>
+	<?php endif; ?>
+
 	<p style="margin-top: 30px; color: #666; font-size: 12px;">
 		<strong>Nota:</strong> Si ves alguna fila resaltada en rojo, significa que jugador1_id = jugador2_id (mismo equipo en ambos lados).
 	</p>
