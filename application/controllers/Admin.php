@@ -2367,6 +2367,12 @@ public function enviarNotificacion() {
 		$this->load->view('debug_bracket', $data);
 	}
 
+	public function testResultado() {
+		if(!$this->Administrator->isLogged()) redirect(base_url());
+		$d['token'] = $this->protect->eToken();
+		$this->load->view('test_resultado', $d);
+	}
+
 	public function testCargarResultado() {
 		$this->protect->setAjax();
 		$this->protect->setRequest('POST');
