@@ -1057,24 +1057,57 @@ class Admin extends CI_Controller {
 		for($i = 0; $i < $totalSlots; $i += 2) {
 			$p1 = isset($porPos[$i])   ? $porPos[$i]   : null;
 			$p2 = isset($porPos[$i+1]) ? $porPos[$i+1] : null;
-			if(!$p1 || !$p2) continue;
 
-			// Para BYEs (score='BYE'), el "ganador" es jugador1_id. Para partidos normales es ganador_id.
-			$g1 = ($p1['score'] === 'BYE') ? $p1['jugador1_id'] : $p1['ganador_id'];
-			$g2 = ($p2['score'] === 'BYE') ? $p2['jugador1_id'] : $p2['ganador_id'];
+			// Obtener ganadores, considerando BYEs
+			$g1 = null;
+			$g2 = null;
 
-			// Solo crear si AMBOS tienen ganador definido
-			if(!empty($g1) && !empty($g2)) {
-				$nuevos[] = array(
-					'category'    => $category,
-					'gender'      => $gender,
-					'ronda'       => $siguiente_ronda,
-					'bracket_pos' => (int)($i / 2),
-					'jugador1_id' => intval($g1),
-					'jugador2_id' => intval($g2),
-					'score'       => null,
-					'ganador_id'  => null
-				);
+			if($p1) {
+				$g1 = ($p1['score'] === 'BYE') ? $p1['jugador1_id'] : $p1['ganador_id'];
+			}
+			if($p2) {
+				$g2 = ($p2['score'] === 'BYE') ? $p2['jugador1_id'] : $p2['ganador_id'];
+			}
+
+			// Crear partido si al menos hay un ganador, o BYE si hay solo uno
+			if(!empty($g1) || !empty($g2)) {
+				if(!empty($g1) && !empty($g2)) {
+					// Ambos tienen ganador: partido normal
+					$nuevos[] = array(
+						'category'    => $category,
+						'gender'      => $gender,
+						'ronda'       => $siguiente_ronda,
+						'bracket_pos' => (int)($i / 2),
+						'jugador1_id' => intval($g1),
+						'jugador2_id' => intval($g2),
+						'score'       => null,
+						'ganador_id'  => null
+					);
+				} elseif(!empty($g1)) {
+					// Solo g1 tiene ganador: BYE
+					$nuevos[] = array(
+						'category'    => $category,
+						'gender'      => $gender,
+						'ronda'       => $siguiente_ronda,
+						'bracket_pos' => (int)($i / 2),
+						'jugador1_id' => intval($g1),
+						'jugador2_id' => null,
+						'score'       => 'BYE',
+						'ganador_id'  => null
+					);
+				} else {
+					// Solo g2 tiene ganador: BYE
+					$nuevos[] = array(
+						'category'    => $category,
+						'gender'      => $gender,
+						'ronda'       => $siguiente_ronda,
+						'bracket_pos' => (int)($i / 2),
+						'jugador1_id' => intval($g2),
+						'jugador2_id' => null,
+						'score'       => 'BYE',
+						'ganador_id'  => null
+					);
+				}
 			}
 		}
 		if(!empty($nuevos)) {
