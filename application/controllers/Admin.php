@@ -2431,28 +2431,54 @@ public function enviarNotificacion() {
 
 			// Enviar email de resultado a test_email
 			if($test_email && filter_var($test_email, FILTER_VALIDATE_EMAIL)) {
-				$this->load->library('email');
-				$ganador = $this->User->getById($ganador_id);
-				if($ganador) {
-					$perdedor_id = $partido->jugador1_id == $ganador_id ? $partido->jugador2_id : $partido->jugador1_id;
-					$perdedor = $this->User->getById($perdedor_id);
-					$email_data = array(
-						'nombre' => $ganador->name,
-						'ganador' => $ganador->name,
-						'perdedor' => $perdedor ? $perdedor->name : '',
-						'categoria' => $partido->categoria,
-						'ronda' => $partido->ronda,
-						'score' => $score
-					);
-					$body = $this->load->view('email/resultado_confirm.php', $email_data, true);
-					$this->email->initialize(array());
-					$this->email
-						->from('secretaria@baltc.net', 'Secretaría BALTC')
-						->to($test_email)
-						->subject('Resultado de tu partido - Torneo BALTC (TEST)')
-						->message($body)
-						->send();
+				$perdedor_id = $partido->jugador1_id == $ganador_id ? $partido->jugador2_id : $partido->jugador1_id;
+
+				// Detectar si es dobles o singles
+				$ganador_partners = $this->db->query(
+					"SELECT p.name FROM reservations_partners rp
+					 JOIN partners p ON p.id = rp.partner_id
+					 WHERE rp.reservation_id = ?
+					 ORDER BY p.name ASC",
+					array($ganador_id)
+				)->result();
+
+				if(!empty($ganador_partners)) {
+					// Dobles
+					$ganador_name = implode(' / ', array_map(function($x) { return $x->name; }, $ganador_partners));
+					$perdedor_partners = $this->db->query(
+						"SELECT p.name FROM reservations_partners rp
+						 JOIN partners p ON p.id = rp.partner_id
+						 WHERE rp.reservation_id = ?
+						 ORDER BY p.name ASC",
+						array($perdedor_id)
+					)->result();
+					$perdedor_name = !empty($perdedor_partners) ? implode(' / ', array_map(function($x) { return $x->name; }, $perdedor_partners)) : '?';
+				} else {
+					// Singles
+					$ganador_user = $this->User->getById($ganador_id);
+					if(!$ganador_user) return;
+					$ganador_name = $ganador_user->name;
+					$perdedor_user = $this->User->getById($perdedor_id);
+					$perdedor_name = $perdedor_user ? $perdedor_user->name : '?';
 				}
+
+				$this->load->library('email');
+				$email_data = array(
+					'nombre' => $ganador_name,
+					'ganador' => $ganador_name,
+					'perdedor' => $perdedor_name,
+					'categoria' => $partido->categoria,
+					'ronda' => $partido->ronda,
+					'score' => $score
+				);
+				$body = $this->load->view('email/resultado_confirm.php', $email_data, true);
+				$this->email->initialize(array());
+				$this->email
+					->from('secretaria@baltc.net', 'Secretaría BALTC')
+					->to($test_email)
+					->subject('Resultado de tu partido - Torneo BALTC (TEST)')
+					->message($body)
+					->send();
 			}
 		}
 
