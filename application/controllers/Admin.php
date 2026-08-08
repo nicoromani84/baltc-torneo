@@ -2286,4 +2286,24 @@ public function enviarNotificacion() {
 		$result = $this->Administrator->addPartner($name, $dni, $gender, $email);
 		$this->protect->ajaxDie(array('action' => $result, 'msg' => $result ? 'Partner agregado correctamente' : 'Error al agregar partner'));
 	}
+
+	public function debugBracket() {
+		if(!$this->Administrator->isLogged()) redirect(base_url());
+
+		$data = array();
+
+		// 1. Categorías con "1ra"
+		$cats = $this->db->query("SELECT id, name FROM category WHERE name LIKE '%1ra%'")->result();
+		$data['categorias'] = $cats;
+
+		// 2. Todos los Cuartos de Final
+		$cuartos = $this->db->query("SELECT m.id, m.jugador1_id, m.jugador2_id, m.ronda, c.name, m.gender FROM matches m JOIN category c ON c.id = m.category WHERE m.ronda = 'Cuartos de Final' ORDER BY c.name, m.id LIMIT 50")->result();
+		$data['cuartos_final'] = $cuartos;
+
+		// 3. Partidos con Pierini
+		$pierini = $this->db->query("SELECT m.id, m.jugador1_id, m.jugador2_id, m.ronda, c.name FROM matches m JOIN category c ON c.id = m.category WHERE m.jugador1_id IN (SELECT DISTINCT reservation_id FROM reservations_partners WHERE partner_id IN (SELECT id FROM partners WHERE name LIKE '%Pierini%')) OR m.jugador2_id IN (SELECT DISTINCT reservation_id FROM reservations_partners WHERE partner_id IN (SELECT id FROM partners WHERE name LIKE '%Pierini%')) ORDER BY m.ronda DESC LIMIT 30")->result();
+		$data['pierini'] = $pierini;
+
+		$this->load->view('debug_bracket', $data);
+	}
 }
