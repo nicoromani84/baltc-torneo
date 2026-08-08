@@ -2434,26 +2434,30 @@ public function enviarNotificacion() {
 					foreach($partidos_ronda as $p) {
 						if(intval($p->bracket_pos) === $hermano_bp) { $hermano = $p; break; }
 					}
-					if($hermano && !empty($hermano->ganador_id)) {
-						if($bp % 2 === 0) {
-							$j1 = $ganador_id;
-							$j2 = intval($hermano->ganador_id);
-						} else {
-							$j1 = intval($hermano->ganador_id);
-							$j2 = $ganador_id;
-						}
-						$existe = $this->Partido_model->existePartido($partido->category, $partido->gender, $siguiente_ronda, $j1, $j2);
-						if(!$existe) {
-							$this->Partido_model->add(array(
-								'category' => $partido->category,
-								'gender' => $partido->gender ?: '',
-								'ronda' => $siguiente_ronda,
-								'bracket_pos' => (int)floor(min($bp, $hermano_bp) / 2),
-								'jugador1_id' => $j1,
-								'jugador2_id' => $j2,
-								'score' => null,
-								'ganador_id' => null
-							));
+					if($hermano) {
+						// Si hermano es BYE, usar jugador1_id; si no, usar ganador_id
+						$hermano_ganador = ($hermano->score === 'BYE') ? $hermano->jugador1_id : $hermano->ganador_id;
+						if(!empty($hermano_ganador)) {
+							if($bp % 2 === 0) {
+								$j1 = $ganador_id;
+								$j2 = intval($hermano_ganador);
+							} else {
+								$j1 = intval($hermano_ganador);
+								$j2 = $ganador_id;
+							}
+							$existe = $this->Partido_model->existePartido($partido->category, $partido->gender, $siguiente_ronda, $j1, $j2);
+							if(!$existe) {
+								$this->Partido_model->add(array(
+									'category' => $partido->category,
+									'gender' => $partido->gender ?: '',
+									'ronda' => $siguiente_ronda,
+									'bracket_pos' => (int)floor(min($bp, $hermano_bp) / 2),
+									'jugador1_id' => $j1,
+									'jugador2_id' => $j2,
+									'score' => null,
+									'ganador_id' => null
+								));
+							}
 						}
 					}
 				}

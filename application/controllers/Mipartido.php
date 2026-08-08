@@ -172,13 +172,17 @@ class Mipartido extends CI_Controller {
 		foreach($partidos_ronda as $p) {
 			if(intval($p->bracket_pos) === $hermano_bp) { $hermano = $p; break; }
 		}
-		if(!$hermano || empty($hermano->ganador_id)) return;
+		if(!$hermano) return;
+
+		// Si hermano es BYE, usar jugador1_id; si no, usar ganador_id
+		$hermano_ganador = ($hermano->score === 'BYE') ? $hermano->jugador1_id : $hermano->ganador_id;
+		if(empty($hermano_ganador)) return;
 
 		if($bp % 2 === 0) {
 			$j1 = $ganador_id;
-			$j2 = intval($hermano->ganador_id);
+			$j2 = intval($hermano_ganador);
 		} else {
-			$j1 = intval($hermano->ganador_id);
+			$j1 = intval($hermano_ganador);
 			$j2 = $ganador_id;
 		}
 
