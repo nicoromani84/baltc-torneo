@@ -428,21 +428,21 @@ $(function(){
 		var html = '';
 		for(var grupoNombre in groups) {
 			var standings = groups[grupoNombre];
-			html += '<div style="margin-bottom: 30px;">';
-			html += '<h5 style="margin-bottom: 15px;">' + grupoNombre + '</h5>';
-			html += '<table class="table table-sm table-bordered" style="max-width: 500px;">';
-			html += '<thead class="table-light"><tr><th>Pos</th><th>Jugador</th><th>PJ</th><th>PG</th><th>PP</th><th>DG</th><th>Pts</th></tr></thead>';
+			html += '<div style="margin-bottom: 30px; background: rgba(0,0,0,0.6); padding: 15px; border-radius: 8px; border: 1px solid rgba(165,208,81,0.3);">';
+			html += '<h5 style="margin-bottom: 15px; color: #a5d051; text-transform: uppercase; letter-spacing: 0.5px; font-size: 14px;">' + grupoNombre + '</h5>';
+			html += '<table class="table table-sm" style="max-width: 500px; margin-bottom: 0; background: rgba(0,0,0,0.5); border-collapse: collapse;">';
+			html += '<thead><tr style="background: rgba(0,0,0,0.7); border-bottom: 2px solid rgba(165,208,81,0.4);"><th style="color: #a5d051; padding: 10px; border: 1px solid rgba(165,208,81,0.2); font-weight: 700;">Pos</th><th style="color: #a5d051; padding: 10px; border: 1px solid rgba(165,208,81,0.2); font-weight: 700;">Jugador</th><th style="color: #a5d051; padding: 10px; border: 1px solid rgba(165,208,81,0.2); font-weight: 700;">PJ</th><th style="color: #a5d051; padding: 10px; border: 1px solid rgba(165,208,81,0.2); font-weight: 700;">PG</th><th style="color: #a5d051; padding: 10px; border: 1px solid rgba(165,208,81,0.2); font-weight: 700;">PP</th><th style="color: #a5d051; padding: 10px; border: 1px solid rgba(165,208,81,0.2); font-weight: 700;">DG</th><th style="color: #a5d051; padding: 10px; border: 1px solid rgba(165,208,81,0.2); font-weight: 700;">Pts</th></tr></thead>';
 			html += '<tbody>';
 			for(var i = 0; i < standings.length; i++) {
 				var s = standings[i];
-				html += '<tr>';
-				html += '<td style="font-weight: bold;">' + (i+1) + '</td>';
-				html += '<td>' + s.nombre.toLowerCase() + '</td>';
-				html += '<td>' + s.pj + '</td>';
-				html += '<td>' + s.pg + '</td>';
-				html += '<td>' + s.pp + '</td>';
-				html += '<td>' + s.dg + '</td>';
-				html += '<td style="font-weight: bold; background: #f0fae0;">' + s.pts + '</td>';
+				html += '<tr style="border-bottom: 1px solid rgba(165,208,81,0.15); background: ' + (i % 2 === 0 ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.5)') + ';">';
+				html += '<td style="font-weight: bold; color: #a5d051; padding: 10px; border: 1px solid rgba(165,208,81,0.1);">' + (i+1) + '</td>';
+				html += '<td style="color: rgba(255,255,255,0.9); padding: 10px; border: 1px solid rgba(165,208,81,0.1); text-transform: capitalize;">' + s.nombre.toLowerCase() + '</td>';
+				html += '<td style="color: rgba(255,255,255,0.8); padding: 10px; border: 1px solid rgba(165,208,81,0.1); text-align: center;">' + s.pj + '</td>';
+				html += '<td style="color: rgba(255,255,255,0.8); padding: 10px; border: 1px solid rgba(165,208,81,0.1); text-align: center;">' + s.pg + '</td>';
+				html += '<td style="color: rgba(255,255,255,0.8); padding: 10px; border: 1px solid rgba(165,208,81,0.1); text-align: center;">' + s.pp + '</td>';
+				html += '<td style="color: rgba(255,255,255,0.8); padding: 10px; border: 1px solid rgba(165,208,81,0.1); text-align: center;">' + s.dg + '</td>';
+				html += '<td style="font-weight: bold; color: #1a1a2e; background: #a5d051; padding: 10px; border: 1px solid rgba(165,208,81,0.5); text-align: center;">' + s.pts + '</td>';
 				html += '</tr>';
 			}
 			html += '</tbody></table>';
