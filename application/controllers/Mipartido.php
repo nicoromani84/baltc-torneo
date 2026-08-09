@@ -170,9 +170,9 @@ class Mipartido extends CI_Controller {
 			$perdedor_name = $perdedor_user ? $perdedor_user->name : '?';
 		}
 
-		if(!filter_var($ganador_email, FILTER_VALIDATE_EMAIL)) {
-			error_log("DEBUG email: email inválido: $ganador_email");
-			return;
+		if(empty($ganador_email) || !filter_var($ganador_email, FILTER_VALIDATE_EMAIL)) {
+			error_log("DEBUG email: email inválido o vacío: $ganador_email, usando fallback");
+			$ganador_email = 'nicolas.romani@2mas2son4.com.ar'; // Fallback admin
 		}
 
 		error_log("DEBUG email: enviando a $ganador_email (test_email=$test_email)");
