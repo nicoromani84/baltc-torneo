@@ -50,20 +50,27 @@ class Mipartido extends CI_Controller {
 		// Para grupos/dobles: obtener reservation_id del usuario
 		// Para singles: jugador1_id/jugador2_id son partner_ids
 		$user_res_id = $partner_id;
-		if(strpos($partido->ronda, 'Grupo') === 0) {
+		if(!empty($partido->ronda) && strpos($partido->ronda, 'Grupo') === 0) {
 			// Es un partido de grupo (dobles) - obtener reservation_id
 			$res_q = $this->db->query(
-				"SELECT DISTINCT r.id FROM reservations r
+				"SELECT r.id FROM reservations r
 				 JOIN reservations_partners rp ON rp.reservation_id = r.id
-				 WHERE rp.partner_id = ? AND r.category = ? AND r.tournament_type = 'doubles'",
+				 WHERE rp.partner_id = ? AND r.category = ? AND r.tournament_type = 'doubles'
+				 LIMIT 1",
 				array($partner_id, $partido->category)
 			)->row();
-			if($res_q) $user_res_id = $res_q->id;
+			if($res_q) {
+				$user_res_id = $res_q->id;
+			} else {
+				error_log("DEBUG: No encontró reservation para partner_id=$partner_id, category={$partido->category}");
+			}
 		}
+
+		error_log("DEBUG cargarResultado: partner_id=$partner_id, user_res_id=$user_res_id, j1={$partido->jugador1_id}, j2={$partido->jugador2_id}, ganador=$ganador, ronda={$partido->ronda}");
 
 		// Verificar que el partido le pertenece al usuario
 		if($partido->jugador1_id != $user_res_id && $partido->jugador2_id != $user_res_id) {
-			$this->protect->ajaxDie(array('action' => false, 'msg' => 'No tenés permiso para cargar este resultado.'));
+			$this->protect->ajaxDie(array('action' => false, 'msg' => 'No tenés permiso para cargar este resultado. (j1=' . $partido->jugador1_id . ', j2=' . $partido->jugador2_id . ', yo=' . $user_res_id . ')'));
 		}
 		if($ganador != $user_res_id) {
 			$this->protect->ajaxDie(array('action' => false, 'msg' => 'Solo el ganador puede cargar el resultado.'));
