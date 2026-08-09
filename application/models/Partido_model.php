@@ -266,15 +266,16 @@ class Partido_model extends CI_Model {
 
 	// Obtener standings de un grupo
 	public function getGroupStandings($category_id, $gender, $ronda) {
-		// Obtener todos los jugadores únicos del grupo
-		$sql = "SELECT DISTINCT
-				CASE
-					WHEN jugador1_id IS NOT NULL THEN jugador1_id
-					WHEN jugador2_id IS NOT NULL THEN jugador2_id
-				END as reservation_id
-			FROM matches
-			WHERE category = $category_id AND gender = '$gender' AND ronda = '$ronda'
-			AND (jugador1_id IS NOT NULL OR jugador2_id IS NOT NULL)";
+		// Obtener TODOS los jugadores inscritos en esta categoría/género/grupo
+		// No solo los que ya tienen partidos
+		$sql = "SELECT DISTINCT m.jugador1_id as reservation_id
+			FROM matches m
+			WHERE m.category = $category_id AND m.gender = '$gender' AND m.ronda LIKE 'Grupo%'
+			UNION
+			SELECT DISTINCT m.jugador2_id
+			FROM matches m
+			WHERE m.category = $category_id AND m.gender = '$gender' AND m.ronda LIKE 'Grupo%'
+			AND m.jugador2_id IS NOT NULL";
 
 		$jugadores_q = $this->db->query($sql)->result();
 		$standings = array();
