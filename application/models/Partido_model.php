@@ -318,7 +318,7 @@ class Partido_model extends CI_Model {
 			$dg = 0;
 			$dgg = 0;
 			$matches_q = $this->db->query(
-				"SELECT score, jugador1_id, jugador2_id FROM matches
+				"SELECT score, jugador1_id, jugador2_id, ganador_id FROM matches
 				 WHERE category = $category_id AND gender = '$gender' AND ronda = '$ronda'
 				 AND score IS NOT NULL AND score != 'BYE'
 				 AND (jugador1_id = $res_id OR jugador2_id = $res_id)"
@@ -326,6 +326,7 @@ class Partido_model extends CI_Model {
 
 			foreach($matches_q as $m) {
 				$es_j1 = ($m->jugador1_id == $res_id);
+				$gano = ($m->ganador_id == $res_id);
 				// Parse score: "6-4, 6-3"
 				$sets = explode(',', trim($m->score));
 				foreach($sets as $set) {
@@ -334,12 +335,23 @@ class Partido_model extends CI_Model {
 					if(count($puntos) == 2) {
 						$p1 = intval($puntos[0]);
 						$p2 = intval($puntos[1]);
+						// Si el jugador ganó el partido, suma sets positivos; si perdió, negativos
 						if($es_j1) {
-							$dg += ($p1 > $p2) ? 1 : -1;
-							$dgg += $p1 - $p2;
+							if($gano) {
+								$dg += ($p1 > $p2) ? 1 : -1;
+								$dgg += $p1 - $p2;
+							} else {
+								$dg += ($p1 > $p2) ? -1 : 1;
+								$dgg += $p2 - $p1;
+							}
 						} else {
-							$dg += ($p2 > $p1) ? 1 : -1;
-							$dgg += $p2 - $p1;
+							if($gano) {
+								$dg += ($p2 > $p1) ? 1 : -1;
+								$dgg += $p2 - $p1;
+							} else {
+								$dg += ($p2 > $p1) ? -1 : 1;
+								$dgg += $p1 - $p2;
+							}
 						}
 					}
 				}
