@@ -25,7 +25,7 @@
 		</div>
 		<div style="padding:30px 20px;">
 			<h1 style="margin-top:0; color:#4c4480;">Recordatorio de partido pendiente</h1>
-			<p style="margin:0 0 20px 0;">Hola <strong><?=ucwords(strtolower($nombre))?></strong>, te recordamos que tenés un partido pendiente en el Torneo Interno de Singles del BALTC.</p>
+			<p style="margin:0 0 20px 0;">Hola <strong><?=ucwords(strtolower($nombre))?></strong>, te recordamos que tenés un partido pendiente en el Torneo Interno de Dobles del BALTC.</p>
 
 			<div style="background:#f8f9fa; border-radius:8px; padding:20px; margin-bottom:20px;">
 				<table style="width:100%; border-collapse:collapse;">

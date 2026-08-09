@@ -2673,4 +2673,35 @@ public function enviarNotificacion() {
 
 		$this->protect->ajaxDie(array('action'=>$updated !== false, 'msg'=>$updated ? 'Resultado cargado correctamente' : 'Error al cargar resultado'));
 	}
+
+	public function syncUsersToPartners() {
+		if (!$this->Administrator->isLogged()) {
+			die('No autorizado');
+		}
+
+		$all_users = $this->db->get('users')->result();
+		$added = 0;
+		$skipped = 0;
+
+		foreach ($all_users as $user) {
+			$exists = $this->db->where('dni', $user->dni)->get('partners')->num_rows();
+			if ($exists == 0) {
+				$data = array(
+					'name' => $user->name,
+					'dni' => $user->dni,
+					'email' => $user->email,
+					'gender' => $user->gender
+				);
+				$this->db->insert('partners', $data);
+				$added++;
+			} else {
+				$skipped++;
+			}
+		}
+
+		echo "Sincronización completada.<br>";
+		echo "Agregados: $added<br>";
+		echo "Ya existían: $skipped<br>";
+		echo "<a href='" . base_url('admin') . "'>Volver</a>";
+	}
 }

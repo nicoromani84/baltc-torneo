@@ -265,7 +265,7 @@
 .draws-player.ganador { color: #a5d051; font-weight: 800; }
 .draws-player.perdedor { color: rgba(255,255,255,0.3); text-decoration: line-through; font-weight: 400; }
 .draws-player.tbd { color: rgba(255,255,255,0.3); font-style: italic; font-weight: 400; }
-.draws-player-name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.draws-player-name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-style: italic; }
 .draws-check { font-size: 11px; color: #a5d051; }
 .draws-score {
 	text-align: center;
@@ -408,6 +408,15 @@ $(function(){
 		});
 	}
 
+	function formatPlayerNamesShort(fullNames) {
+		if(!fullNames) return 'BYE';
+		var names = fullNames.split(' / ');
+		return names.map(function(n) {
+			var apellido = n.split(',')[0].trim();
+			return apellido.charAt(0).toUpperCase() + apellido.slice(1).toLowerCase();
+		}).join('-');
+	}
+
 	function renderBracket() {
 		var rondasMostrar = [RONDAS[rondaActivaIdx]];
 		if(RONDAS[rondaActivaIdx + 1]) rondasMostrar.push(RONDAS[rondaActivaIdx + 1]);
@@ -453,7 +462,7 @@ $(function(){
 				var esYo1 = !esBYE1 && miPartnerId && p.jugador1_id == miPartnerId;
 				html += '<div class="draws-player ' + c1 + (esBYE1 ? ' tbd' : '') + (esYo1 ? ' yo-player' : '') + '">';
 				if(seed1) html += '<span style="color:#a5d051;font-weight:800;font-size:10px;margin-right:3px">['+seed1+']</span>';
-				html += '<span class="draws-player-name">' + (p.jugador1 ? p.jugador1.toLowerCase() : 'BYE') + '</span>';
+				html += '<span class="draws-player-name">' + formatPlayerNamesShort(p.jugador1) + '</span>';
 				if(!esBYE1 && p.ganador_id == p.jugador1_id) html += '<span class="draws-check"><i class="fas fa-check"></i></span>';
 				html += '</div>';
 				var esBYE2 = !p.jugador2_id || p.jugador2_id == 0;
@@ -462,7 +471,7 @@ $(function(){
 				var esYo2 = !esBYE2 && miPartnerId && p.jugador2_id == miPartnerId;
 				html += '<div class="draws-player ' + c2 + (esBYE2 ? ' tbd' : '') + (esYo2 ? ' yo-player' : '') + '">';
 				if(seed2) html += '<span style="color:#a5d051;font-weight:800;font-size:10px;margin-right:3px">['+seed2+']</span>';
-				html += '<span class="draws-player-name">' + (p.jugador2 ? p.jugador2.toLowerCase() : 'BYE') + '</span>';
+				html += '<span class="draws-player-name">' + formatPlayerNamesShort(p.jugador2) + '</span>';
 				if(!esBYE2 && p.ganador_id == p.jugador2_id) html += '<span class="draws-check"><i class="fas fa-check"></i></span>';
 				html += '</div>';
 				if(p.score && p.score !== 'BYE') html += '<div class="draws-score">' + p.score + '</div>';
@@ -509,9 +518,11 @@ $(function(){
 				var initialGen = (miGen && miGen !== '') ? miGen : 'M';
 				$('#draws-gender').val(initialGen);
 				var toLoad = null;
-				if(miCat && miGen && disponibles[miCat+'_'+miGen]) {
+				// Prioridad 1: Siempre mostrar la categoría del usuario si existe
+				if(miCat !== '' && miGen !== '') {
 					toLoad = { cat: miCat, gen: miGen };
 				} else if(res.draws && res.draws.length) {
+					// Prioridad 2: Si no tiene categoría, mostrar la primera disponible
 					var fallback = (miGen && miGen !== '') ? res.draws.find(function(d){ return d.gender === miGen; }) : null;
 					if(!fallback) fallback = res.draws[0];
 					if(fallback) {
@@ -527,7 +538,15 @@ $(function(){
 		});
 	}
 
-	cargarDrawsDisponibles();
+	// Auto-cargar mi categoría si existe
+	if(miCat !== '') {
+		var genToUse = (miGen !== '' && miGen !== null) ? miGen : 'M';
+		$('#draws-category').val(miCat);
+		$('#draws-gender').val(genToUse);
+		cargarDraw(miCat, genToUse);
+	} else {
+		cargarDrawsDisponibles();
+	}
 
 	$('#draws-category, #draws-gender').on('change', function(){
 		var cat = $('#draws-category').val();

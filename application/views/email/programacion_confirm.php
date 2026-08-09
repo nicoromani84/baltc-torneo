@@ -23,7 +23,7 @@
 		</div>
 		<div style="padding:30px 20px;">
 			<h1 style="margin-top:0; color:#4c4480;">Tu partido fue programado</h1>
-			<p style="margin:0 0 20px 0;">Hola <strong><?=ucwords(strtolower($nombre))?></strong>, te informamos que tu próximo partido en el Torneo Interno de Singles del BALTC ya tiene fecha y hora asignadas.</p>
+			<p style="margin:0 0 20px 0;">Hola <strong><?=ucwords(strtolower($nombre))?></strong>, te informamos que tu próximo partido en el Torneo Interno de Dobles del BALTC ya tiene fecha y hora asignadas.</p>
 
 			<div style="background:#f8f9fa; border-radius:8px; padding:20px; margin-bottom:20px;">
 				<table style="width:100%; border-collapse:collapse;">

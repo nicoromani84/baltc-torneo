@@ -17,8 +17,22 @@ class Draws extends CI_Controller {
 		$d['token']      = $this->protect->eToken();
 		$d['user']       = $this->session;
 		$d['classname']  = 'reserva';
-		$d['categories'] = $this->Reservation->getCategories();
-		$d['mi_category'] = $this->Reservation->getCategoryByPlayer($this->session->userdata('id'));
+		// Obtener solo categorías de dobles (con inscripciones) sin "2nd chance"
+		$allCats = $this->Reservation->getCategories();
+		$this->db->where('tournament_type', 'doubles');
+		$doublesQ = $this->db->get('reservations');
+		$doblesCats = array();
+		foreach($doublesQ->result() as $r) {
+			$doblesCats[$r->category] = true;
+		}
+		$filteredCats = array();
+		foreach($allCats as $c) {
+			if(isset($doblesCats[$c->id]) && strpos($c->name, '2nd chance') === false) {
+				$filteredCats[] = $c;
+			}
+		}
+		$d['categories'] = $filteredCats;
+		$d['mi_category'] = $this->Reservation->getCategoryByPlayer($this->session->userdata('id'), 'doubles');
 		$d['mi_gender']   = $this->session->userdata('gender');
 		$d['mi_partner_id'] = $this->session->userdata('id');
 		$this->load->view('web/header', $d);
@@ -34,7 +48,7 @@ class Draws extends CI_Controller {
 		$sql = "SELECT DISTINCT c.id as category, g.gender
 				FROM category c
 				CROSS JOIN (SELECT 'M' as gender UNION SELECT 'F') g
-				WHERE c.active = 1
+				WHERE c.active = 1 AND c.name NOT LIKE '%2nd chance%'
 				ORDER BY c.id ASC, g.gender ASC";
 		$q = $this->db->query($sql);
 		$this->protect->ajaxDie(array('action'=>true, 'draws'=> $q->num_rows() > 0 ? $q->result() : array()));

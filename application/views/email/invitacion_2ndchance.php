@@ -12,7 +12,7 @@
     </div>
     <div style="background:#fff;padding:36px 28px;">
         <h1 style="margin:0 0 6px;font-size:24px;color:#1a1a2e;">¡Seguí en el torneo!</h1>
-        <p style="color:#888;font-size:14px;margin:0 0 24px;">Torneo Interno de Singles — 2nd Chance</p>
+        <p style="color:#888;font-size:14px;margin:0 0 24px;">Torneo Interno de Dobles — 2nd Chance</p>
 
         <p style="color:#333;font-size:15px;line-height:1.6;margin-bottom:20px;">
             Hola <strong><?=ucwords(strtolower($nombre))?></strong>,

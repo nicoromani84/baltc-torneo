@@ -28,7 +28,7 @@
         </p>
 
         <p style="margin:0 0 16px;font-size:15px;color:#555;line-height:1.7;">
-            ¡Gracias por inscribirte en el <strong style="color:#1a1a2e;">Torneo Interno de Singles del Open BALTC</strong>! 🎾
+            ¡Gracias por inscribirte en el <strong style="color:#1a1a2e;">Torneo Interno de Dobles del Open BALTC</strong>! 🎾
         </p>
 
         <p style="margin:0 0 20px;font-size:15px;color:#555;line-height:1.7;">
@@ -55,23 +55,11 @@
                 Coordiná con tu rival y jueguen el día y horario que prefieran dentro de la semana (lunes a domingo).
             </p>
             <p style="margin:0 0 10px;font-size:14px;color:#c0392b;font-weight:700;line-height:1.7;">
-                ⏰ Importante: tenés que jugar el partido antes de la fecha límite informada por mail.
+                ⏰ Importante: tenés que jugar el partido antes de la fecha límite informada por mail.<br>
+                Si no te llegó el mail de tu deadline, quiere decir que saliste adelantado y estás esperando rival.
             </p>
             <p style="margin:0 0 12px;font-size:14px;color:#555;line-height:1.7;">
                 Si van a jugar después de las 18:00, recomendamos reservar previamente para asegurarse cancha, especialmente durante la semana.
-            </p>
-            <p style="margin:0 0 6px;font-size:14px;color:#333;font-weight:700;">Prioridades:</p>
-            <p style="margin:0 0 4px;font-size:14px;color:#555;line-height:1.7;">
-                &nbsp;&nbsp;• <strong>Cancha 9:</strong> prioridad para singles todos los días (excepto horarios de escuela)
-            </p>
-            <p style="margin:0 0 4px;font-size:14px;color:#555;line-height:1.7;">
-                &nbsp;&nbsp;• <strong>Cancha 14:</strong> prioridad adicional para torneo
-            </p>
-            <p style="margin:0 0 4px;font-size:14px;color:#555;line-height:1.7;">
-                &nbsp;&nbsp;&nbsp;&nbsp;– Sábados desde las 12:00
-            </p>
-            <p style="margin:0;font-size:14px;color:#555;line-height:1.7;">
-                &nbsp;&nbsp;&nbsp;&nbsp;– Domingos y feriados durante todo el día
             </p>
         </div>
 
