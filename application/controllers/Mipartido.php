@@ -35,34 +35,50 @@ class Mipartido extends CI_Controller {
 			$this->protect->ajaxDie(array('action' => false, 'msg' => 'No autorizado.'));
 		}
 
-		$user_id  = $this->session->userdata('id');
+		$partner_id  = $this->session->userdata('id');
 		$id       = intval($this->input->post('id'));
 		$score    = $this->input->post('score', true);
 		$ganador  = intval($this->input->post('ganador_id'));
 		$test_email = $this->input->post('test_email', true);
 
-		// Verificar que el partido le pertenece al usuario
+		// Obtener el partido
 		$partido = $this->Partido_model->getById($id);
 		if(!$partido) {
 			$this->protect->ajaxDie(array('action' => false, 'msg' => 'Partido no encontrado.'));
 		}
-		if($partido->jugador1_id != $user_id && $partido->jugador2_id != $user_id) {
+
+		// Para grupos/dobles: obtener reservation_id del usuario
+		// Para singles: jugador1_id/jugador2_id son partner_ids
+		$user_res_id = $partner_id;
+		if(strpos($partido->ronda, 'Grupo') === 0) {
+			// Es un partido de grupo (dobles) - obtener reservation_id
+			$res_q = $this->db->query(
+				"SELECT DISTINCT r.id FROM reservations r
+				 JOIN reservations_partners rp ON rp.reservation_id = r.id
+				 WHERE rp.partner_id = ? AND r.category = ? AND r.tournament_type = 'doubles'",
+				array($partner_id, $partido->category)
+			)->row();
+			if($res_q) $user_res_id = $res_q->id;
+		}
+
+		// Verificar que el partido le pertenece al usuario
+		if($partido->jugador1_id != $user_res_id && $partido->jugador2_id != $user_res_id) {
 			$this->protect->ajaxDie(array('action' => false, 'msg' => 'No tenés permiso para cargar este resultado.'));
 		}
-		if($ganador != $user_id) {
+		if($ganador != $user_res_id) {
 			$this->protect->ajaxDie(array('action' => false, 'msg' => 'Solo el ganador puede cargar el resultado.'));
 		}
 		if(!empty($partido->ganador_id)) {
 			$this->protect->ajaxDie(array('action' => false, 'msg' => 'Este partido ya tiene resultado cargado.'));
 		}
 
-		$data = array('score' => $score, 'ganador_id' => $ganador);
+		$data = array('score' => $score, 'ganador_id' => $user_res_id);
 		$updated = $this->Partido_model->edit($id, $data);
 
 		// Avanzar bracket y enviar email
 		if($updated !== false) {
-			$this->_avanzarBracket($id, $ganador, $data);
-			$this->_sendResultadoEmail($id, $ganador, $score, $test_email);
+			$this->_avanzarBracket($id, $user_res_id, $data);
+			$this->_sendResultadoEmail($id, $user_res_id, $score, $test_email);
 		}
 
 		$this->protect->ajaxDie(array('action' => $updated !== false));
