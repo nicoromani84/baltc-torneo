@@ -211,8 +211,13 @@ $(function(){
 			$('#draw-vacio').html(
 				'<i class="fas fa-sitemap fa-3x" style="margin-bottom:15px;display:block;color:#dee2e6"></i>'
 				+ '<p>Esta categoría aún no fue sorteada.</p>'
+				+ '<div class="mt-3">'
 				+ '<a href="'+baseurl+'admin/sorteo?cat='+cat+'&gen='+gen+'" class="btn btn-warning mt-2">'
-				+ '<i class="fas fa-random"></i> Ir a sortear esta categoría</a>'
+				+ '<i class="fas fa-random"></i> Sortear automático</a>'
+				+ ' '
+				+ '<a href="'+baseurl+'admin/crearGruposManual?cat='+cat+'&gen='+gen+'" class="btn btn-info mt-2">'
+				+ '<i class="fas fa-users"></i> Crear grupos manualmente</a>'
+				+ '</div>'
 			).show();
 			return;
 		}
