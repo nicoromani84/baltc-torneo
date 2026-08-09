@@ -127,10 +127,7 @@ class Mipartido extends CI_Controller {
 
 		$perdedor_id = $partido->jugador1_id == $ganador_id ? $partido->jugador2_id : $partido->jugador1_id;
 
-		// INTENTA OBTENER EMAIL COMO DOBLES (reservation_id)
-		$ganador_email = null;
-		$ganador_name = null;
-
+		// Detectar si es dobles o singles
 		$ganador_partners = $this->db->query(
 			"SELECT p.name, p.email FROM reservations_partners rp
 			 JOIN partners p ON p.id = rp.partner_id
@@ -139,60 +136,46 @@ class Mipartido extends CI_Controller {
 			array($ganador_id)
 		)->result();
 
+		// Si hay partners, es dobles
 		if(!empty($ganador_partners)) {
-			// Es DOBLES - obtener email del primer partner
+			// Dobles
 			$ganador_name = implode(' / ', array_map(function($x) { return $x->name; }, $ganador_partners));
 			$ganador_email = reset($ganador_partners)->email;
-		}
 
-		// SI NO ENCONTRÓ COMO DOBLES, INTENTA COMO SINGLES (user_id/partner_id)
-		if(empty($ganador_email)) {
-			$ganador_user = $this->User->getById($ganador_id);
-			if($ganador_user) {
-				$ganador_name = $ganador_user->name;
-				$ganador_email = $ganador_user->email;
-			}
-		}
-
-		// SI SIGUE SIN EMAIL, NO ENVIAR
-		if(empty($ganador_email) || !filter_var($ganador_email, FILTER_VALIDATE_EMAIL)) {
-			error_log("CORREO FAIL: ganador_id=$ganador_id, email=$ganador_email");
-			return;
-		}
-
-		// OBTENER NOMBRE DEL PERDEDOR
-		$perdedor_partners = $this->db->query(
-			"SELECT p.name FROM reservations_partners rp
-			 JOIN partners p ON p.id = rp.partner_id
-			 WHERE rp.reservation_id = ?
-			 ORDER BY p.name ASC",
-			array($perdedor_id)
-		)->result();
-
-		if(!empty($perdedor_partners)) {
-			$perdedor_name = implode(' / ', array_map(function($x) { return $x->name; }, $perdedor_partners));
+			$perdedor_partners = $this->db->query(
+				"SELECT p.name FROM reservations_partners rp
+				 JOIN partners p ON p.id = rp.partner_id
+				 WHERE rp.reservation_id = ?
+				 ORDER BY p.name ASC",
+				array($perdedor_id)
+			)->result();
+			$perdedor_name = !empty($perdedor_partners) ? implode(' / ', array_map(function($x) { return $x->name; }, $perdedor_partners)) : '?';
 		} else {
+			// Singles
+			$ganador_user = $this->User->getById($ganador_id);
+			if(!$ganador_user) return;
+			$ganador_name = $ganador_user->name;
+			$ganador_email = $ganador_user->email;
+
 			$perdedor_user = $this->User->getById($perdedor_id);
 			$perdedor_name = $perdedor_user ? $perdedor_user->name : '?';
 		}
 
-		$email_destino = $test_email ?: $ganador_email;
-
-		$data = array(
-			'nombre'   => $ganador_name,
-			'ganador'  => $ganador_name,
-			'perdedor' => $perdedor_name,
-			'categoria'=> $partido->categoria,
-			'ronda'    => $partido->ronda,
-			'score'    => $score
-		);
+		if(!filter_var($ganador_email, FILTER_VALIDATE_EMAIL)) return;
 
 		$this->load->library('email');
-		$body = $this->load->view('email/resultado_confirm.php', $data, true);
+		$body = $this->load->view('email/resultado_confirm.php', array(
+			'nombre' => $ganador_name,
+			'ganador' => $ganador_name,
+			'perdedor' => $perdedor_name,
+			'categoria' => $partido->categoria,
+			'ronda' => $partido->ronda,
+			'score' => $score
+		), true);
 		$this->email->initialize(array());
 		$this->email
 			->from('secretaria@baltc.net', 'Secretaría BALTC')
-			->to($email_destino)
+			->to($test_email ?: $ganador_email)
 			->subject('Resultado de tu partido - Torneo BALTC')
 			->message($body)
 			->send();
