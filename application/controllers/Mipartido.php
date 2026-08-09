@@ -123,16 +123,14 @@ class Mipartido extends CI_Controller {
 
 	private function _sendResultadoEmail($partido_id, $ganador_id, $score, $test_email = null) {
 		$partido = $this->Partido_model->getById($partido_id);
-		if(!$partido) {
-			error_log("CORREO: Partido $partido_id no encontrado");
-			return;
-		}
-
-		error_log("CORREO: Intentando enviar para partido $partido_id, ganador_id=$ganador_id");
+		if(!$partido) return;
 
 		$perdedor_id = $partido->jugador1_id == $ganador_id ? $partido->jugador2_id : $partido->jugador1_id;
 
-		// Detectar si es dobles o singles
+		// INTENTA OBTENER EMAIL COMO DOBLES (reservation_id)
+		$ganador_email = null;
+		$ganador_name = null;
+
 		$ganador_partners = $this->db->query(
 			"SELECT p.name, p.email FROM reservations_partners rp
 			 JOIN partners p ON p.id = rp.partner_id
@@ -141,51 +139,44 @@ class Mipartido extends CI_Controller {
 			array($ganador_id)
 		)->result();
 
-		error_log("CORREO: Query dobles devolvió " . count($ganador_partners) . " partners");
-
-		// Si hay partners, es dobles
 		if(!empty($ganador_partners)) {
-			// Dobles
+			// Es DOBLES - obtener email del primer partner
 			$ganador_name = implode(' / ', array_map(function($x) { return $x->name; }, $ganador_partners));
 			$ganador_email = reset($ganador_partners)->email;
-			error_log("CORREO: DOBLES - nombre=$ganador_name, email=$ganador_email");
+		}
 
-			$perdedor_partners = $this->db->query(
-				"SELECT p.name FROM reservations_partners rp
-				 JOIN partners p ON p.id = rp.partner_id
-				 WHERE rp.reservation_id = ?
-				 ORDER BY p.name ASC",
-				array($perdedor_id)
-			)->result();
-			$perdedor_name = !empty($perdedor_partners) ? implode(' / ', array_map(function($x) { return $x->name; }, $perdedor_partners)) : '?';
-		} else {
-			// Singles
-			error_log("CORREO: Buscando usuario singles con ID=$ganador_id");
+		// SI NO ENCONTRÓ COMO DOBLES, INTENTA COMO SINGLES (user_id/partner_id)
+		if(empty($ganador_email)) {
 			$ganador_user = $this->User->getById($ganador_id);
-			if(!$ganador_user) {
-				error_log("CORREO: ERROR - Usuario $ganador_id no encontrado en tabla users");
-				return;
+			if($ganador_user) {
+				$ganador_name = $ganador_user->name;
+				$ganador_email = $ganador_user->email;
 			}
-			$ganador_name = $ganador_user->name;
-			$ganador_email = $ganador_user->email;
-			error_log("CORREO: SINGLES - nombre=$ganador_name, email=$ganador_email");
+		}
 
+		// SI SIGUE SIN EMAIL, NO ENVIAR
+		if(empty($ganador_email) || !filter_var($ganador_email, FILTER_VALIDATE_EMAIL)) {
+			error_log("CORREO FAIL: ganador_id=$ganador_id, email=$ganador_email");
+			return;
+		}
+
+		// OBTENER NOMBRE DEL PERDEDOR
+		$perdedor_partners = $this->db->query(
+			"SELECT p.name FROM reservations_partners rp
+			 JOIN partners p ON p.id = rp.partner_id
+			 WHERE rp.reservation_id = ?
+			 ORDER BY p.name ASC",
+			array($perdedor_id)
+		)->result();
+
+		if(!empty($perdedor_partners)) {
+			$perdedor_name = implode(' / ', array_map(function($x) { return $x->name; }, $perdedor_partners));
+		} else {
 			$perdedor_user = $this->User->getById($perdedor_id);
 			$perdedor_name = $perdedor_user ? $perdedor_user->name : '?';
 		}
 
-		if(empty($ganador_email)) {
-			error_log("CORREO: ERROR - Email vacío para ganador $ganador_id");
-			return;
-		}
-
-		if(!filter_var($ganador_email, FILTER_VALIDATE_EMAIL)) {
-			error_log("CORREO: ERROR - Email inválido: $ganador_email");
-			return;
-		}
-
 		$email_destino = $test_email ?: $ganador_email;
-		error_log("CORREO: Enviando a: $email_destino");
 
 		$data = array(
 			'nombre'   => $ganador_name,
@@ -199,17 +190,12 @@ class Mipartido extends CI_Controller {
 		$this->load->library('email');
 		$body = $this->load->view('email/resultado_confirm.php', $data, true);
 		$this->email->initialize(array());
-		$result = $this->email
+		$this->email
 			->from('secretaria@baltc.net', 'Secretaría BALTC')
 			->to($email_destino)
 			->subject('Resultado de tu partido - Torneo BALTC')
 			->message($body)
 			->send();
-
-		error_log("CORREO: Resultado envío = " . ($result ? 'ÉXITO' : 'FALLO'));
-		if(!$result) {
-			error_log("CORREO: Error SMTP = " . $this->email->print_debugger());
-		}
 	}
 
 	private function _avanzarBracket($partido_id, $ganador_id, $post) {
