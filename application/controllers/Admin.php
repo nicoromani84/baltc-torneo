@@ -2704,4 +2704,94 @@ public function enviarNotificacion() {
 		echo "Ya existían: $skipped<br>";
 		echo "<a href='" . base_url('admin') . "'>Volver</a>";
 	}
+
+	public function crearGruposManual() {
+		$this->protect->setRequest('GET');
+		if (!$this->Administrator->isLogged()) redirect(base_url('/admin'));
+		if ($this->Administrator->isReadOnly()) redirect(base_url('/admin'));
+
+		$category = intval($this->input->get('cat'));
+		$gender = $this->input->get('gen', true);
+
+		if (!$category || !$gender) {
+			redirect(base_url('admin/draws'));
+		}
+
+		// Obtener jugadores inscritos
+		$jugadores = $this->Administrator->getInscriptosByCategory($category, $gender, 'doubles');
+		if (empty($jugadores)) {
+			$this->session->set_flashdata('error', 'No hay jugadores inscritos en esta categoría y género.');
+			redirect(base_url('admin/draws'));
+		}
+
+		// Obtener nombres
+		$cat = $this->db->where('id', $category)->get('category')->row();
+		$categoria_nombre = $cat ? $cat->name : 'Categoría';
+		$genero_nombre = ($gender === 'M') ? 'Caballeros' : 'Damas';
+
+		$d['titulo'] = 'Crear Grupos';
+		$d['token'] = $this->protect->eToken();
+		$d['section'] = 'admin-grupos';
+		$d['category_id'] = $category;
+		$d['gender'] = $gender;
+		$d['categoria_nombre'] = $categoria_nombre;
+		$d['genero_nombre'] = $genero_nombre;
+		$d['jugadores'] = $jugadores;
+
+		$this->load->view('admin/header', $d);
+		$this->load->view('admin/crear_grupos', $d);
+		$this->load->view('admin/footer');
+	}
+
+	public function guardarGrupos() {
+		$this->protect->setAjax();
+		$this->protect->setRequest('POST');
+		if ($this->Administrator->isReadOnly()) {
+			$this->protect->ajaxDie(array('action' => false, 'msg' => 'Sin permisos.'));
+		}
+
+		$category = intval($this->input->post('category'));
+		$gender = $this->input->post('gender', true);
+		$grupos_data = json_decode($this->input->post('grupos'), true);
+
+		if (!$category || !$gender || empty($grupos_data)) {
+			$this->protect->ajaxDie(array('action' => false, 'msg' => 'Datos inválidos.'));
+		}
+
+		// Borrar partidos existentes
+		$this->Partido_model->deleteByCategoryAndGender($category, $gender);
+
+		// Agrupar jugadores por grupo
+		$grupos = array('A' => array(), 'B' => array(), 'C' => array(), 'D' => array());
+		foreach ($grupos_data as $jugador_id => $grupo_letra) {
+			if (isset($grupos[$grupo_letra])) {
+				$grupos[$grupo_letra][] = intval($jugador_id);
+			}
+		}
+
+		// Generar matches round-robin por grupo
+		$partidos = array();
+		foreach ($grupos as $grupo_letra => $grupo_jugadores) {
+			if (count($grupo_jugadores) < 2) continue;
+
+			$bp = 0;
+			for ($i = 0; $i < count($grupo_jugadores); $i++) {
+				for ($j = $i + 1; $j < count($grupo_jugadores); $j++) {
+					$partidos[] = array(
+						'category' => $category,
+						'gender' => $gender,
+						'ronda' => "Grupo $grupo_letra",
+						'bracket_pos' => $bp++,
+						'jugador1_id' => $grupo_jugadores[$i],
+						'jugador2_id' => $grupo_jugadores[$j],
+						'score' => null,
+						'ganador_id' => null
+					);
+				}
+			}
+		}
+
+		$ok = $this->Partido_model->addBatch($partidos);
+		$this->protect->ajaxDie(array('action' => $ok, 'msg' => $ok ? 'Grupos creados' : 'Error al crear grupos'));
+	}
 }
