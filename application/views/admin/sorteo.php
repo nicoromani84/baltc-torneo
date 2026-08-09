@@ -6,7 +6,7 @@
 	<!-- PASO 1: SELECTOR -->
 	<div class="sorteo-card mb-4">
 		<div class="sorteo-card-header">
-			<span class="sorteo-step">1</span> Seleccionar torneo, categoría y género
+			<span class="sorteo-step">1</span> Seleccionar torneo, categoría, género y formato
 		</div>
 		<div class="sorteo-card-body">
 			<div class="form-row align-items-end">
@@ -16,7 +16,7 @@
 						<option value="doubles" selected>Dobles</option>
 					</select>
 				</div>
-				<div class="form-group col-md-3 mb-0">
+				<div class="form-group col-md-2 mb-0">
 					<label>Categoría</label>
 					<select id="sorteo-category" class="form-control">
 						<option value="">Elegir...</option>
@@ -25,7 +25,7 @@
 						<?php endforeach; ?>
 					</select>
 				</div>
-				<div class="form-group col-md-3 mb-0">
+				<div class="form-group col-md-2 mb-0">
 					<label>Género</label>
 					<select id="sorteo-gender" class="form-control">
 						<option value="">Elegir...</option>
@@ -33,7 +33,14 @@
 						<option value="F">Damas</option>
 					</select>
 				</div>
-				<div class="form-group col-md-3 mb-0">
+				<div class="form-group col-md-2 mb-0">
+					<label>Formato</label>
+					<select id="sorteo-format" class="form-control">
+						<option value="bracket">Bracket Directo</option>
+						<option value="groups">Grupos + Zona Campeonato</option>
+					</select>
+				</div>
+				<div class="form-group col-md-2 mb-0">
 					<button class="btn btn-primary" id="btn-cargar">
 						<i class="fas fa-users"></i> Cargar jugadores
 					</button>
@@ -165,6 +172,7 @@ $(function(){
 	var categoryId = null;
 	var gender = null;
 	var tournament_type = 'doubles';
+	var tournament_format = 'bracket';
 	var numSembrados = 0;
 	var bracketFinal = [];
 	var RONDAS = ['1ra Ronda','2da Ronda','Cuartos de Final','Semifinal','Final'];
@@ -209,13 +217,16 @@ $(function(){
 		bracketFinal = null;
 		jugadores = [];
 	});
-	$('#sorteo-category, #sorteo-gender').on('change', function(){
+	$('#sorteo-category, #sorteo-gender, #sorteo-format').on('change', function(){
 		$('#paso2').hide();
 		$('#bracket-col').hide();
 		$('#btns-confirmacion').hide();
 		$('#btn-sortear').show();
 		bracketFinal = null;
 		jugadores = [];
+		if($(this).attr('id') === 'sorteo-format') {
+			tournament_format = $(this).val();
+		}
 	});
 	$('#btn-cargar').on('click', function(){
 		categoryId = $('#sorteo-category').val();
@@ -435,6 +446,7 @@ $(function(){
 				category: categoryId,
 				gender: gender,
 				tournament_type: tournament_type,
+				tournament_format: tournament_format,
 				jugadores: JSON.stringify(idsOrdenados),
 				sembrados: JSON.stringify(sembradosData)
 			},
