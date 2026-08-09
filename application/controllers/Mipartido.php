@@ -47,37 +47,38 @@ class Mipartido extends CI_Controller {
 			$this->protect->ajaxDie(array('action' => false, 'msg' => 'Partido no encontrado.'));
 		}
 
-		// Obtener reservation_id basado en partner_id (funciona para dobles)
-		$res_q = $this->db->query(
-			"SELECT DISTINCT r.id FROM reservations r
-			 JOIN reservations_partners rp ON rp.reservation_id = r.id
-			 WHERE rp.partner_id = ?",
-			array($partner_id)
-		)->result();
+		// El usuario debe ser quien reporta el resultado - puede ser jugador1 o jugador2
+		// Para partidos de grupo (dobles), jugador1_id y jugador2_id son reservation_ids
+		// Para partidos normales (singles), pueden ser partner_ids
 
-		// Si es un partido de grupo, buscar la reservation que coincida con la categoría
-		$user_res_id = $partner_id;
-		if(!empty($partido->ronda) && strpos($partido->ronda, 'Grupo') === 0) {
-			// Partido de grupo: buscar reservation del usuario en esta categoría
+		// Intentar verificar directamente con partner_id primero (para singles)
+		$user_is_jugador = ($partido->jugador1_id == $partner_id || $partido->jugador2_id == $partner_id);
+
+		// Si no encontró como partner, buscar como reservation
+		if(!$user_is_jugador) {
+			$res_q = $this->db->query(
+				"SELECT DISTINCT r.id FROM reservations r
+				 JOIN reservations_partners rp ON rp.reservation_id = r.id
+				 WHERE rp.partner_id = ?",
+				array($partner_id)
+			)->result();
+
 			foreach($res_q as $r) {
-				$cat_q = $this->db->query(
-					"SELECT 1 FROM reservations WHERE id = ? AND category = ?",
-					array($r->id, $partido->category)
-				)->row();
-				if($cat_q) {
-					$user_res_id = $r->id;
+				if($partido->jugador1_id == $r->id || $partido->jugador2_id == $r->id) {
+					$user_is_jugador = true;
+					$partner_id = $r->id; // Usar reservation_id para el resto
 					break;
 				}
 			}
-		} else if(!empty($res_q)) {
-			// Partido normal (no grupo): usar primer reservation encontrado
-			$user_res_id = $res_q[0]->id;
 		}
 
-		// Verificar que el partido le pertenece al usuario
-		if($partido->jugador1_id != $user_res_id && $partido->jugador2_id != $user_res_id) {
+		if(!$user_is_jugador) {
+			error_log("DEBUG: usuario no es jugador. partner_id=$partner_id, j1={$partido->jugador1_id}, j2={$partido->jugador2_id}");
 			$this->protect->ajaxDie(array('action' => false, 'msg' => 'No tenés permiso para cargar este resultado.'));
 		}
+
+		// Ahora partner_id contiene el ID correcto (partner_id o reservation_id según sea necesario)
+		$user_res_id = $partner_id;
 		if($ganador != $user_res_id) {
 			$this->protect->ajaxDie(array('action' => false, 'msg' => 'Solo el ganador puede cargar el resultado.'));
 		}
