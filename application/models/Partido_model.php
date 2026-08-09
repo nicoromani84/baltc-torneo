@@ -327,7 +327,11 @@ class Partido_model extends CI_Model {
 			foreach($matches_q as $m) {
 				$es_j1 = ($m->jugador1_id == $res_id);
 				$gano = ($m->ganador_id == $res_id);
-				// Parse score: "6-4, 6-3"
+				// Parse score: "6-4, 6-3" - contar sets ganados y perdidos
+				$sets_ganados = 0;
+				$sets_perdidos = 0;
+				$games_ganados = 0;
+				$games_perdidos = 0;
 				$sets = explode(',', trim($m->score));
 				foreach($sets as $set) {
 					$set = trim($set);
@@ -335,25 +339,22 @@ class Partido_model extends CI_Model {
 					if(count($puntos) == 2) {
 						$p1 = intval($puntos[0]);
 						$p2 = intval($puntos[1]);
-						// Si el jugador ganó el partido, suma sets positivos; si perdió, negativos
 						if($es_j1) {
-							if($gano) {
-								$dg += ($p1 > $p2) ? 1 : -1;
-								$dgg += $p1 - $p2;
-							} else {
-								$dg += ($p1 > $p2) ? -1 : 1;
-								$dgg += $p2 - $p1;
-							}
+							if($p1 > $p2) { $sets_ganados++; $games_ganados += $p1; $games_perdidos += $p2; }
+							else { $sets_perdidos++; $games_ganados += $p1; $games_perdidos += $p2; }
 						} else {
-							if($gano) {
-								$dg += ($p2 > $p1) ? 1 : -1;
-								$dgg += $p2 - $p1;
-							} else {
-								$dg += ($p2 > $p1) ? -1 : 1;
-								$dgg += $p1 - $p2;
-							}
+							if($p2 > $p1) { $sets_ganados++; $games_ganados += $p2; $games_perdidos += $p1; }
+							else { $sets_perdidos++; $games_ganados += $p2; $games_perdidos += $p1; }
 						}
 					}
+				}
+				// Si ganó el partido, DS/DG positivos; si perdió, negativos
+				if($gano) {
+					$dg += $sets_ganados - $sets_perdidos;
+					$dgg += $games_ganados - $games_perdidos;
+				} else {
+					$dg -= $sets_ganados - $sets_perdidos;
+					$dgg -= $games_ganados - $games_perdidos;
 				}
 			}
 
