@@ -160,11 +160,12 @@
 	margin: 5px 0 25px 0;
 }
 .mipartido-card {
-	background: rgba(0,0,0,0.5);
-	border: 1px solid rgba(165,208,81,0.3);
+	background: rgba(0,0,0,0.75);
+	border: 2px solid rgba(165,208,81,0.6);
 	border-radius: 12px;
 	padding: 20px;
 	margin-bottom: 15px;
+	box-shadow: 0 4px 15px rgba(0,0,0,0.5), inset 0 0 20px rgba(165,208,81,0.05);
 }
 .mipartido-ronda {
 	font-size: 11px;
