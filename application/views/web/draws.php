@@ -430,8 +430,8 @@ $(function(){
 			var standings = groups[grupoNombre];
 			html += '<div style="margin-bottom: 20px; background: rgba(0,0,0,0.6); padding: 12px; border-radius: 8px; border: 1px solid rgba(165,208,81,0.3);">';
 			html += '<h5 style="margin-bottom: 10px; color: #a5d051; text-transform: uppercase; letter-spacing: 0.5px; font-size: 12px;">' + grupoNombre + '</h5>';
-			html += '<table class="table table-sm" style="max-width: 350px; margin-bottom: 0; background: rgba(0,0,0,0.5); border-collapse: collapse; font-size: 14px;">';
-			html += '<thead><tr style="background: rgba(0,0,0,0.7); border-bottom: 2px solid rgba(165,208,81,0.4);"><th style="color: #a5d051; padding: 8px; border: 1px solid rgba(165,208,81,0.2); font-weight: 700; width: 30px; font-size: 13px;">Pos</th><th style="color: #a5d051; padding: 8px; border: 1px solid rgba(165,208,81,0.2); font-weight: 700; font-size: 13px;">Apellido</th><th style="color: #a5d051; padding: 8px; border: 1px solid rgba(165,208,81,0.2); font-weight: 700; width: 35px; font-size: 13px;">PJ</th><th style="color: #a5d051; padding: 8px; border: 1px solid rgba(165,208,81,0.2); font-weight: 700; width: 35px; font-size: 13px;">PG</th><th style="color: #a5d051; padding: 8px; border: 1px solid rgba(165,208,81,0.2); font-weight: 700; width: 35px; font-size: 13px;">Pts</th></tr></thead>';
+			html += '<table class="table table-sm" style="max-width: 420px; margin-bottom: 0; background: rgba(0,0,0,0.5); border-collapse: collapse; font-size: 14px;">';
+			html += '<thead><tr style="background: rgba(0,0,0,0.7); border-bottom: 2px solid rgba(165,208,81,0.4);"><th style="color: #a5d051; padding: 8px; border: 1px solid rgba(165,208,81,0.2); font-weight: 700; width: 30px; font-size: 13px;">Pos</th><th style="color: #a5d051; padding: 8px; border: 1px solid rgba(165,208,81,0.2); font-weight: 700; font-size: 13px;">Apellido</th><th style="color: #a5d051; padding: 8px; border: 1px solid rgba(165,208,81,0.2); font-weight: 700; width: 30px; font-size: 13px;">PJ</th><th style="color: #a5d051; padding: 8px; border: 1px solid rgba(165,208,81,0.2); font-weight: 700; width: 30px; font-size: 13px;">PG</th><th style="color: #a5d051; padding: 8px; border: 1px solid rgba(165,208,81,0.2); font-weight: 700; width: 30px; font-size: 13px;">DS</th><th style="color: #a5d051; padding: 8px; border: 1px solid rgba(165,208,81,0.2); font-weight: 700; width: 30px; font-size: 13px;">Pts</th></tr></thead>';
 			html += '<tbody>';
 			for(var i = 0; i < standings.length; i++) {
 				var s = standings[i];
@@ -441,6 +441,7 @@ $(function(){
 				html += '<td style="color: rgba(255,255,255,0.9); padding: 8px; border: 1px solid rgba(165,208,81,0.1); text-transform: capitalize; font-size: 14px; font-weight: bold;">' + apellido.toLowerCase() + '</td>';
 				html += '<td style="color: rgba(255,255,255,0.8); padding: 8px; border: 1px solid rgba(165,208,81,0.1); text-align: center; font-size: 14px;">' + s.pj + '</td>';
 				html += '<td style="color: rgba(255,255,255,0.8); padding: 8px; border: 1px solid rgba(165,208,81,0.1); text-align: center; font-size: 14px;">' + s.pg + '</td>';
+				html += '<td style="color: rgba(255,255,255,0.8); padding: 8px; border: 1px solid rgba(165,208,81,0.1); text-align: center; font-size: 14px;">' + (s.dg >= 0 ? '+' : '') + s.dg + '</td>';
 				html += '<td style="font-weight: bold; color: #1a1a2e; background: #a5d051; padding: 8px; border: 1px solid rgba(165,208,81,0.5); text-align: center; font-size: 14px;">' + s.pts + '</td>';
 				html += '</tr>';
 			}
