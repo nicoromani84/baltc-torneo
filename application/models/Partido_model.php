@@ -314,51 +314,22 @@ class Partido_model extends CI_Model {
 			// Puntos (3 por victoria, 0 por derrota)
 			$pts = $pg * 3;
 
-			// Calcular diferencia de sets y games
-			$sets_query = $this->db->query(
-				"SELECT
-					COALESCE(SUM(CASE WHEN jugador1_id = $res_id THEN sets_ganados_j1 ELSE sets_ganados_j2 END), 0) as sets_ganados,
-					COALESCE(SUM(CASE WHEN jugador1_id = $res_id THEN sets_perdidos_j1 ELSE sets_perdidos_j2 END), 0) as sets_perdidos,
-					COALESCE(SUM(CASE WHEN jugador1_id = $res_id THEN games_ganados_j1 ELSE games_ganados_j2 END), 0) as games_ganados,
-					COALESCE(SUM(CASE WHEN jugador1_id = $res_id THEN games_perdidos_j1 ELSE games_perdidos_j2 END), 0) as games_perdidos
-				FROM (
-					SELECT
-						jugador1_id, jugador2_id, score,
-						CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(score, ',', 1), '-', 1) AS UNSIGNED) - CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(score, ',', 1), '-', -1) AS UNSIGNED) as sets_ganados_j1,
-						CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(score, ',', 1), '-', -1) AS UNSIGNED) - CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(score, ',', 1), '-', 1) AS UNSIGNED) as sets_perdidos_j1,
-						CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(score, ',', -1), '-', 1) AS UNSIGNED) - CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(score, ',', -1), '-', -1) AS UNSIGNED) as games_ganados_j1,
-						CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(score, ',', -1), '-', -1) AS UNSIGNED) - CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(score, ',', -1), '-', 1) AS UNSIGNED) as games_perdidos_j1,
-						-CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(score, ',', 1), '-', 1) AS UNSIGNED) + CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(score, ',', 1), '-', -1) AS UNSIGNED) as sets_ganados_j2,
-						-CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(score, ',', 1), '-', -1) AS UNSIGNED) + CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(score, ',', 1), '-', 1) AS UNSIGNED) as sets_perdidos_j2,
-						-CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(score, ',', -1), '-', 1) AS UNSIGNED) + CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(score, ',', -1), '-', -1) AS UNSIGNED) as games_ganados_j2,
-						-CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(score, ',', -1), '-', -1) AS UNSIGNED) + CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(score, ',', -1), '-', 1) AS UNSIGNED) as games_perdidos_j2
-					FROM matches
-					WHERE category = $category_id AND gender = '$gender' AND ronda = '$ronda'
-					AND score IS NOT NULL AND score != 'BYE'
-				) parsed_scores
-				WHERE jugador1_id = $res_id OR jugador2_id = $res_id
-			")->row();
-
-			$dg = $sets_query->sets_ganados - $sets_query->sets_perdidos;
-			$dgg = $sets_query->games_ganados - $sets_query->games_perdidos;
-
 			$standings[] = array(
 				'reservation_id' => $res_id,
 				'nombre' => $nombre,
 				'pj' => $pj,
 				'pg' => $pg,
 				'pp' => $pp,
-				'dg' => $dg,
-				'dgg' => $dgg,
+				'dg' => 0,
+				'dgg' => 0,
 				'pts' => $pts
 			);
 		}
 
-		// Ordenar por puntos desc, luego por diferencia de sets desc, luego por diferencia de games desc
+		// Ordenar por puntos desc, luego por PG desc
 		usort($standings, function($a, $b) {
 			if($a['pts'] !== $b['pts']) return $b['pts'] - $a['pts'];
-			if($a['dg'] !== $b['dg']) return $b['dg'] - $a['dg'];
-			return $b['dgg'] - $a['dgg'];
+			return $b['pg'] - $a['pg'];
 		});
 
 		return $standings;
