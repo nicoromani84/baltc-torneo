@@ -123,9 +123,13 @@ class Mipartido extends CI_Controller {
 
 	private function _sendResultadoEmail($partido_id, $ganador_id, $score, $test_email = null) {
 		$partido = $this->Partido_model->getById($partido_id);
-		if(!$partido) return;
+		if(!$partido) {
+			error_log("DEBUG email: partido no encontrado id=$partido_id");
+			return;
+		}
 
 		$perdedor_id = $partido->jugador1_id == $ganador_id ? $partido->jugador2_id : $partido->jugador1_id;
+		error_log("DEBUG email: ganador_id=$ganador_id, perdedor_id=$perdedor_id, ronda={$partido->ronda}");
 
 		// Detectar si es dobles o singles
 		$ganador_partners = $this->db->query(
@@ -135,6 +139,8 @@ class Mipartido extends CI_Controller {
 			 ORDER BY p.name ASC",
 			array($ganador_id)
 		)->result();
+
+		error_log("DEBUG email: partners count=" . count($ganador_partners));
 
 		// Si hay partners, es dobles
 		if(!empty($ganador_partners)) {
@@ -153,7 +159,10 @@ class Mipartido extends CI_Controller {
 		} else {
 			// Singles
 			$ganador_user = $this->User->getById($ganador_id);
-			if(!$ganador_user) return;
+			if(!$ganador_user) {
+				error_log("DEBUG email: usuario ganador no encontrado id=$ganador_id");
+				return;
+			}
 			$ganador_name = $ganador_user->name;
 			$ganador_email = $ganador_user->email;
 
@@ -161,7 +170,12 @@ class Mipartido extends CI_Controller {
 			$perdedor_name = $perdedor_user ? $perdedor_user->name : '?';
 		}
 
-		if(!filter_var($ganador_email, FILTER_VALIDATE_EMAIL)) return;
+		if(!filter_var($ganador_email, FILTER_VALIDATE_EMAIL)) {
+			error_log("DEBUG email: email inválido: $ganador_email");
+			return;
+		}
+
+		error_log("DEBUG email: enviando a $ganador_email (test_email=$test_email)");
 
 		$data = array(
 			'nombre'   => $ganador_name,
@@ -175,12 +189,14 @@ class Mipartido extends CI_Controller {
 		$this->load->library('email');
 		$body = $this->load->view('email/resultado_confirm.php', $data, true);
 		$this->email->initialize(array());
-		$this->email
+		$result = $this->email
 			->from('secretaria@baltc.net', 'Secretaría BALTC')
 			->to($test_email ?: $ganador_email)
 			->subject('Resultado de tu partido - Torneo BALTC')
 			->message($body)
 			->send();
+
+		error_log("DEBUG email: send result=" . ($result ? 'OK' : 'FAIL'));
 	}
 
 	private function _avanzarBracket($partido_id, $ganador_id, $post) {
