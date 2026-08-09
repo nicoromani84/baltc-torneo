@@ -263,4 +263,74 @@ class Partido_model extends CI_Model {
 		if(empty($data)) return false;
 		return $this->db->insert_batch('matches', $data) !== false;
 	}
+
+	// Obtener standings de un grupo
+	public function getGroupStandings($category_id, $gender, $ronda) {
+		// Obtener todos los jugadores únicos del grupo
+		$sql = "SELECT DISTINCT
+				CASE
+					WHEN jugador1_id IS NOT NULL THEN jugador1_id
+					WHEN jugador2_id IS NOT NULL THEN jugador2_id
+				END as reservation_id
+			FROM matches
+			WHERE category = $category_id AND gender = '$gender' AND ronda = '$ronda'
+			AND (jugador1_id IS NOT NULL OR jugador2_id IS NOT NULL)";
+
+		$jugadores_q = $this->db->query($sql)->result();
+		$standings = array();
+
+		foreach($jugadores_q as $j) {
+			$res_id = $j->reservation_id;
+
+			// Obtener nombre del jugador
+			$nombre_q = $this->db->query(
+				"SELECT GROUP_CONCAT(p.name SEPARATOR ' / ') as nombre
+				 FROM reservations_partners rp
+				 JOIN partners p ON p.id = rp.partner_id
+				 WHERE rp.reservation_id = $res_id"
+			)->row();
+			$nombre = $nombre_q ? $nombre_q->nombre : '?';
+
+			// Contar partidos jugados
+			$pj_q = $this->db->query(
+				"SELECT COUNT(*) as pj FROM matches
+				 WHERE category = $category_id AND gender = '$gender' AND ronda = '$ronda'
+				 AND ganador_id IS NOT NULL
+				 AND (jugador1_id = $res_id OR jugador2_id = $res_id)"
+			)->row();
+			$pj = $pj_q->pj;
+
+			// Contar partidos ganados
+			$pg_q = $this->db->query(
+				"SELECT COUNT(*) as pg FROM matches
+				 WHERE category = $category_id AND gender = '$gender' AND ronda = '$ronda'
+				 AND ganador_id = $res_id"
+			)->row();
+			$pg = $pg_q->pg;
+
+			// Partidos perdidos
+			$pp = $pj - $pg;
+
+			// Puntos (3 por victoria, 0 por derrota)
+			$pts = $pg * 3;
+
+			$standings[] = array(
+				'reservation_id' => $res_id,
+				'nombre' => $nombre,
+				'pj' => $pj,
+				'pg' => $pg,
+				'pp' => $pp,
+				'dg' => 0, // Por ahora 0, se puede mejorar con scores
+				'pts' => $pts
+			);
+		}
+
+		// Ordenar por puntos desc, luego por PG desc
+		usort($standings, function($a, $b) {
+			if($a['pts'] !== $b['pts']) return $b['pts'] - $a['pts'];
+			return $b['pg'] - $a['pg'];
+		});
+
+		return $standings;
+	}
 }
