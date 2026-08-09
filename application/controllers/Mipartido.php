@@ -35,7 +35,7 @@ class Mipartido extends CI_Controller {
 			$this->protect->ajaxDie(array('action' => false, 'msg' => 'No autorizado.'));
 		}
 
-		$user_id  = $this->session->id;
+		$user_id  = $this->session->userdata('id');
 		$id       = intval($this->input->post('id'));
 		$score    = $this->input->post('score', true);
 		$ganador  = intval($this->input->post('ganador_id'));
@@ -73,7 +73,7 @@ class Mipartido extends CI_Controller {
 		$this->protect->setRequest('POST');
 		if(!$this->User->isLogged()) $this->protect->ajaxDie(array('action'=>false,'msg'=>'No autorizado.'));
 
-		$user_id = $this->session->id;
+		$user_id = $this->session->userdata('id');
 		$id      = intval($this->input->post('id'));
 		$fecha   = $this->input->post('fecha', true);
 		$hora    = $this->input->post('hora', true);
