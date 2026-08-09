@@ -1070,9 +1070,7 @@ class Admin extends CI_Controller {
 			}
 		}
 
-		return $this->Partido_model->addBatch($partidos)
-
-		$this->protect->ajaxDie(array('action' => $ok));
+		return $this->Partido_model->addBatch($partidos);
 	}
 
 	private function _avanzarByesSorteo($partidos, $category, $gender, $rondasNombres, $rondaInicio, $bracketSize = null) {
