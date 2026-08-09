@@ -348,14 +348,20 @@ class Partido_model extends CI_Model {
 						}
 					}
 				}
-				// Si ganó el partido, DS/DG positivos; si perdió, negativos
+				// Calcular diferencia
+				$diff_sets = $sets_ganados - $sets_perdidos;
+				$diff_games = $games_ganados - $games_perdidos;
+
+				// Si ganó, debería tener sets positivos; si la diferencia es negativa, invertir
 				if($gano) {
-					$dg += $sets_ganados - $sets_perdidos;
-					$dgg += $games_ganados - $games_perdidos;
+					if($diff_sets < 0) $diff_sets = -$diff_sets;
+					if($diff_games < 0) $diff_games = -$diff_games;
 				} else {
-					$dg -= $sets_ganados - $sets_perdidos;
-					$dgg -= $games_ganados - $games_perdidos;
+					if($diff_sets > 0) $diff_sets = -$diff_sets;
+					if($diff_games > 0) $diff_games = -$diff_games;
 				}
+				$dg += $diff_sets;
+				$dgg += $diff_games;
 			}
 
 			$standings[] = array(
