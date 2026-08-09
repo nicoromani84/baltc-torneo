@@ -92,7 +92,7 @@ class Mipartido extends CI_Controller {
 		// Avanzar bracket y enviar email
 		if($updated !== false) {
 			$this->_avanzarBracket($id, $ganador, $data);
-			$this->_sendResultadoEmail($id, $ganador, $score, $test_email);
+			$this->_sendResultadoEmail($id, $ganador, $score, $test_email, $partner_id);
 		}
 
 		$this->protect->ajaxDie(array('action' => $updated !== false));
@@ -121,15 +121,9 @@ class Mipartido extends CI_Controller {
 		$this->protect->ajaxDie(array('action'=>true));
 	}
 
-	private function _sendResultadoEmail($partido_id, $ganador_id, $score, $test_email = null) {
-		$log_file = APPPATH . '../email_debug.log';
-		file_put_contents($log_file, "\n=== EMAIL SEND ATTEMPT " . date('Y-m-d H:i:s') . " ===\n", FILE_APPEND);
-
+	private function _sendResultadoEmail($partido_id, $ganador_id, $score, $test_email = null, $user_partner_id = null) {
 		$partido = $this->Partido_model->getById($partido_id);
-		if(!$partido) {
-			file_put_contents($log_file, "ERROR: Partido no encontrado\n", FILE_APPEND);
-			return;
-		}
+		if(!$partido) return;
 
 		$perdedor_id = $partido->jugador1_id == $ganador_id ? $partido->jugador2_id : $partido->jugador1_id;
 
@@ -142,13 +136,27 @@ class Mipartido extends CI_Controller {
 			array($ganador_id)
 		)->result();
 
-		file_put_contents($log_file, "ganador_id=$ganador_id, partners_count=" . count($ganador_partners) . "\n", FILE_APPEND);
-
 		// Si hay partners, es dobles
 		if(!empty($ganador_partners)) {
-			// Dobles
+			// Dobles - obtener email del partner que cargó el resultado
 			$ganador_name = implode(' / ', array_map(function($x) { return $x->name; }, $ganador_partners));
-			$ganador_email = reset($ganador_partners)->email;
+			$ganador_email = null;
+
+			// Buscar el email del partner específico que cargó
+			if($user_partner_id) {
+				$user_partner = $this->db->query(
+					"SELECT email FROM partners WHERE id = ?",
+					array($user_partner_id)
+				)->row();
+				if($user_partner) {
+					$ganador_email = $user_partner->email;
+				}
+			}
+
+			// Si no encontró email del partner específico, usar el del primer partner
+			if(!$ganador_email) {
+				$ganador_email = reset($ganador_partners)->email;
+			}
 
 			$perdedor_partners = $this->db->query(
 				"SELECT p.name FROM reservations_partners rp
@@ -161,10 +169,7 @@ class Mipartido extends CI_Controller {
 		} else {
 			// Singles
 			$ganador_user = $this->User->getById($ganador_id);
-			if(!$ganador_user) {
-				file_put_contents($log_file, "ERROR: Usuario $ganador_id no encontrado\n", FILE_APPEND);
-				return;
-			}
+			if(!$ganador_user) return;
 			$ganador_name = $ganador_user->name;
 			$ganador_email = $ganador_user->email;
 
@@ -172,15 +177,7 @@ class Mipartido extends CI_Controller {
 			$perdedor_name = $perdedor_user ? $perdedor_user->name : '?';
 		}
 
-		file_put_contents($log_file, "Ganador: $ganador_name, Email: $ganador_email\n", FILE_APPEND);
-
-		if(!filter_var($ganador_email, FILTER_VALIDATE_EMAIL)) {
-			file_put_contents($log_file, "ERROR: Email inválido: $ganador_email\n", FILE_APPEND);
-			return;
-		}
-
-		$email_destino = $test_email ?: $ganador_email;
-		file_put_contents($log_file, "Enviando a: $email_destino\n", FILE_APPEND);
+		if(!filter_var($ganador_email, FILTER_VALIDATE_EMAIL)) return;
 
 		$this->load->library('email');
 		$body = $this->load->view('email/resultado_confirm.php', array(
@@ -192,17 +189,12 @@ class Mipartido extends CI_Controller {
 			'score' => $score
 		), true);
 		$this->email->initialize(array());
-		$result = $this->email
+		$this->email
 			->from('secretaria@baltc.net', 'Secretaría BALTC')
-			->to($email_destino)
+			->to($test_email ?: $ganador_email)
 			->subject('Resultado de tu partido - Torneo BALTC')
 			->message($body)
 			->send();
-
-		file_put_contents($log_file, "Send result: " . ($result ? "SUCCESS" : "FAILED") . "\n", FILE_APPEND);
-		if(!$result) {
-			file_put_contents($log_file, "SMTP Error: " . $this->email->print_debugger() . "\n", FILE_APPEND);
-		}
 	}
 
 	private function _avanzarBracket($partido_id, $ganador_id, $post) {
