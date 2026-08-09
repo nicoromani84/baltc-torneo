@@ -122,8 +122,14 @@ class Mipartido extends CI_Controller {
 	}
 
 	private function _sendResultadoEmail($partido_id, $ganador_id, $score, $test_email = null) {
+		$log_file = APPPATH . '../email_debug.log';
+		file_put_contents($log_file, "\n=== EMAIL SEND ATTEMPT " . date('Y-m-d H:i:s') . " ===\n", FILE_APPEND);
+
 		$partido = $this->Partido_model->getById($partido_id);
-		if(!$partido) return;
+		if(!$partido) {
+			file_put_contents($log_file, "ERROR: Partido no encontrado\n", FILE_APPEND);
+			return;
+		}
 
 		$perdedor_id = $partido->jugador1_id == $ganador_id ? $partido->jugador2_id : $partido->jugador1_id;
 
@@ -135,6 +141,8 @@ class Mipartido extends CI_Controller {
 			 ORDER BY p.name ASC",
 			array($ganador_id)
 		)->result();
+
+		file_put_contents($log_file, "ganador_id=$ganador_id, partners_count=" . count($ganador_partners) . "\n", FILE_APPEND);
 
 		// Si hay partners, es dobles
 		if(!empty($ganador_partners)) {
@@ -153,7 +161,10 @@ class Mipartido extends CI_Controller {
 		} else {
 			// Singles
 			$ganador_user = $this->User->getById($ganador_id);
-			if(!$ganador_user) return;
+			if(!$ganador_user) {
+				file_put_contents($log_file, "ERROR: Usuario $ganador_id no encontrado\n", FILE_APPEND);
+				return;
+			}
 			$ganador_name = $ganador_user->name;
 			$ganador_email = $ganador_user->email;
 
@@ -161,7 +172,15 @@ class Mipartido extends CI_Controller {
 			$perdedor_name = $perdedor_user ? $perdedor_user->name : '?';
 		}
 
-		if(!filter_var($ganador_email, FILTER_VALIDATE_EMAIL)) return;
+		file_put_contents($log_file, "Ganador: $ganador_name, Email: $ganador_email\n", FILE_APPEND);
+
+		if(!filter_var($ganador_email, FILTER_VALIDATE_EMAIL)) {
+			file_put_contents($log_file, "ERROR: Email inválido: $ganador_email\n", FILE_APPEND);
+			return;
+		}
+
+		$email_destino = $test_email ?: $ganador_email;
+		file_put_contents($log_file, "Enviando a: $email_destino\n", FILE_APPEND);
 
 		$this->load->library('email');
 		$body = $this->load->view('email/resultado_confirm.php', array(
@@ -173,12 +192,17 @@ class Mipartido extends CI_Controller {
 			'score' => $score
 		), true);
 		$this->email->initialize(array());
-		$this->email
+		$result = $this->email
 			->from('secretaria@baltc.net', 'Secretaría BALTC')
-			->to($test_email ?: $ganador_email)
+			->to($email_destino)
 			->subject('Resultado de tu partido - Torneo BALTC')
 			->message($body)
 			->send();
+
+		file_put_contents($log_file, "Send result: " . ($result ? "SUCCESS" : "FAILED") . "\n", FILE_APPEND);
+		if(!$result) {
+			file_put_contents($log_file, "SMTP Error: " . $this->email->print_debugger() . "\n", FILE_APPEND);
+		}
 	}
 
 	private function _avanzarBracket($partido_id, $ganador_id, $post) {
