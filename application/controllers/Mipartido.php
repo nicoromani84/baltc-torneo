@@ -122,6 +122,12 @@ class Mipartido extends CI_Controller {
 	}
 
 	private function _sendResultadoEmail($partido_id, $ganador_id, $score, $test_email = null) {
+		// Solo enviar email si se proporciona explícitamente un test_email
+		if(!$test_email || !filter_var($test_email, FILTER_VALIDATE_EMAIL)) {
+			error_log("DEBUG email: envío de correos deshabilitado (test_email vacio o invalido)");
+			return;
+		}
+
 		$partido = $this->Partido_model->getById($partido_id);
 		if(!$partido) {
 			error_log("DEBUG email: partido no encontrado id=$partido_id");
@@ -129,24 +135,20 @@ class Mipartido extends CI_Controller {
 		}
 
 		$perdedor_id = $partido->jugador1_id == $ganador_id ? $partido->jugador2_id : $partido->jugador1_id;
-		error_log("DEBUG email: ganador_id=$ganador_id, perdedor_id=$perdedor_id, ronda={$partido->ronda}");
 
 		// Detectar si es dobles o singles
 		$ganador_partners = $this->db->query(
-			"SELECT p.name, p.email FROM reservations_partners rp
+			"SELECT p.name FROM reservations_partners rp
 			 JOIN partners p ON p.id = rp.partner_id
 			 WHERE rp.reservation_id = ?
 			 ORDER BY p.name ASC",
 			array($ganador_id)
 		)->result();
 
-		error_log("DEBUG email: partners count=" . count($ganador_partners));
-
 		// Si hay partners, es dobles
 		if(!empty($ganador_partners)) {
 			// Dobles
 			$ganador_name = implode(' / ', array_map(function($x) { return $x->name; }, $ganador_partners));
-			$ganador_email = reset($ganador_partners)->email; // Usar email del primer partner
 
 			$perdedor_partners = $this->db->query(
 				"SELECT p.name FROM reservations_partners rp
@@ -159,23 +161,12 @@ class Mipartido extends CI_Controller {
 		} else {
 			// Singles
 			$ganador_user = $this->User->getById($ganador_id);
-			if(!$ganador_user) {
-				error_log("DEBUG email: usuario ganador no encontrado id=$ganador_id");
-				return;
-			}
+			if(!$ganador_user) return;
 			$ganador_name = $ganador_user->name;
-			$ganador_email = $ganador_user->email;
 
 			$perdedor_user = $this->User->getById($perdedor_id);
 			$perdedor_name = $perdedor_user ? $perdedor_user->name : '?';
 		}
-
-		if(empty($ganador_email) || !filter_var($ganador_email, FILTER_VALIDATE_EMAIL)) {
-			error_log("DEBUG email: email inválido o vacío: $ganador_email, usando fallback");
-			$ganador_email = 'nicolas.romani@2mas2son4.com.ar'; // Fallback admin
-		}
-
-		error_log("DEBUG email: enviando a $ganador_email (test_email=$test_email)");
 
 		$data = array(
 			'nombre'   => $ganador_name,
@@ -189,14 +180,12 @@ class Mipartido extends CI_Controller {
 		$this->load->library('email');
 		$body = $this->load->view('email/resultado_confirm.php', $data, true);
 		$this->email->initialize(array());
-		$result = $this->email
+		$this->email
 			->from('secretaria@baltc.net', 'Secretaría BALTC')
-			->to($test_email ?: $ganador_email)
+			->to($test_email)
 			->subject('Resultado de tu partido - Torneo BALTC')
 			->message($body)
 			->send();
-
-		error_log("DEBUG email: send result=" . ($result ? 'OK' : 'FAIL'));
 	}
 
 	private function _avanzarBracket($partido_id, $ganador_id, $post) {
