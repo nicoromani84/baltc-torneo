@@ -392,17 +392,21 @@ $(function(){
 				if(miCat && miGen && cat == miCat && gen == miGen) {
 					$('#mi-cat-badge').show();
 				}
-				rondaInicioIdx = getRondaInicio();
-				rondaActivaIdx = rondaInicioIdx;
-				for(var i = rondaInicioIdx; i < RONDAS.length; i++) {
-					var rp = todosPartidos.filter(function(p){ return p.ronda === RONDAS[i]; });
-					if(rp.length > 0) {
-						var pend = rp.filter(function(p){ return !p.ganador_id; });
-						if(pend.length > 0) { rondaActivaIdx = i; break; }
-						rondaActivaIdx = i;
+				if(res.is_groups) {
+					renderGroups(res.groups);
+				} else {
+					rondaInicioIdx = getRondaInicio();
+					rondaActivaIdx = rondaInicioIdx;
+					for(var i = rondaInicioIdx; i < RONDAS.length; i++) {
+						var rp = todosPartidos.filter(function(p){ return p.ronda === RONDAS[i]; });
+						if(rp.length > 0) {
+							var pend = rp.filter(function(p){ return !p.ganador_id; });
+							if(pend.length > 0) { rondaActivaIdx = i; break; }
+							rondaActivaIdx = i;
+						}
 					}
+					renderBracket();
 				}
-				renderBracket();
 				$('#draw-resultado').show();
 			}
 		});
@@ -415,6 +419,34 @@ $(function(){
 			var apellido = n.split(',')[0].trim();
 			return apellido.charAt(0).toUpperCase() + apellido.slice(1).toLowerCase();
 		}).join('-');
+	}
+
+	function renderGroups(groups) {
+		$('#draw-nav').hide();
+		var html = '';
+		for(var grupoNombre in groups) {
+			var standings = groups[grupoNombre];
+			html += '<div style="margin-bottom: 30px;">';
+			html += '<h5 style="margin-bottom: 15px;">' + grupoNombre + '</h5>';
+			html += '<table class="table table-sm table-bordered" style="max-width: 500px;">';
+			html += '<thead class="table-light"><tr><th>Pos</th><th>Jugador</th><th>PJ</th><th>PG</th><th>PP</th><th>DG</th><th>Pts</th></tr></thead>';
+			html += '<tbody>';
+			for(var i = 0; i < standings.length; i++) {
+				var s = standings[i];
+				html += '<tr>';
+				html += '<td style="font-weight: bold;">' + (i+1) + '</td>';
+				html += '<td>' + s.nombre.toLowerCase() + '</td>';
+				html += '<td>' + s.pj + '</td>';
+				html += '<td>' + s.pg + '</td>';
+				html += '<td>' + s.pp + '</td>';
+				html += '<td>' + s.dg + '</td>';
+				html += '<td style="font-weight: bold; background: #f0fae0;">' + s.pts + '</td>';
+				html += '</tr>';
+			}
+			html += '</tbody></table>';
+			html += '</div>';
+		}
+		$('#draw-bracket').html(html);
 	}
 
 	function renderBracket() {

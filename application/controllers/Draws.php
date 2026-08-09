@@ -67,6 +67,42 @@ class Draws extends CI_Controller {
 				$sembrados[$s->partner_id] = $s->numero;
 			}
 		}
-		$this->protect->ajaxDie(array('action' => !empty($partidos), 'partidos' => $partidos ?: array(), 'sembrados' => $sembrados, 'debug' => array('category' => $category, 'gender' => $gender, 'partidos_count' => count($partidos))));
+
+		// Detectar si hay grupos
+		$is_groups = false;
+		$groups_data = array();
+		if(!empty($partidos)) {
+			foreach($partidos as $p) {
+				if(strpos($p->ronda, 'Grupo') === 0) {
+					$is_groups = true;
+					break;
+				}
+			}
+		}
+
+		// Si hay grupos, obtener standings
+		if($is_groups) {
+			$grupos = array();
+			$rondas_unicas = array();
+			foreach($partidos as $p) {
+				if(strpos($p->ronda, 'Grupo') === 0 && !in_array($p->ronda, $rondas_unicas)) {
+					$rondas_unicas[] = $p->ronda;
+				}
+			}
+			foreach($rondas_unicas as $ronda) {
+				$standings = $this->Partido_model->getGroupStandings($category, $gender, $ronda);
+				$grupos[$ronda] = $standings;
+			}
+			$groups_data = $grupos;
+		}
+
+		$this->protect->ajaxDie(array(
+			'action' => !empty($partidos),
+			'partidos' => $partidos ?: array(),
+			'sembrados' => $sembrados,
+			'is_groups' => $is_groups,
+			'groups' => $groups_data,
+			'debug' => array('category' => $category, 'gender' => $gender, 'partidos_count' => count($partidos))
+		));
 	}
 }
