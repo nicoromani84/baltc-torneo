@@ -86,13 +86,13 @@ class Mipartido extends CI_Controller {
 			$this->protect->ajaxDie(array('action' => false, 'msg' => 'Este partido ya tiene resultado cargado.'));
 		}
 
-		$data = array('score' => $score, 'ganador_id' => $user_res_id);
+		$data = array('score' => $score, 'ganador_id' => $ganador);
 		$updated = $this->Partido_model->edit($id, $data);
 
 		// Avanzar bracket y enviar email
 		if($updated !== false) {
-			$this->_avanzarBracket($id, $user_res_id, $data);
-			$this->_sendResultadoEmail($id, $user_res_id, $score, $test_email);
+			$this->_avanzarBracket($id, $ganador, $data);
+			$this->_sendResultadoEmail($id, $ganador, $score, $test_email);
 		}
 
 		$this->protect->ajaxDie(array('action' => $updated !== false));
