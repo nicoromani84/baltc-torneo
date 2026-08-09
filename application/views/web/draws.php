@@ -438,7 +438,7 @@ $(function(){
 				var apellido = s.nombre.split(' / ').map(function(n) { return n.split(',')[0]; }).join(' / ');
 				html += '<tr style="border-bottom: 1px solid rgba(165,208,81,0.15); background: ' + (i % 2 === 0 ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.5)') + ';">';
 				html += '<td style="font-weight: bold; color: #a5d051; padding: 8px; border: 1px solid rgba(165,208,81,0.1); text-align: center; font-size: 14px;">' + (i+1) + '</td>';
-				html += '<td style="color: rgba(255,255,255,0.9); padding: 8px; border: 1px solid rgba(165,208,81,0.1); text-transform: capitalize; font-size: 14px;">' + apellido.toLowerCase() + '</td>';
+				html += '<td style="color: rgba(255,255,255,0.9); padding: 8px; border: 1px solid rgba(165,208,81,0.1); text-transform: capitalize; font-size: 14px; font-weight: bold;">' + apellido.toLowerCase() + '</td>';
 				html += '<td style="color: rgba(255,255,255,0.8); padding: 8px; border: 1px solid rgba(165,208,81,0.1); text-align: center; font-size: 14px;">' + s.pj + '</td>';
 				html += '<td style="color: rgba(255,255,255,0.8); padding: 8px; border: 1px solid rgba(165,208,81,0.1); text-align: center; font-size: 14px;">' + s.pg + '</td>';
 				html += '<td style="font-weight: bold; color: #1a1a2e; background: #a5d051; padding: 8px; border: 1px solid rgba(165,208,81,0.5); text-align: center; font-size: 14px;">' + s.pts + '</td>';
