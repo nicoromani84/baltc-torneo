@@ -314,14 +314,45 @@ class Partido_model extends CI_Model {
 			// Puntos (3 por victoria, 0 por derrota)
 			$pts = $pg * 3;
 
+			// Calcular diferencia de sets y games
+			$dg = 0;
+			$dgg = 0;
+			$matches_q = $this->db->query(
+				"SELECT score, jugador1_id, jugador2_id FROM matches
+				 WHERE category = $category_id AND gender = '$gender' AND ronda = '$ronda'
+				 AND score IS NOT NULL AND score != 'BYE'
+				 AND (jugador1_id = $res_id OR jugador2_id = $res_id)"
+			)->result();
+
+			foreach($matches_q as $m) {
+				$es_j1 = ($m->jugador1_id == $res_id);
+				// Parse score: "6-4, 6-3"
+				$sets = explode(',', trim($m->score));
+				foreach($sets as $set) {
+					$set = trim($set);
+					$puntos = explode('-', $set);
+					if(count($puntos) == 2) {
+						$p1 = intval($puntos[0]);
+						$p2 = intval($puntos[1]);
+						if($es_j1) {
+							$dg += ($p1 > $p2) ? 1 : -1;
+							$dgg += $p1 - $p2;
+						} else {
+							$dg += ($p2 > $p1) ? 1 : -1;
+							$dgg += $p2 - $p1;
+						}
+					}
+				}
+			}
+
 			$standings[] = array(
 				'reservation_id' => $res_id,
 				'nombre' => $nombre,
 				'pj' => $pj,
 				'pg' => $pg,
 				'pp' => $pp,
-				'dg' => 0,
-				'dgg' => 0,
+				'dg' => $dg,
+				'dgg' => $dgg,
 				'pts' => $pts
 			);
 		}
