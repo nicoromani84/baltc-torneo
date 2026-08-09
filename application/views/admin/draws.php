@@ -35,6 +35,11 @@
 						<i class="fas fa-eye"></i> Ver Draw
 					</button>
 				</div>
+				<div class="form-group col-md-2 mb-0">
+					<button class="btn btn-info" id="btn-crear-grupos">
+						<i class="fas fa-users"></i> Grupos
+					</button>
+				</div>
 			</div>
 		</div>
 	</div>
@@ -262,6 +267,13 @@ $(function(){
 		});
 	}
 	cargarTabs();
+
+	$('#btn-crear-grupos').on('click', function(){
+		var cat = $('#draws-category').val();
+		var gen = $('#draws-gender').val();
+		if(!cat || !gen) { alert('Seleccioná categoría y género.'); return; }
+		location.href = baseurl + 'admin/crearGruposManual?cat=' + cat + '&gen=' + gen;
+	});
 
 	$('#btn-ver-draw').on('click', function(){
 		var cat = $('#draws-category').val();
