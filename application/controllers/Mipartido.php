@@ -122,23 +122,14 @@ class Mipartido extends CI_Controller {
 	}
 
 	private function _sendResultadoEmail($partido_id, $ganador_id, $score, $test_email = null) {
-		// Solo enviar email si se proporciona explícitamente un test_email
-		if(!$test_email || !filter_var($test_email, FILTER_VALIDATE_EMAIL)) {
-			error_log("DEBUG email: envío de correos deshabilitado (test_email vacio o invalido)");
-			return;
-		}
-
 		$partido = $this->Partido_model->getById($partido_id);
-		if(!$partido) {
-			error_log("DEBUG email: partido no encontrado id=$partido_id");
-			return;
-		}
+		if(!$partido) return;
 
 		$perdedor_id = $partido->jugador1_id == $ganador_id ? $partido->jugador2_id : $partido->jugador1_id;
 
 		// Detectar si es dobles o singles
 		$ganador_partners = $this->db->query(
-			"SELECT p.name FROM reservations_partners rp
+			"SELECT p.name, p.email FROM reservations_partners rp
 			 JOIN partners p ON p.id = rp.partner_id
 			 WHERE rp.reservation_id = ?
 			 ORDER BY p.name ASC",
@@ -149,6 +140,7 @@ class Mipartido extends CI_Controller {
 		if(!empty($ganador_partners)) {
 			// Dobles
 			$ganador_name = implode(' / ', array_map(function($x) { return $x->name; }, $ganador_partners));
+			$ganador_email = reset($ganador_partners)->email;
 
 			$perdedor_partners = $this->db->query(
 				"SELECT p.name FROM reservations_partners rp
@@ -163,10 +155,13 @@ class Mipartido extends CI_Controller {
 			$ganador_user = $this->User->getById($ganador_id);
 			if(!$ganador_user) return;
 			$ganador_name = $ganador_user->name;
+			$ganador_email = $ganador_user->email;
 
 			$perdedor_user = $this->User->getById($perdedor_id);
 			$perdedor_name = $perdedor_user ? $perdedor_user->name : '?';
 		}
+
+		if(!filter_var($ganador_email, FILTER_VALIDATE_EMAIL)) return;
 
 		$data = array(
 			'nombre'   => $ganador_name,
@@ -182,7 +177,7 @@ class Mipartido extends CI_Controller {
 		$this->email->initialize(array());
 		$this->email
 			->from('secretaria@baltc.net', 'Secretaría BALTC')
-			->to($test_email)
+			->to($test_email ?: $ganador_email)
 			->subject('Resultado de tu partido - Torneo BALTC')
 			->message($body)
 			->send();
