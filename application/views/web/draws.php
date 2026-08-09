@@ -223,11 +223,12 @@
 	font-weight: 800;
 	text-transform: uppercase;
 	letter-spacing: 0.5px;
-	color: rgba(255,255,255,0.6);
+	color: rgba(255,255,255,0.7);
 	padding: 8px 6px;
-	background: rgba(0,0,0,0.3);
-	border: 1px solid rgba(255,255,255,0.1);
+	background: rgba(0,0,0,0.6);
+	border: 1px solid rgba(255,255,255,0.2);
 	margin: 0 4px;
+	border-radius: 4px;
 }
 .draws-ronda.activa .draws-ronda-titulo {
 	color: #a5d051;
@@ -243,10 +244,11 @@
 	gap: 8px;
 }
 .draws-match {
-	background: rgba(0,0,0,0.55);
-	border: 1px solid rgba(255,255,255,0.1);
+	background: rgba(0,0,0,0.75);
+	border: 1.5px solid rgba(165,208,81,0.5);
 	border-radius: 8px;
 	overflow: hidden;
+	box-shadow: 0 2px 8px rgba(0,0,0,0.4);
 }
 .draws-match.jugado { border-color: rgba(165,208,81,0.4); }
 .draws-player {
