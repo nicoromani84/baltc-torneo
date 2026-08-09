@@ -35,7 +35,8 @@ class Mipartido extends CI_Controller {
 			$this->protect->ajaxDie(array('action' => false, 'msg' => 'No autorizado.'));
 		}
 
-		$partner_id  = $this->session->userdata('id');
+		$user_partner_id = $this->session->userdata('id');
+		$partner_id  = $user_partner_id;
 		$id       = intval($this->input->post('id'));
 		$score    = $this->input->post('score', true);
 		$ganador  = intval($this->input->post('ganador_id'));
@@ -92,7 +93,7 @@ class Mipartido extends CI_Controller {
 		// Avanzar bracket y enviar email
 		if($updated !== false) {
 			$this->_avanzarBracket($id, $ganador, $data);
-			$this->_sendResultadoEmail($id, $ganador, $score, $test_email, $partner_id);
+			$this->_sendResultadoEmail($id, $ganador, $score, $test_email, $user_partner_id);
 		}
 
 		$this->protect->ajaxDie(array('action' => $updated !== false));
