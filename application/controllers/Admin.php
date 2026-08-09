@@ -928,7 +928,9 @@ class Admin extends CI_Controller {
 		$category = intval($this->input->post('category'));
 		$gender   = $this->input->post('gender', true);
 		$tournament_type = $this->input->post('tournament_type', true);
+		$tournament_format = $this->input->post('tournament_format', true);
 		if(!$tournament_type) $tournament_type = 'singles';
+		if(!$tournament_format) $tournament_format = 'bracket';
 		$jugadores = json_decode($this->input->post('jugadores'), true);
 
 		if(empty($jugadores)) {
@@ -960,6 +962,17 @@ class Admin extends CI_Controller {
 			}
 		}
 
+		// Ejecutar según formato
+		if($tournament_format === 'groups') {
+			$ok = $this->_confirmarSorteoGroups($category, $gender, $tournament_type, $jugadores);
+		} else {
+			$ok = $this->_confirmarSorteoBracket($category, $gender, $tournament_type, $jugadores);
+		}
+
+		$this->protect->ajaxDie(array('action' => $ok));
+	}
+
+	private function _confirmarSorteoBracket($category, $gender, $tournament_type, $jugadores) {
 		// El frontend manda bracketFinal con posiciones exactas
 		$n = 0;
 		foreach($jugadores as $j) { if($j !== null) $n++; }
@@ -970,17 +983,13 @@ class Admin extends CI_Controller {
 		while(count($jugadores) < $size) $jugadores[] = null;
 		$jugadores = array_slice($jugadores, 0, $size);
 
-		// Eliminar null+null: si un par tiene ambos nulls, tomar un jugador
-		// de otro par que tiene jugador solo (jugador+null) y moverlo aquí
-		// Esto garantiza que cada par tenga al menos 1 jugador
+		// Eliminar null+null
 		for($i = 0; $i < $size; $i += 2) {
 			if($jugadores[$i] === null && $jugadores[$i+1] === null) {
-				// Buscar un par que tenga jugador solo para "robarle" uno
 				for($k = 0; $k < $size; $k += 2) {
 					$k1 = $jugadores[$k];
 					$k2 = $jugadores[$k+1];
 					if($k !== $i && $k1 !== null && $k2 !== null) {
-						// Par con dos jugadores: mover k2 al par vacío
 						$jugadores[$i] = $k2;
 						$jugadores[$k+1] = null;
 						break;
@@ -989,46 +998,79 @@ class Admin extends CI_Controller {
 			}
 		}
 
-				// Ronda de arranque
 		$rondasNombres = array('1ra Ronda','2da Ronda','Cuartos de Final','Semifinal','Final');
 		$mapa = array(32=>0, 16=>1, 8=>2, 4=>3, 2=>4);
 		$rondaInicio = isset($mapa[$size]) ? $mapa[$size] : 0;
 
-		// Generar partidos respetando el array del frontend
 		$partidos = array();
 		for($i = 0; $i < $size; $i += 2) {
 			$j1 = isset($jugadores[$i])   ? $jugadores[$i]   : null;
 			$j2 = isset($jugadores[$i+1]) ? $jugadores[$i+1] : null;
 			$bp = $i / 2;
 
-			// Para dobles, j1 y j2 son reservation_ids (contienen ambos partners)
-			// Para singles, j1 y j2 son partner_ids
-			if($tournament_type === 'doubles') {
-				if($j1 && $j2) {
-					$partidos[] = array('category'=>$category,'gender'=>$gender,'ronda'=>$rondasNombres[$rondaInicio],'bracket_pos'=>$bp,'jugador1_id'=>intval($j1),'jugador2_id'=>intval($j2),'score'=>null,'ganador_id'=>null);
-				} elseif($j1) {
-					$partidos[] = array('category'=>$category,'gender'=>$gender,'ronda'=>$rondasNombres[$rondaInicio],'bracket_pos'=>$bp,'jugador1_id'=>intval($j1),'jugador2_id'=>null,'score'=>'BYE','ganador_id'=>null);
-				} elseif($j2) {
-					$partidos[] = array('category'=>$category,'gender'=>$gender,'ronda'=>$rondasNombres[$rondaInicio],'bracket_pos'=>$bp,'jugador1_id'=>intval($j2),'jugador2_id'=>null,'score'=>'BYE','ganador_id'=>null);
-				}
-			} else {
-				if($j1 && $j2) {
-					$partidos[] = array('category'=>$category,'gender'=>$gender,'ronda'=>$rondasNombres[$rondaInicio],'bracket_pos'=>$bp,'jugador1_id'=>intval($j1),'jugador2_id'=>intval($j2),'score'=>null,'ganador_id'=>null);
-				} elseif($j1) {
-					$partidos[] = array('category'=>$category,'gender'=>$gender,'ronda'=>$rondasNombres[$rondaInicio],'bracket_pos'=>$bp,'jugador1_id'=>intval($j1),'jugador2_id'=>null,'score'=>'BYE','ganador_id'=>null);
-				} elseif($j2) {
-					$partidos[] = array('category'=>$category,'gender'=>$gender,'ronda'=>$rondasNombres[$rondaInicio],'bracket_pos'=>$bp,'jugador1_id'=>intval($j2),'jugador2_id'=>null,'score'=>'BYE','ganador_id'=>null);
-				}
+			if($j1 && $j2) {
+				$partidos[] = array('category'=>$category,'gender'=>$gender,'ronda'=>$rondasNombres[$rondaInicio],'bracket_pos'=>$bp,'jugador1_id'=>intval($j1),'jugador2_id'=>intval($j2),'score'=>null,'ganador_id'=>null);
+			} elseif($j1) {
+				$partidos[] = array('category'=>$category,'gender'=>$gender,'ronda'=>$rondasNombres[$rondaInicio],'bracket_pos'=>$bp,'jugador1_id'=>intval($j1),'jugador2_id'=>null,'score'=>'BYE','ganador_id'=>null);
+			} elseif($j2) {
+				$partidos[] = array('category'=>$category,'gender'=>$gender,'ronda'=>$rondasNombres[$rondaInicio],'bracket_pos'=>$bp,'jugador1_id'=>intval($j2),'jugador2_id'=>null,'score'=>'BYE','ganador_id'=>null);
 			}
-			// null+null → slot vacío, no se guarda
 		}
 
 		$ok = $this->Partido_model->addBatch($partidos);
 
-		// Avanzar BYEs automáticamente: si dos partidos adyacentes ambos tienen ganador, crear siguiente ronda
 		if($ok) {
 			$this->_avanzarByesSorteo($partidos, $category, $gender, $rondasNombres, $rondaInicio, $size);
 		}
+
+		return $ok;
+	}
+
+	private function _confirmarSorteoGroups($category, $gender, $tournament_type, $jugadores) {
+		// Filtrar nulls
+		$jugadores = array_filter($jugadores, function($j) { return $j !== null; });
+		$jugadores = array_values($jugadores);
+		$n = count($jugadores);
+
+		if($n < 2) return false;
+
+		// Calcular cantidad de grupos
+		$numGrupos = 1;
+		if($n > 12) $numGrupos = 4;
+		elseif($n > 8) $numGrupos = 3;
+		elseif($n > 4) $numGrupos = 2;
+
+		// Dividir en grupos equilibrados
+		$jugadoresPorGrupo = ceil($n / $numGrupos);
+		$grupos = array();
+		for($g = 0; $g < $numGrupos; $g++) {
+			$inicio = $g * $jugadoresPorGrupo;
+			$fin = min($inicio + $jugadoresPorGrupo, $n);
+			$grupos[$g] = array_slice($jugadores, $inicio, $fin - $inicio);
+		}
+
+		// Generar matches round-robin por grupo
+		$partidos = array();
+		foreach($grupos as $gIdx => $grupo) {
+			$nombreGrupo = chr(65 + $gIdx);
+			$bp = 0;
+			for($i = 0; $i < count($grupo); $i++) {
+				for($j = $i + 1; $j < count($grupo); $j++) {
+					$partidos[] = array(
+						'category' => $category,
+						'gender' => $gender,
+						'ronda' => "Grupo $nombreGrupo",
+						'bracket_pos' => $bp++,
+						'jugador1_id' => intval($grupo[$i]),
+						'jugador2_id' => intval($grupo[$j]),
+						'score' => null,
+						'ganador_id' => null
+					);
+				}
+			}
+		}
+
+		return $this->Partido_model->addBatch($partidos)
 
 		$this->protect->ajaxDie(array('action' => $ok));
 	}
