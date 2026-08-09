@@ -217,18 +217,20 @@ $(function(){
 		bracketFinal = null;
 		jugadores = [];
 	});
-	$('#sorteo-category, #sorteo-gender, #sorteo-format').on('change', function(){
+	$('#sorteo-format').on('change', function(){
+		tournament_format = $(this).val();
+		console.log('Formato seleccionado:', tournament_format);
+	});
+	$('#sorteo-category, #sorteo-gender').on('change', function(){
 		$('#paso2').hide();
 		$('#bracket-col').hide();
 		$('#btns-confirmacion').hide();
 		$('#btn-sortear').show();
 		bracketFinal = null;
 		jugadores = [];
-		if($(this).attr('id') === 'sorteo-format') {
-			tournament_format = $(this).val();
-		}
 	});
 	$('#btn-cargar').on('click', function(){
+		tournament_format = $('#sorteo-format').val();
 		categoryId = $('#sorteo-category').val();
 		gender = $('#sorteo-gender').val();
 		if(!categoryId || !gender) { alert('Seleccioná categoría y género.'); return; }
