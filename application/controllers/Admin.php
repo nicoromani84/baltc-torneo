@@ -2905,10 +2905,10 @@ public function enviarNotificacion() {
 			 FROM reservations r
 			 JOIN reservations_partners rp ON rp.reservation_id = r.id
 			 JOIN partners p ON p.id = rp.partner_id
-			 WHERE r.category = ? AND r.tournament_type = 'doubles'
+			 WHERE r.category = ? AND r.tournament_type = 'doubles' AND p.gender = ?
 			 GROUP BY r.id
 			 ORDER BY nombre ASC",
-			array($category)
+			array($category, $gender)
 		)->result();
 
 		$this->protect->ajaxDie(array('action' => true, 'jugadores' => $jugadores));
