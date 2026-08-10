@@ -218,16 +218,23 @@ class Administrator extends CI_Model
 		return true;
 	}
 	// Jugadores de una categoría con email (para envío de mails)
-	public function getJugadoresByCategory($category_id) {
+	public function getJugadoresByCategory($category_id, $tournament_type = null) {
 		$sql = "SELECT DISTINCT p.id, p.name, p.dni, p.email, p.gender,
 				c.id as category_id, c.name as categoria, r.id as reserva_id
 				FROM reservations r
 				JOIN reservations_partners rp ON rp.reservation_id = r.id
 				JOIN partners p ON p.id = rp.partner_id
 				JOIN category c ON c.id = r.category
-				WHERE r.category = ?
-				ORDER BY p.name ASC";
-		$q = $this->db->query($sql, array($category_id));
+				WHERE r.category = ?";
+		$params = array($category_id);
+
+		if($tournament_type) {
+			$sql .= " AND r.tournament_type = ?";
+			$params[] = $tournament_type;
+		}
+
+		$sql .= " ORDER BY p.name ASC";
+		$q = $this->db->query($sql, $params);
 		return ($q->num_rows() > 0) ? $q->result() : array();
 	}
 

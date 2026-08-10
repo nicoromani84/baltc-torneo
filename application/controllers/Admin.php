@@ -1887,7 +1887,7 @@ class Admin extends CI_Controller {
 		if($tipo === 'todos') {
 			$jugadores = $this->Administrator->getJugadoresByTournament(false, false, 'doubles');
 		} elseif($tipo === 'categoria' && $category) {
-			$jugadores = $this->Administrator->getJugadoresByCategory($category);
+			$jugadores = $this->Administrator->getJugadoresByCategory($category, 'doubles');
 		} elseif($tipo === 'individual' && $partner_id) {
 			$j = $this->User->getById($partner_id);
 			if($j) $jugadores = array($j);
@@ -1925,7 +1925,7 @@ public function enviarNotificacion() {
 		if($tipo === 'todos') {
 			$jugadores = $this->Administrator->getJugadoresByTournament(false, false, 'doubles');
 		} elseif($tipo === 'categoria' && $category) {
-			$jugadores = $this->Administrator->getJugadoresByCategory($category);
+			$jugadores = $this->Administrator->getJugadoresByCategory($category, 'doubles');
 		} elseif($tipo === 'individual' && $partner_id) {
 			$j = $this->User->getById($partner_id);
 			if($j) $jugadores = array($j);
