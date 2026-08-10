@@ -2981,4 +2981,37 @@ public function enviarNotificacion() {
 		$this->load->view('admin/check_doubles_sin_email', $d);
 		$this->load->view('admin/footer');
 	}
+
+	public function searchPartner() {
+		if(!$this->Administrator->isLogged()) redirect(base_url('admin'));
+
+		$nombre = $this->input->get('q', true);
+
+		if(!$nombre || strlen($nombre) < 2) {
+			$this->protect->ajaxDie(array('action' => false, 'msg' => 'Ingresa al menos 2 caracteres'));
+		}
+
+		$partners = $this->db->query(
+			"SELECT p.id, p.name, p.dni, p.email, p.gender,
+					GROUP_CONCAT(DISTINCT r.id) as reservation_ids,
+					GROUP_CONCAT(DISTINCT r.tournament_type) as tournament_types
+			 FROM partners p
+			 LEFT JOIN reservations_partners rp ON rp.partner_id = p.id
+			 LEFT JOIN reservations r ON r.id = rp.reservation_id
+			 WHERE p.name LIKE ? OR p.dni LIKE ?
+			 GROUP BY p.id
+			 ORDER BY p.name ASC
+			 LIMIT 20",
+			array('%' . $nombre . '%', '%' . $nombre . '%')
+		)->result();
+
+		$d['titulo'] = 'Búsqueda: ' . htmlspecialchars($nombre);
+		$d['nombre_busca'] = $nombre;
+		$d['partners'] = $partners;
+		$d['token'] = $this->protect->eToken();
+
+		$this->load->view('admin/header', $d);
+		$this->load->view('admin/search_partner', $d);
+		$this->load->view('admin/footer');
+	}
 }
