@@ -615,7 +615,120 @@ $(function(){
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 <script>
 // Make jsPDF available
 window.jsPDF = window.jspdf.jsPDF;
+
+// ========== DRAG & DROP BRACKETS ==========
+var sortables = {};
+
+function initDragDropBracket() {
+	// Destruir sortables anteriores
+	Object.keys(sortables).forEach(function(key) {
+		if(sortables[key]) sortables[key].destroy();
+	});
+	sortables = {};
+
+	// Inicializar SortableJS en cada ronda
+	document.querySelectorAll('.draw-matches').forEach(function(container) {
+		var rondaDiv = container.closest('.draw-ronda');
+		var rondaTitulo = rondaDiv.querySelector('.draw-ronda-titulo').textContent;
+		var category = $('#draws-category').val();
+		var gender = $('#draws-gender').val();
+
+		sortables[rondaTitulo] = Sortable.create(container, {
+			animation: 150,
+			ghostClass: 'sortable-ghost',
+			onEnd: function(evt) {
+				updateBracketPositions(category, gender, rondaTitulo, container);
+			}
+		});
+	});
+}
+
+function updateBracketPositions(category, gender, ronda, container) {
+	var positions = [];
+	var matches = container.querySelectorAll('.draw-match');
+
+	matches.forEach(function(match, idx) {
+		// Extraer match_id si existe, o usar índice
+		var matchId = match.dataset.matchId;
+		if(matchId) {
+			positions.push({
+				match_id: parseInt(matchId),
+				bracket_pos: idx
+			});
+		}
+	});
+
+	if(positions.length === 0) return;
+
+	$.ajax({
+		url: baseurl + 'admin/updateBracketPositions',
+		type: 'POST',
+		data: {
+			category: category,
+			gender: gender,
+			ronda: ronda,
+			positions: JSON.stringify(positions)
+		},
+		headers: { 'X-Auth-Token': token },
+		success: function(res) {
+			if(res.action) {
+				// Recargar datos para refrescar
+				loadDrawData();
+			} else {
+				alert('Error al actualizar posiciones: ' + (res.msg || 'Error desconocido'));
+			}
+		},
+		error: function() {
+			alert('Error de conexión');
+		}
+	});
+}
+
+// Hook a renderBracket para inicializar drag & drop
+var originalRenderBracket = renderBracket;
+renderBracket = function(partidos, sembrados) {
+	originalRenderBracket(partidos, sembrados);
+
+	// Agregar data-match-id a cada match
+	document.querySelectorAll('.draw-match').forEach(function(match) {
+		// Buscar el match en partidos
+		var j1Name = match.querySelector('.draw-player:first-child .draw-player-name').textContent.trim();
+		var j2Name = match.querySelector('.draw-player:last-child .draw-player-name').textContent.trim();
+
+		for(var i = 0; i < partidos.length; i++) {
+			var p = partidos[i];
+			if((p.jugador1 && p.jugador1.toLowerCase() === j1Name.toLowerCase()) ||
+			   (p.jugador2 && p.jugador2.toLowerCase() === j2Name.toLowerCase())) {
+				match.dataset.matchId = p.id;
+				break;
+			}
+		}
+	});
+
+	initDragDropBracket();
+};
+
+// Estilos para drag & drop
+var style = document.createElement('style');
+style.textContent = `
+	.draw-matches {
+		cursor: grab;
+	}
+	.draw-match {
+		cursor: grab;
+		transition: opacity 0.2s;
+	}
+	.draw-match:active {
+		cursor: grabbing;
+	}
+	.sortable-ghost {
+		opacity: 0.4;
+		background: #f0f0f0;
+	}
+`;
+document.head.appendChild(style);
 </script>

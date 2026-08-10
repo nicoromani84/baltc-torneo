@@ -2778,6 +2778,31 @@ public function enviarNotificacion() {
 		$this->load->view('admin/footer');
 	}
 
+	public function updateBracketPositions() {
+		$this->protect->setAjax();
+		$this->protect->setRequest('POST');
+		if ($this->Administrator->isReadOnly()) {
+			$this->protect->ajaxDie(array('action' => false, 'msg' => 'Sin permisos.'));
+		}
+
+		$category = intval($this->input->post('category'));
+		$gender = $this->input->post('gender', true);
+		$ronda = $this->input->post('ronda', true);
+		$positions = json_decode($this->input->post('positions'), true);
+
+		if (!$category || !$gender || !$ronda || empty($positions)) {
+			$this->protect->ajaxDie(array('action' => false, 'msg' => 'Datos inválidos.'));
+		}
+
+		// Actualizar bracket_pos para cada match
+		foreach ($positions as $pos) {
+			$this->db->where('id', intval($pos['match_id']))
+				->update('matches', array('bracket_pos' => intval($pos['bracket_pos'])));
+		}
+
+		$this->protect->ajaxDie(array('action' => true, 'msg' => 'Posiciones actualizadas'));
+	}
+
 	public function guardarGrupos() {
 		$this->protect->setAjax();
 		$this->protect->setRequest('POST');
