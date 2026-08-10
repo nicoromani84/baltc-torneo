@@ -37,7 +37,7 @@
 				</div>
 				<div class="form-group col-md-2 mb-0">
 					<button class="btn btn-info" id="btn-crear-grupos">
-						<i class="fas fa-users"></i> Grupos
+						<i class="fas fa-users"></i> Armar Grupos
 					</button>
 				</div>
 				<div class="form-group col-md-3 mb-0">
