@@ -220,6 +220,7 @@ $(function(){
 		var tiene = $(this).data('tiene');
 		$('#draws-category').val(cat);
 		$('#draws-gender').val(gen);
+		actualizarConteoPareja();
 		if(!tiene) {
 			$('#draw-container').hide();
 			$('#draw-titulo-activo').hide();
