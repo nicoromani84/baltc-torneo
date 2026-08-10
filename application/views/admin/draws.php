@@ -441,6 +441,9 @@ $(function(){
 
 		html += '</div>';
 		$('#draw-bracket').html(html);
+
+		// Inicializar drag & drop
+		setTimeout(function() { initDragDropBracket(partidos); }, 100);
 	}
 
 	// Genera HTML del bracket clásico (izquierda→derecha) con inline styles para PDF
@@ -623,17 +626,24 @@ window.jsPDF = window.jspdf.jsPDF;
 // ========== DRAG & DROP BRACKETS ==========
 var sortables = {};
 
-function initDragDropBracket() {
+function initDragDropBracket(partidos) {
 	// Destruir sortables anteriores
 	Object.keys(sortables).forEach(function(key) {
 		if(sortables[key]) sortables[key].destroy();
 	});
 	sortables = {};
 
+	// Agregar data-match-id a cada match
+	document.querySelectorAll('.draw-match').forEach(function(match, idx) {
+		if(partidos && partidos[idx]) {
+			match.dataset.matchId = partidos[idx].id;
+		}
+	});
+
 	// Inicializar SortableJS en cada ronda
 	document.querySelectorAll('.draw-matches').forEach(function(container) {
 		var rondaDiv = container.closest('.draw-ronda');
-		var rondaTitulo = rondaDiv.querySelector('.draw-ronda-titulo').textContent;
+		var rondaTitulo = rondaDiv ? rondaDiv.querySelector('.draw-ronda-titulo').textContent.trim() : 'Unknown';
 		var category = $('#draws-category').val();
 		var gender = $('#draws-gender').val();
 
@@ -652,7 +662,6 @@ function updateBracketPositions(category, gender, ronda, container) {
 	var matches = container.querySelectorAll('.draw-match');
 
 	matches.forEach(function(match, idx) {
-		// Extraer match_id si existe, o usar índice
 		var matchId = match.dataset.matchId;
 		if(matchId) {
 			positions.push({
@@ -676,41 +685,16 @@ function updateBracketPositions(category, gender, ronda, container) {
 		headers: { 'X-Auth-Token': token },
 		success: function(res) {
 			if(res.action) {
-				// Recargar datos para refrescar
 				loadDrawData();
 			} else {
-				alert('Error al actualizar posiciones: ' + (res.msg || 'Error desconocido'));
+				console.log('Error:', res.msg);
 			}
 		},
-		error: function() {
-			alert('Error de conexión');
+		error: function(e) {
+			console.log('Error de conexión', e);
 		}
 	});
 }
-
-// Hook a renderBracket para inicializar drag & drop
-var originalRenderBracket = renderBracket;
-renderBracket = function(partidos, sembrados) {
-	originalRenderBracket(partidos, sembrados);
-
-	// Agregar data-match-id a cada match
-	document.querySelectorAll('.draw-match').forEach(function(match) {
-		// Buscar el match en partidos
-		var j1Name = match.querySelector('.draw-player:first-child .draw-player-name').textContent.trim();
-		var j2Name = match.querySelector('.draw-player:last-child .draw-player-name').textContent.trim();
-
-		for(var i = 0; i < partidos.length; i++) {
-			var p = partidos[i];
-			if((p.jugador1 && p.jugador1.toLowerCase() === j1Name.toLowerCase()) ||
-			   (p.jugador2 && p.jugador2.toLowerCase() === j2Name.toLowerCase())) {
-				match.dataset.matchId = p.id;
-				break;
-			}
-		}
-	});
-
-	initDragDropBracket();
-};
 
 // Estilos para drag & drop
 var style = document.createElement('style');
@@ -721,13 +705,14 @@ style.textContent = `
 	.draw-match {
 		cursor: grab;
 		transition: opacity 0.2s;
+		border-radius: 4px;
 	}
 	.draw-match:active {
 		cursor: grabbing;
 	}
 	.sortable-ghost {
 		opacity: 0.4;
-		background: #f0f0f0;
+		background: rgba(165, 208, 81, 0.1);
 	}
 `;
 document.head.appendChild(style);
