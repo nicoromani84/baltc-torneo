@@ -68,14 +68,9 @@ class Login extends CI_Controller {
 				$this->load->view('web/footer');
 			}
 		} else {
-			// Verificar si las inscripciones están cerradas
-			$q_setting = $this->db->where('key', 'inscripciones_abiertas')->get('settings');
-			$inscripciones_abiertas = ($q_setting->num_rows() > 0 && $q_setting->row()->value == '1');
-
 			$d['titulo'] 	= 'Interno de Dobles ';
 			$d['token']		= $this->protect->eToken();
 			$d['classname'] = 'login';
-			$d['inscripciones_cerradas'] = !$inscripciones_abiertas;
 			$this->load->view('web/header',$d);
 			$this->load->view('web/login');
 			$this->load->view('web/footer');
