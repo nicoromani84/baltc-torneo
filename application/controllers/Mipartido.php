@@ -104,21 +104,49 @@ class Mipartido extends CI_Controller {
 		$this->protect->setRequest('POST');
 		if(!$this->User->isLogged()) $this->protect->ajaxDie(array('action'=>false,'msg'=>'No autorizado.'));
 
-		$user_id = $this->session->userdata('id');
+		$user_partner_id = $this->session->userdata('id');
+		$partner_id = $user_partner_id;
 		$id      = intval($this->input->post('id'));
 		$fecha   = $this->input->post('fecha', true);
 		$hora    = $this->input->post('hora', true);
 
 		$partido = $this->Partido_model->getById($id);
 		if(!$partido) $this->protect->ajaxDie(array('action'=>false,'msg'=>'Partido no encontrado.'));
-		if($partido->jugador1_id != $user_id && $partido->jugador2_id != $user_id) {
+
+		// Verificar permisos - mismo método que en cargarResultado()
+		$user_is_jugador = ($partido->jugador1_id == $partner_id || $partido->jugador2_id == $partner_id);
+
+		if(!$user_is_jugador) {
+			$res_q = $this->db->query(
+				"SELECT DISTINCT r.id FROM reservations r
+				 JOIN reservations_partners rp ON rp.reservation_id = r.id
+				 WHERE rp.partner_id = ?",
+				array($partner_id)
+			)->result();
+
+			foreach($res_q as $r) {
+				if($partido->jugador1_id == $r->id || $partido->jugador2_id == $r->id) {
+					$user_is_jugador = true;
+					break;
+				}
+			}
+		}
+
+		if(!$user_is_jugador) {
 			$this->protect->ajaxDie(array('action'=>false,'msg'=>'Sin permiso.'));
 		}
+
 		if(!empty($partido->deadline) && !empty($fecha) && strtotime($fecha) > strtotime($partido->deadline)) {
 			$this->protect->ajaxDie(array('action'=>false,'msg'=>'La fecha debe ser antes del deadline (' . date('d/m/Y', strtotime($partido->deadline)) . ').'));
 		}
 
-		$this->Partido_model->edit($id, array('fecha' => $fecha, 'hora' => $hora ?: null));
+		// Actualizar deadline a la nueva fecha si es anterior
+		$update_data = array('fecha' => $fecha, 'hora' => $hora ?: null);
+		if(!empty($fecha)) {
+			$update_data['deadline'] = $fecha;
+		}
+
+		$this->Partido_model->edit($id, $update_data);
 		$this->protect->ajaxDie(array('action'=>true));
 	}
 
