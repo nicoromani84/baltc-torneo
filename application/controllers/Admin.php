@@ -2838,4 +2838,102 @@ public function enviarNotificacion() {
 		$ok = $this->Partido_model->addBatch($partidos);
 		$this->protect->ajaxDie(array('action' => $ok, 'msg' => $ok ? 'Grupos creados' : 'Error al crear grupos'));
 	}
+
+	public function editarPartido() {
+		if(!$this->Administrator->isLogged()) redirect(base_url('/admin'));
+
+		$d['titulo'] = 'Editar Partido';
+		$d['token'] = $this->protect->eToken();
+		$d['section'] = 'admin-editar-partido';
+		$d['categories'] = $this->Reservation->getCategories();
+
+		$this->load->view('admin/header', $d);
+		$this->load->view('admin/editar_partido', $d);
+		$this->load->view('admin/footer');
+	}
+
+	public function getRondasByCategory() {
+		$this->protect->setAjax();
+		$this->protect->setRequest('POST');
+
+		$category = intval($this->input->post('category'));
+		$gender = $this->input->post('gender', true);
+
+		$rondas = $this->db->query(
+			"SELECT DISTINCT ronda FROM matches WHERE category = ? AND gender = ? AND ronda != 'BYE' ORDER BY ronda ASC",
+			array($category, $gender)
+		)->result();
+
+		$ronda_list = array();
+		foreach($rondas as $r) {
+			$ronda_list[] = $r->ronda;
+		}
+
+		$this->protect->ajaxDie(array('action' => true, 'rondas' => $ronda_list));
+	}
+
+	public function getPartidosByRonda() {
+		$this->protect->setAjax();
+		$this->protect->setRequest('POST');
+
+		$category = intval($this->input->post('category'));
+		$gender = $this->input->post('gender', true);
+		$ronda = $this->input->post('ronda', true);
+
+		$partidos = $this->db->query(
+			"SELECT m.id, m.jugador1_id, m.jugador2_id, m.score, m.ganador_id,
+					(SELECT GROUP_CONCAT(p.name SEPARATOR ' / ') FROM reservations_partners rp JOIN partners p ON p.id = rp.partner_id WHERE rp.reservation_id = m.jugador1_id) as jugador1,
+					(SELECT GROUP_CONCAT(p.name SEPARATOR ' / ') FROM reservations_partners rp JOIN partners p ON p.id = rp.partner_id WHERE rp.reservation_id = m.jugador2_id) as jugador2
+			 FROM matches m
+			 WHERE m.category = ? AND m.gender = ? AND m.ronda = ?
+			 ORDER BY m.bracket_pos ASC",
+			array($category, $gender, $ronda)
+		)->result();
+
+		$this->protect->ajaxDie(array('action' => true, 'partidos' => $partidos));
+	}
+
+	public function getJugadoresByCategory() {
+		$this->protect->setAjax();
+		$this->protect->setRequest('POST');
+
+		$category = intval($this->input->post('category'));
+		$gender = $this->input->post('gender', true);
+
+		$jugadores = $this->db->query(
+			"SELECT r.id, GROUP_CONCAT(p.name SEPARATOR ' / ') as nombre
+			 FROM reservations r
+			 JOIN reservations_partners rp ON rp.reservation_id = r.id
+			 JOIN partners p ON p.id = rp.partner_id
+			 WHERE r.category = ? AND r.tournament_type = 'doubles'
+			 GROUP BY r.id
+			 ORDER BY nombre ASC",
+			array($category)
+		)->result();
+
+		$this->protect->ajaxDie(array('action' => true, 'jugadores' => $jugadores));
+	}
+
+	public function actualizarPartido() {
+		$this->protect->setAjax();
+		$this->protect->setRequest('POST');
+		if($this->Administrator->isReadOnly()) {
+			$this->protect->ajaxDie(array('action' => false, 'msg' => 'Sin permisos.'));
+		}
+
+		$partido_id = intval($this->input->post('partido_id'));
+		$jugador1_id = intval($this->input->post('jugador1_id'));
+		$jugador2_id = intval($this->input->post('jugador2_id'));
+
+		if(!$partido_id || !$jugador1_id || !$jugador2_id) {
+			$this->protect->ajaxDie(array('action' => false, 'msg' => 'Datos inválidos.'));
+		}
+
+		$this->db->where('id', $partido_id)->update('matches', array(
+			'jugador1_id' => $jugador1_id,
+			'jugador2_id' => $jugador2_id
+		));
+
+		$this->protect->ajaxDie(array('action' => true, 'msg' => 'Partido actualizado'));
+	}
 }

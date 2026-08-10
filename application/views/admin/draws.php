@@ -13,7 +13,7 @@
 	<div class="card mb-4">
 		<div class="card-body">
 			<div class="form-row align-items-end">
-				<div class="form-group col-md-4 mb-0">
+				<div class="form-group col-md-3 mb-0">
 					<label>Categoría</label>
 					<select id="draws-category" class="form-control">
 						<option value="">Elegir...</option>
@@ -22,7 +22,7 @@
 						<?php endforeach; ?>
 					</select>
 				</div>
-				<div class="form-group col-md-3 mb-0">
+				<div class="form-group col-md-2 mb-0">
 					<label>Género</label>
 					<select id="draws-gender" class="form-control">
 						<option value="">Elegir...</option>
@@ -30,7 +30,7 @@
 						<option value="F">Damas</option>
 					</select>
 				</div>
-				<div class="form-group col-md-3 mb-0">
+				<div class="form-group col-md-2 mb-0">
 					<button class="btn btn-primary" id="btn-ver-draw">
 						<i class="fas fa-eye"></i> Ver Draw
 					</button>
@@ -38,6 +38,11 @@
 				<div class="form-group col-md-2 mb-0">
 					<button class="btn btn-info" id="btn-crear-grupos">
 						<i class="fas fa-users"></i> Grupos
+					</button>
+				</div>
+				<div class="form-group col-md-3 mb-0">
+					<button class="btn btn-secondary" id="btn-editar-partidos">
+						<i class="fas fa-edit"></i> Editar Partidos
 					</button>
 				</div>
 			</div>
@@ -273,6 +278,10 @@ $(function(){
 		var gen = $('#draws-gender').val();
 		if(!cat || !gen) { alert('Seleccioná categoría y género.'); return; }
 		location.href = baseurl + 'admin/crearGruposManual?cat=' + cat + '&gen=' + gen;
+	});
+
+	$('#btn-editar-partidos').on('click', function(){
+		location.href = baseurl + 'admin/editarPartido';
 	});
 
 	$('#btn-ver-draw').on('click', function(){

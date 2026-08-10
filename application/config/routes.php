@@ -41,6 +41,11 @@ $route['admin/getInscriptosByCategory'] = 'admin/getInscriptosByCategory';
 $route['admin/confirmarSorteo'] = 'admin/confirmarSorteo';
 $route['admin/crearGruposManual'] = 'admin/crearGruposManual';
 $route['admin/guardarGrupos'] = 'admin/guardarGrupos';
+$route['admin/editarPartido'] = 'admin/editarPartido';
+$route['admin/getRondasByCategory'] = 'admin/getRondasByCategory';
+$route['admin/getPartidosByRonda'] = 'admin/getPartidosByRonda';
+$route['admin/getJugadoresByCategory'] = 'admin/getJugadoresByCategory';
+$route['admin/actualizarPartido'] = 'admin/actualizarPartido';
 
 $route['admin/mails'] = 'admin/mails';
 $route['admin/mails2ndchance'] = 'admin/mails2ndchance';
