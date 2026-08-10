@@ -2936,4 +2936,27 @@ public function enviarNotificacion() {
 
 		$this->protect->ajaxDie(array('action' => true, 'msg' => 'Partido actualizado'));
 	}
+
+	public function countPairesByCategory() {
+		$this->protect->setAjax();
+		$this->protect->setRequest('POST');
+
+		$category = intval($this->input->post('category'));
+		$gender = $this->input->post('gender', true);
+
+		if(!$category || !$gender) {
+			$this->protect->ajaxDie(array('action' => false, 'count' => 0));
+		}
+
+		$result = $this->db->query(
+			"SELECT COUNT(DISTINCT r.id) as total FROM reservations r
+			 JOIN reservations_partners rp ON rp.reservation_id = r.id
+			 JOIN partners p ON p.id = rp.partner_id
+			 WHERE r.category = ? AND r.tournament_type = 'doubles' AND p.gender = ?",
+			array($category, $gender)
+		)->row();
+
+		$count = $result ? $result->total : 0;
+		$this->protect->ajaxDie(array('action' => true, 'count' => $count));
+	}
 }

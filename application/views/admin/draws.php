@@ -31,18 +31,24 @@
 					</select>
 				</div>
 				<div class="form-group col-md-2 mb-0">
-					<button class="btn btn-primary" id="btn-ver-draw">
-						<i class="fas fa-eye"></i> Ver Draw
+					<label>&nbsp;</label>
+					<div style="padding-top: 7px; font-size: 13px; color: #666;">
+						<span id="parejas-count"></span>
+					</div>
+				</div>
+				<div class="form-group col-md-1 mb-0">
+					<button class="btn btn-primary btn-sm" id="btn-ver-draw">
+						<i class="fas fa-eye"></i> Ver
 					</button>
 				</div>
-				<div class="form-group col-md-2 mb-0">
-					<button class="btn btn-info" id="btn-crear-grupos">
-						<i class="fas fa-users"></i> Armar Grupos
+				<div class="form-group col-md-1 mb-0">
+					<button class="btn btn-info btn-sm" id="btn-crear-grupos">
+						<i class="fas fa-users"></i> Armar
 					</button>
 				</div>
 				<div class="form-group col-md-3 mb-0">
-					<button class="btn btn-secondary" id="btn-editar-partidos">
-						<i class="fas fa-edit"></i> Editar Partidos
+					<button class="btn btn-secondary btn-sm" id="btn-editar-partidos">
+						<i class="fas fa-edit"></i> Editar
 					</button>
 				</div>
 			</div>
@@ -282,6 +288,36 @@ $(function(){
 
 	$('#btn-editar-partidos').on('click', function(){
 		location.href = baseurl + 'admin/editarPartido';
+	});
+
+	// Mostrar cantidad de parejas cuando cambia categoría/género
+	function actualizarConteoPareja() {
+		var cat = $('#draws-category').val();
+		var gen = $('#draws-gender').val();
+
+		if(!cat || !gen) {
+			$('#parejas-count').text('');
+			return;
+		}
+
+		$.ajax({
+			url: baseurl + 'admin/countPairesByCategory',
+			type: 'POST',
+			data: { category: cat, gender: gen },
+			headers: { 'X-Auth-Token': token },
+			success: function(res) {
+				if(res.action && res.count > 0) {
+					var label = res.count === 1 ? 'pareja' : 'parejas';
+					$('#parejas-count').text('(' + res.count + ' ' + label + ')');
+				} else {
+					$('#parejas-count').text('');
+				}
+			}
+		});
+	}
+
+	$('#draws-category, #draws-gender').on('change', function(){
+		actualizarConteoPareja();
 	});
 
 	$('#btn-ver-draw').on('click', function(){

@@ -152,8 +152,8 @@ $(function(){
 					res.partidos.forEach(function(p) {
 						html += '<tr>';
 						html += '<td><strong>' + p.id + '</strong></td>';
-						html += '<td>' + (p.jugador1 || 'TBD') + '</td>';
-						html += '<td>' + (p.jugador2 || 'TBD') + '</td>';
+						html += '<td>' + (p.jugador1 || 'Por definir') + '</td>';
+						html += '<td>' + (p.jugador2 || 'Por definir') + '</td>';
 						html += '<td>' + (p.score || '-') + '</td>';
 						html += '<td><button class="btn btn-sm btn-warning editar-partido" data-id="' + p.id + '" data-cat="' + cat + '" data-gen="' + gen + '" data-ronda="' + ronda + '">';
 						html += '<i class="fas fa-edit"></i> Editar</button></td>';
