@@ -2787,7 +2787,11 @@ public function enviarNotificacion() {
 
 		$category = intval($this->input->post('category'));
 		$gender = $this->input->post('gender', true);
-		$grupos_data = json_decode($this->input->post('grupos'), true);
+		$grupos_json = $this->input->post('grupos');
+		$grupos_data = json_decode($grupos_json, true);
+
+		error_log("DEBUG guardarGrupos: JSON recibido = $grupos_json");
+		error_log("DEBUG guardarGrupos: grupos_data decodificado = " . json_encode($grupos_data));
 
 		if (!$category || !$gender || empty($grupos_data)) {
 			$this->protect->ajaxDie(array('action' => false, 'msg' => 'Datos inválidos.'));
@@ -2799,10 +2803,15 @@ public function enviarNotificacion() {
 		// Agrupar jugadores por grupo
 		$grupos = array('A' => array(), 'B' => array(), 'C' => array(), 'D' => array());
 		foreach ($grupos_data as $jugador_id => $grupo_letra) {
+			error_log("DEBUG: asignando jugador_id=$jugador_id a grupo=$grupo_letra");
 			if (isset($grupos[$grupo_letra])) {
 				$grupos[$grupo_letra][] = intval($jugador_id);
+			} else {
+				error_log("DEBUG: ERROR - grupo_letra '$grupo_letra' no existe en array de grupos");
 			}
 		}
+
+		error_log("DEBUG: grupos finales = " . json_encode($grupos));
 
 		// Generar matches round-robin por grupo
 		$partidos = array();
