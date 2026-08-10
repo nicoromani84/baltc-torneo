@@ -30,25 +30,25 @@
 						<option value="F">Damas</option>
 					</select>
 				</div>
-				<div class="form-group col-md-2 mb-0">
+				<div class="form-group col-md-1 mb-0">
 					<label>&nbsp;</label>
-					<div style="padding-top: 7px; font-size: 13px; color: #666;">
+					<div style="padding-top: 7px; font-size: 12px; color: #999;">
 						<span id="parejas-count"></span>
 					</div>
 				</div>
-				<div class="form-group col-md-1 mb-0">
-					<button class="btn btn-primary btn-sm" id="btn-ver-draw">
-						<i class="fas fa-eye"></i> Ver
+				<div class="form-group col-md-2 mb-0">
+					<button class="btn btn-primary" id="btn-ver-draw">
+						<i class="fas fa-eye"></i> Ver Draw
 					</button>
 				</div>
-				<div class="form-group col-md-1 mb-0">
-					<button class="btn btn-info btn-sm" id="btn-crear-grupos">
-						<i class="fas fa-users"></i> Armar
+				<div class="form-group col-md-2 mb-0">
+					<button class="btn btn-info" id="btn-crear-grupos">
+						<i class="fas fa-users"></i> Armar Grupos
 					</button>
 				</div>
-				<div class="form-group col-md-3 mb-0">
-					<button class="btn btn-secondary btn-sm" id="btn-editar-partidos">
-						<i class="fas fa-edit"></i> Editar
+				<div class="form-group col-md-2 mb-0">
+					<button class="btn btn-secondary" id="btn-editar-partidos">
+						<i class="fas fa-edit"></i> Editar Partidos
 					</button>
 				</div>
 			</div>
