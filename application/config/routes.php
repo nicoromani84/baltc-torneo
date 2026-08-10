@@ -49,6 +49,7 @@ $route['admin/actualizarPartido'] = 'admin/actualizarPartido';
 $route['admin/countPairesByCategory'] = 'admin/countPairesByCategory';
 $route['admin/checkDoublesSinEmail'] = 'admin/checkDoublesSinEmail';
 $route['admin/searchPartner'] = 'admin/searchPartner';
+$route['admin/allPartners'] = 'admin/allPartners';
 
 $route['admin/mails'] = 'admin/mails';
 $route['admin/mails2ndchance'] = 'admin/mails2ndchance';

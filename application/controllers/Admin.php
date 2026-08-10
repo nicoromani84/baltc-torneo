@@ -2986,11 +2986,54 @@ public function enviarNotificacion() {
 		if(!$this->Administrator->isLogged()) redirect(base_url('admin'));
 
 		$nombre = $this->input->get('q', true);
+		$partners = array();
+		$nombre_busca = '';
 
-		if(!$nombre || strlen($nombre) < 2) {
-			$this->protect->ajaxDie(array('action' => false, 'msg' => 'Ingresa al menos 2 caracteres'));
+		if($nombre && strlen($nombre) >= 2) {
+			// Búsqueda flexible: cualquier palabra en el nombre
+			$palabras = explode(' ', $nombre);
+			$where_clause = '';
+			$params = array();
+
+			foreach($palabras as $palabra) {
+				if(!empty($palabra)) {
+					if($where_clause) $where_clause .= ' OR ';
+					$where_clause .= 'p.name LIKE ? OR p.dni LIKE ?';
+					$params[] = '%' . $palabra . '%';
+					$params[] = '%' . $palabra . '%';
+				}
+			}
+
+			if($where_clause) {
+				$query = "SELECT p.id, p.name, p.dni, p.email, p.gender,
+						GROUP_CONCAT(DISTINCT r.id) as reservation_ids,
+						GROUP_CONCAT(DISTINCT r.tournament_type) as tournament_types
+					 FROM partners p
+					 LEFT JOIN reservations_partners rp ON rp.partner_id = p.id
+					 LEFT JOIN reservations r ON r.id = rp.reservation_id
+					 WHERE ($where_clause)
+					 GROUP BY p.id
+					 ORDER BY p.name ASC
+					 LIMIT 50";
+				$partners = $this->db->query($query, $params)->result();
+				$nombre_busca = $nombre;
+			}
 		}
 
+		$d['titulo'] = $nombre ? 'Búsqueda: ' . htmlspecialchars($nombre) : 'Búsqueda de Jugador';
+		$d['nombre_busca'] = $nombre_busca;
+		$d['partners'] = $partners;
+		$d['token'] = $this->protect->eToken();
+
+		$this->load->view('admin/header', $d);
+		$this->load->view('admin/search_partner', $d);
+		$this->load->view('admin/footer');
+	}
+
+	public function allPartners() {
+		if(!$this->Administrator->isLogged()) redirect(base_url('admin'));
+
+		// Mostrar todos los partners ordenados alfabéticamente
 		$partners = $this->db->query(
 			"SELECT p.id, p.name, p.dni, p.email, p.gender,
 					GROUP_CONCAT(DISTINCT r.id) as reservation_ids,
@@ -2998,20 +3041,16 @@ public function enviarNotificacion() {
 			 FROM partners p
 			 LEFT JOIN reservations_partners rp ON rp.partner_id = p.id
 			 LEFT JOIN reservations r ON r.id = rp.reservation_id
-			 WHERE p.name LIKE ? OR p.dni LIKE ?
 			 GROUP BY p.id
-			 ORDER BY p.name ASC
-			 LIMIT 20",
-			array('%' . $nombre . '%', '%' . $nombre . '%')
+			 ORDER BY p.name ASC"
 		)->result();
 
-		$d['titulo'] = 'Búsqueda: ' . htmlspecialchars($nombre);
-		$d['nombre_busca'] = $nombre;
+		$d['titulo'] = 'Todos los Jugadores';
 		$d['partners'] = $partners;
 		$d['token'] = $this->protect->eToken();
 
 		$this->load->view('admin/header', $d);
-		$this->load->view('admin/search_partner', $d);
+		$this->load->view('admin/all_partners', $d);
 		$this->load->view('admin/footer');
 	}
 }
