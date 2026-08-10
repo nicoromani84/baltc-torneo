@@ -442,8 +442,8 @@ $(function(){
 		html += '</div>';
 		$('#draw-bracket').html(html);
 
-		// Inicializar drag & drop
-		setTimeout(function() { initDragDropBracket(partidos); }, 100);
+		// Inicializar clicks para intercambiar parejas
+		setTimeout(function() { initSwapMatches(partidos); }, 100);
 	}
 
 	// Genera HTML del bracket clásico (izquierda→derecha) con inline styles para PDF
@@ -618,101 +618,110 @@ $(function(){
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 <script>
 // Make jsPDF available
 window.jsPDF = window.jspdf.jsPDF;
 
-// ========== DRAG & DROP BRACKETS ==========
-var sortables = {};
+// ========== INTERCAMBIAR PAREJAS CON CLICKS ==========
+var selectedMatch = null;
 
-function initDragDropBracket(partidos) {
-	// Destruir sortables anteriores
-	Object.keys(sortables).forEach(function(key) {
-		if(sortables[key]) sortables[key].destroy();
-	});
-	sortables = {};
-
-	// Agregar data-match-id a cada match
+function initSwapMatches(partidos) {
 	document.querySelectorAll('.draw-match').forEach(function(match, idx) {
 		if(partidos && partidos[idx]) {
 			match.dataset.matchId = partidos[idx].id;
-		}
-	});
+			match.dataset.bracketPos = partidos[idx].bracket_pos;
+			match.dataset.ronda = partidos[idx].ronda;
+			match.dataset.category = partidos[idx].category;
+			match.dataset.gender = partidos[idx].gender;
 
-	// Inicializar SortableJS en cada ronda
-	document.querySelectorAll('.draw-matches').forEach(function(container) {
-		var rondaDiv = container.closest('.draw-ronda');
-		var rondaTitulo = rondaDiv ? rondaDiv.querySelector('.draw-ronda-titulo').textContent.trim() : 'Unknown';
-		var category = $('#draws-category').val();
-		var gender = $('#draws-gender').val();
-
-		sortables[rondaTitulo] = Sortable.create(container, {
-			animation: 150,
-			ghostClass: 'sortable-ghost',
-			onEnd: function(evt) {
-				updateBracketPositions(category, gender, rondaTitulo, container);
-			}
-		});
-	});
-}
-
-function updateBracketPositions(category, gender, ronda, container) {
-	var positions = [];
-	var matches = container.querySelectorAll('.draw-match');
-
-	matches.forEach(function(match, idx) {
-		var matchId = match.dataset.matchId;
-		if(matchId) {
-			positions.push({
-				match_id: parseInt(matchId),
-				bracket_pos: idx
+			match.style.cursor = 'pointer';
+			match.addEventListener('click', function(e) {
+				e.stopPropagation();
+				selectMatch(this, partidos);
 			});
 		}
 	});
 
-	if(positions.length === 0) return;
+	// Deseleccionar al hacer click fuera
+	document.addEventListener('click', function() {
+		if(selectedMatch) {
+			selectedMatch.classList.remove('selected-match');
+			selectedMatch = null;
+		}
+	});
+}
+
+function selectMatch(match, partidos) {
+	if(!selectedMatch) {
+		// Primer click - seleccionar
+		selectedMatch = match;
+		match.classList.add('selected-match');
+		return;
+	}
+
+	if(selectedMatch === match) {
+		// Click en el mismo - deseleccionar
+		match.classList.remove('selected-match');
+		selectedMatch = null;
+		return;
+	}
+
+	// Segundo click - intercambiar
+	swapMatches(selectedMatch, match);
+	selectedMatch.classList.remove('selected-match');
+	selectedMatch = null;
+}
+
+function swapMatches(match1, match2) {
+	var id1 = parseInt(match1.dataset.matchId);
+	var id2 = parseInt(match2.dataset.matchId);
+	var pos1 = parseInt(match1.dataset.bracketPos);
+	var pos2 = parseInt(match2.dataset.bracketPos);
+	var ronda = match1.dataset.ronda;
+	var category = match1.dataset.category;
+	var gender = match1.dataset.gender;
 
 	$.ajax({
-		url: baseurl + 'admin/updateBracketPositions',
+		url: baseurl + 'admin/swapMatchPositions',
 		type: 'POST',
 		data: {
-			category: category,
-			gender: gender,
+			match1_id: id1,
+			match2_id: id2,
+			pos1: pos1,
+			pos2: pos2,
 			ronda: ronda,
-			positions: JSON.stringify(positions)
+			category: category,
+			gender: gender
 		},
 		headers: { 'X-Auth-Token': token },
 		success: function(res) {
 			if(res.action) {
 				loadDrawData();
 			} else {
-				console.log('Error:', res.msg);
+				alert('Error: ' + (res.msg || 'Error desconocido'));
 			}
 		},
-		error: function(e) {
-			console.log('Error de conexión', e);
+		error: function() {
+			alert('Error de conexión');
 		}
 	});
 }
 
-// Estilos para drag & drop
+// Estilos para intercambio
 var style = document.createElement('style');
 style.textContent = `
-	.draw-matches {
-		cursor: grab;
-	}
 	.draw-match {
-		cursor: grab;
-		transition: opacity 0.2s;
-		border-radius: 4px;
+		cursor: pointer;
+		transition: all 0.2s;
 	}
-	.draw-match:active {
-		cursor: grabbing;
+	.draw-match:hover {
+		box-shadow: 0 0 6px rgba(165, 208, 81, 0.4);
+		transform: scale(1.02);
 	}
-	.sortable-ghost {
-		opacity: 0.4;
-		background: rgba(165, 208, 81, 0.1);
+	.selected-match {
+		box-shadow: 0 0 12px rgba(165, 208, 81, 0.8) !important;
+		border: 2px solid rgba(165, 208, 81, 0.8) !important;
+		background: rgba(165, 208, 81, 0.05);
 	}
 `;
 document.head.appendChild(style);

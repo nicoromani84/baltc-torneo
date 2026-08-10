@@ -2778,29 +2778,27 @@ public function enviarNotificacion() {
 		$this->load->view('admin/footer');
 	}
 
-	public function updateBracketPositions() {
+	public function swapMatchPositions() {
 		$this->protect->setAjax();
 		$this->protect->setRequest('POST');
 		if ($this->Administrator->isReadOnly()) {
 			$this->protect->ajaxDie(array('action' => false, 'msg' => 'Sin permisos.'));
 		}
 
-		$category = intval($this->input->post('category'));
-		$gender = $this->input->post('gender', true);
-		$ronda = $this->input->post('ronda', true);
-		$positions = json_decode($this->input->post('positions'), true);
+		$match1_id = intval($this->input->post('match1_id'));
+		$match2_id = intval($this->input->post('match2_id'));
+		$pos1 = intval($this->input->post('pos1'));
+		$pos2 = intval($this->input->post('pos2'));
 
-		if (!$category || !$gender || !$ronda || empty($positions)) {
-			$this->protect->ajaxDie(array('action' => false, 'msg' => 'Datos inválidos.'));
+		if (!$match1_id || !$match2_id) {
+			$this->protect->ajaxDie(array('action' => false, 'msg' => 'IDs inválidos.'));
 		}
 
-		// Actualizar bracket_pos para cada match
-		foreach ($positions as $pos) {
-			$this->db->where('id', intval($pos['match_id']))
-				->update('matches', array('bracket_pos' => intval($pos['bracket_pos'])));
-		}
+		// Intercambiar positions
+		$this->db->where('id', $match1_id)->update('matches', array('bracket_pos' => $pos2));
+		$this->db->where('id', $match2_id)->update('matches', array('bracket_pos' => $pos1));
 
-		$this->protect->ajaxDie(array('action' => true, 'msg' => 'Posiciones actualizadas'));
+		$this->protect->ajaxDie(array('action' => true, 'msg' => 'Posiciones intercambiadas'));
 	}
 
 	public function guardarGrupos() {
