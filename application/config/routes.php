@@ -47,6 +47,7 @@ $route['admin/getPartidosByRonda'] = 'admin/getPartidosByRonda';
 $route['admin/getJugadoresByCategory'] = 'admin/getJugadoresByCategory';
 $route['admin/actualizarPartido'] = 'admin/actualizarPartido';
 $route['admin/countPairesByCategory'] = 'admin/countPairesByCategory';
+$route['admin/checkDoublesSinEmail'] = 'admin/checkDoublesSinEmail';
 
 $route['admin/mails'] = 'admin/mails';
 $route['admin/mails2ndchance'] = 'admin/mails2ndchance';

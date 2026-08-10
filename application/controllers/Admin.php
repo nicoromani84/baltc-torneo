@@ -2959,4 +2959,26 @@ public function enviarNotificacion() {
 		$count = $result ? $result->total : 0;
 		$this->protect->ajaxDie(array('action' => true, 'count' => $count));
 	}
+
+	public function checkDoublesSinEmail() {
+		if(!$this->Administrator->isLogged()) redirect(base_url('admin'));
+
+		$jugadores = $this->db->query(
+			"SELECT DISTINCT p.id, p.name, p.email, p.dni, p.gender
+			 FROM reservations r
+			 JOIN reservations_partners rp ON rp.reservation_id = r.id
+			 JOIN partners p ON p.id = rp.partner_id
+			 WHERE r.tournament_type = 'doubles'
+			 AND (p.email IS NULL OR p.email = '')
+			 ORDER BY p.name ASC"
+		)->result();
+
+		$d['titulo'] = 'Jugadores en Dobles sin Email';
+		$d['jugadores'] = $jugadores;
+		$d['token'] = $this->protect->eToken();
+
+		$this->load->view('admin/header', $d);
+		$this->load->view('admin/check_doubles_sin_email', $d);
+		$this->load->view('admin/footer');
+	}
 }
