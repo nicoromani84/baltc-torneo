@@ -24,7 +24,7 @@
     <div style="background:#ffffff;padding:32px 30px;">
 
         <p style="margin:0 0 16px;font-size:16px;color:#333;line-height:1.5;">
-            Hola <strong><?=ucwords(strtolower($nombre))?></strong>,
+            Estimado jugador,
         </p>
 
         <p style="margin:0 0 16px;font-size:15px;color:#555;line-height:1.7;">
