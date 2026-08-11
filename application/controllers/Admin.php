@@ -2861,4 +2861,51 @@ public function enviarNotificacion() {
 		$ok = $this->Partido_model->addBatch($partidos);
 		$this->protect->ajaxDie(array('action' => $ok, 'msg' => $ok ? 'Grupos creados' : 'Error al crear grupos'));
 	}
+
+	public function asignarDeadlineManual() {
+		if(!$this->Administrator->isLogged()) redirect(base_url('admin'));
+
+		$d['titulo'] = 'Asignar Deadline Manual';
+		$d['token'] = $this->protect->eToken();
+		$d['categories'] = $this->Reservation->getCategories();
+
+		$this->load->view('admin/header', $d);
+		$this->load->view('admin/asignar_deadline_manual', $d);
+		$this->load->view('admin/footer');
+	}
+
+	public function guardarDeadlineManual() {
+		$this->protect->setAjax();
+		$this->protect->setRequest('POST');
+		if(!$this->Administrator->isLogged()) $this->protect->ajaxDie(array('action'=>false, 'msg'=>'Sin permisos.'));
+
+		$category = intval($this->input->post('category'));
+		$gender = $this->input->post('gender', true);
+		$ronda = $this->input->post('ronda', true);
+		$deadline = $this->input->post('deadline', true);
+
+		if(!$category || !$gender || !$deadline) {
+			$this->protect->ajaxDie(array('action'=>false, 'msg'=>'Faltan datos requeridos.'));
+		}
+
+		// Validar que la fecha sea válida
+		if(!strtotime($deadline)) {
+			$this->protect->ajaxDie(array('action'=>false, 'msg'=>'Fecha inválida.'));
+		}
+
+		// Construir la query
+		$where = array('category' => $category, 'gender' => $gender);
+		if($ronda) {
+			$where['ronda'] = $ronda;
+		}
+
+		// Actualizar todos los partidos que cumplan con los criterios
+		$affected = $this->db->where($where)->update('matches', array('deadline' => $deadline));
+
+		$this->protect->ajaxDie(array(
+			'action' => true,
+			'msg' => "Deadline asignado a $affected partidos",
+			'affected' => $affected
+		));
+	}
 }

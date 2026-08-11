@@ -41,6 +41,8 @@ $route['admin/getInscriptosByCategory'] = 'admin/getInscriptosByCategory';
 $route['admin/confirmarSorteo'] = 'admin/confirmarSorteo';
 $route['admin/crearGruposManual'] = 'admin/crearGruposManual';
 $route['admin/guardarGrupos'] = 'admin/guardarGrupos';
+$route['admin/asignarDeadlineManual'] = 'admin/asignarDeadlineManual';
+$route['admin/guardarDeadlineManual'] = 'admin/guardarDeadlineManual';
 
 $route['admin/mails'] = 'admin/mails';
 $route['admin/mails2ndchance'] = 'admin/mails2ndchance';
