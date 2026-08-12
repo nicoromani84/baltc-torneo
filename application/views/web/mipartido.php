@@ -38,29 +38,15 @@
 					<div class="mipartido-fecha-acordada" id="fecha-acordada-<?=$p->id?>">
 						<i class="fas fa-calendar-check"></i>
 						<span>Acordado: <strong><?=date('d/m/Y', strtotime($p->fecha))?><?=!empty($p->hora) ? ' a las ' . date('H:i', strtotime($p->hora)) : ''?></strong></span>
-						<button class="mipartido-fecha-edit" data-id="<?=$p->id?>"><i class="fas fa-pencil-alt"></i></button>
+						<button class="mipartido-fecha-edit btn-edit-fecha" data-id="<?=$p->id?>"><i class="fas fa-pencil-alt"></i></button>
 					</div>
 					<?php else: ?>
-					<button class="mipartido-fecha-trigger" data-id="<?=$p->id?>">
-						<i class="fas fa-calendar-plus"></i> ¿Ya coordinaste con tu rival? Agrega la fecha acá
-					</button>
-					<?php endif; ?>
-					<div class="mipartido-fecha-form" id="fecha-form-<?=$p->id?>" style="display:none"
-						data-deadline="<?=$p->deadline?>"
-						data-id="<?=$p->id?>">
-						<div class="mipartido-fecha-hint"><i class="fas fa-pencil-alt"></i> Tocá los campos para cambiar fecha u hora</div>
-						<div class="mipartido-fecha-inputs">
-							<input type="date" class="fecha-input-date" max="<?=$p->deadline?>">
-							<input type="time" class="fecha-input-time" value="10:00">
-						</div>
-						<div class="mipartido-fecha-confirm" id="fecha-confirm-<?=$p->id?>" style="display:none">
-							<span class="fecha-confirm-label"></span>
-							<div class="mipartido-fecha-btns">
-								<button class="btn-fecha-ok"><i class="fas fa-check"></i> Confirmar</button>
-								<button class="btn-fecha-cancel"><i class="fas fa-times"></i></button>
-							</div>
-						</div>
+					<div class="mipartido-fecha-hint"><i class="fas fa-pencil-alt"></i> Tocá los campos para cambiar fecha u hora</div>
+					<div class="mipartido-fecha-inputs">
+						<input type="date" class="fecha-input-date btn-fecha-input" data-id="<?=$p->id?>" max="<?=$p->deadline?>" data-deadline="<?=$p->deadline?>">
+						<input type="time" class="fecha-input-time btn-hora-input" data-id="<?=$p->id?>" value="10:00">
 					</div>
+					<?php endif; ?>
 				</div>
 				<?php endif; ?>
 				<div class="mipartido-vs">
@@ -458,117 +444,32 @@ $(function(){
 		});
 	});
 
-	// Fecha acordada
-	var MESES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+	// Guardar fecha cuando el usuario confirma
+	$(document).on('change', '.btn-fecha-input, .btn-hora-input', function(){
+		var id = $(this).data('id');
+		var $dateInput = $('[data-id="' + id + '"].btn-fecha-input');
+		var $timeInput = $('[data-id="' + id + '"].btn-hora-input');
+		var fecha = $dateInput.val();
+		var hora = $timeInput.val();
 
-	function formatFechaLabel(fecha, hora) {
-		var d = new Date(fecha + 'T00:00:00');
-		var label = d.getDate() + ' de ' + MESES[d.getMonth()];
-		if(hora) label += ' a las ' + hora.substr(0,5);
-		return label;
-	}
+		if(!fecha || !hora) return;
 
-	// Mostrar formulario de fecha cuando hace click
-	$(document).on('click', '.mipartido-fecha-trigger', function(){
-		var btn = this;
-		var id = $(btn).data('id');
-		var form = $('#fecha-form-' + id);
-		var deadline = form.data('deadline');
-		var hoy = new Date();
-		var hoyStr = hoy.getFullYear() + '-' + String(hoy.getMonth()+1).padStart(2,'0') + '-' + String(hoy.getDate()).padStart(2,'0');
-
-		// Mostrar el formulario
-		form.show();
-		$(btn).hide();
-
-		// Configurar inputs
-		form.find('.fecha-input-date').attr('max', deadline).val(hoyStr).focus();
-		form.find('.fecha-input-time').val('10:00');
-
-		var label = formatFechaLabel(hoyStr, '10:00');
-		$('#fecha-confirm-' + id).find('.fecha-confirm-label').text('Confirmar: ' + label);
-		$('#fecha-confirm-' + id).show();
-	});
-
-	// Editar fecha cuando ya existe
-	$(document).on('click', '.mipartido-fecha-edit', function(){
-		var btn = this;
-		var id = $(btn).data('id');
-		var form = $('#fecha-form-' + id);
-		var deadline = form.data('deadline');
-		var hoy = new Date();
-		var hoyStr = hoy.getFullYear() + '-' + String(hoy.getMonth()+1).padStart(2,'0') + '-' + String(hoy.getDate()).padStart(2,'0');
-
-		// Mostrar el formulario
-		form.show();
-		$('#fecha-acordada-' + id).hide();
-
-		// Configurar inputs
-		form.find('.fecha-input-date').attr('max', deadline).val(hoyStr).focus();
-		form.find('.fecha-input-time').val('10:00');
-
-		var label = formatFechaLabel(hoyStr, '10:00');
-		$('#fecha-confirm-' + id).find('.fecha-confirm-label').text('Confirmar: ' + label);
-		$('#fecha-confirm-' + id).show();
-	});
-
-	$(document).on('change', '.fecha-input-date, .fecha-input-time', function(){
-		var $form = $(this).closest('.mipartido-fecha-form');
-		var id = $form.data('id');
-		var fecha = $form.find('.fecha-input-date').val();
-		var hora  = $form.find('.fecha-input-time').val();
-		if(!fecha) { $('#fecha-confirm-' + id).hide(); return; }
-		var label = formatFechaLabel(fecha, hora);
-		$('#fecha-confirm-' + id).find('.fecha-confirm-label').text('Confirmar: ' + label);
-		$('#fecha-confirm-' + id).slideDown(150);
-	});
-
-	$(document).on('click', '.btn-fecha-cancel', function(){
-		var $form = $(this).closest('.mipartido-fecha-form');
-		var id = $form.data('id');
-		$form.slideUp(150);
-		$('#fecha-confirm-' + id).hide();
-		if($('#fecha-acordada-' + id).length) {
-			$('#fecha-acordada-' + id).show();
-		} else {
-			$('.mipartido-fecha-trigger[data-id="'+id+'"]').show();
-		}
-	});
-
-	$(document).on('click', '.btn-fecha-ok', function(){
-		var $btn = $(this);
-		var $form = $btn.closest('.mipartido-fecha-form');
-		var id    = $form.data('id');
-		var fecha = $form.find('.fecha-input-date').val();
-		var hora  = $form.find('.fecha-input-time').val();
-		if(!fecha) return;
-		$btn.prop('disabled', true);
+		// Guardar automáticamente
 		$.ajax({
 			url: baseurl + 'mipartido/guardarFechaAcordada',
 			type: 'POST',
 			data: { id: id, fecha: fecha, hora: hora },
 			headers: { 'X-Auth-Token': token },
 			success: function(res) {
-				$btn.prop('disabled', false);
 				if(res.action) {
-					$form.slideUp(150);
-					var label = formatFechaLabel(fecha, hora);
-					var $wrap = $('#fecha-acordada-' + id);
-					if($wrap.length) {
-						$wrap.find('strong').text(label.replace(' a las ', ' a las '));
-						$wrap.show();
-					} else {
-						$('.mipartido-fecha-trigger[data-id="'+id+'"]').replaceWith(
-							'<div class="mipartido-fecha-acordada" id="fecha-acordada-'+id+'">'
-							+ '<i class="fas fa-calendar-check"></i>'
-							+ '<span>Acordado: <strong>'+label+'</strong></span>'
-							+ '<button class="mipartido-fecha-edit" data-id="'+id+'"><i class="fas fa-pencil-alt"></i></button>'
-							+ '</div>'
-						);
-					}
+					// Recargar la página para mostrar el cambio
+					location.reload();
 				} else {
 					alert(res.msg || 'Error al guardar.');
 				}
+			},
+			error: function(){
+				alert('Error de conexión');
 			}
 		});
 	});
