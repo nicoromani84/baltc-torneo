@@ -2909,31 +2909,95 @@ public function enviarNotificacion() {
 		));
 	}
 
-	public function enviarRecordatoriosAutomatico() {
-		// Este endpoint puede ser llamado desde cron, sin protección
-		// URL: https://www.baltc.net/torneo/admin/enviarRecordatoriosAutomatico
+	public function enviarRecordatorios() {
+		if(!$this->Administrator->isLogged()) redirect(base_url('admin'));
 
-		date_default_timezone_set('America/Argentina/Buenos_Aires');
+		$d['titulo'] = 'Enviar Recordatorios';
+		$d['token'] = $this->protect->eToken();
 
-		// Buscar partidos que falten 3 días para deadline
-		// - Sin resultado (ganador_id IS NULL)
-		// - Sin fecha programada (fecha IS NULL)
-		// - Con deadline válido
+		$this->load->view('admin/header', $d);
+		$this->load->view('admin/enviar_recordatorios', $d);
+		$this->load->view('admin/footer');
+	}
+
+	public function getDeadlinesPendientes() {
+		$this->protect->setAjax();
+		$this->protect->setRequest('POST');
+		if(!$this->Administrator->isLogged()) $this->protect->ajaxDie(array('action'=>false));
+
+		// Obtener todos los deadlines únicos que tienen partidos sin resultado y sin fecha
+		$deadlines = $this->db->query(
+			"SELECT DISTINCT m.deadline, COUNT(*) as total_partidos
+			 FROM matches m
+			 WHERE m.deadline IS NOT NULL
+			 AND m.ganador_id IS NULL
+			 AND m.fecha IS NULL
+			 GROUP BY m.deadline
+			 ORDER BY m.deadline ASC"
+		)->result();
+
+		$lista = array();
+		foreach($deadlines as $d) {
+			$lista[] = array(
+				'deadline' => $d->deadline,
+				'deadline_formato' => date('d/m/Y', strtotime($d->deadline)),
+				'partidos' => $d->total_partidos
+			);
+		}
+
+		$this->protect->ajaxDie(array('action' => true, 'deadlines' => $lista));
+	}
+
+	public function getPartidosPorDeadline() {
+		$this->protect->setAjax();
+		$this->protect->setRequest('POST');
+		if(!$this->Administrator->isLogged()) $this->protect->ajaxDie(array('action'=>false));
+
+		$deadline = $this->input->post('deadline', true);
+
+		if(!$deadline) {
+			$this->protect->ajaxDie(array('action'=>false, 'msg'=>'Deadline requerido.'));
+		}
+
 		$partidos = $this->db->query(
 			"SELECT m.*, c.name as categoria,
 					(SELECT GROUP_CONCAT(p.name SEPARATOR ' / ') FROM reservations_partners rp JOIN partners p ON p.id = rp.partner_id WHERE rp.reservation_id = m.jugador1_id) as jugador1_nombres,
 					(SELECT GROUP_CONCAT(p.name SEPARATOR ' / ') FROM reservations_partners rp JOIN partners p ON p.id = rp.partner_id WHERE rp.reservation_id = m.jugador2_id) as jugador2_nombres
 			 FROM matches m
 			 JOIN category c ON c.id = m.category
-			 WHERE m.ganador_id IS NULL
+			 WHERE m.deadline = ?
+			 AND m.ganador_id IS NULL
 			 AND m.fecha IS NULL
-			 AND m.deadline IS NOT NULL
-			 AND DATEDIFF(m.deadline, NOW()) = 3"
+			 ORDER BY m.categoria ASC, m.ronda ASC",
+			array($deadline)
+		)->result();
+
+		$this->protect->ajaxDie(array('action' => true, 'partidos' => $partidos, 'total' => count($partidos)));
+	}
+
+	public function enviarRecordatoriosPorDeadline() {
+		$this->protect->setAjax();
+		$this->protect->setRequest('POST');
+		if(!$this->Administrator->isLogged()) $this->protect->ajaxDie(array('action'=>false, 'msg'=>'Sin permisos.'));
+
+		$deadline = $this->input->post('deadline', true);
+
+		if(!$deadline) {
+			$this->protect->ajaxDie(array('action'=>false, 'msg'=>'Deadline requerido.'));
+		}
+
+		$partidos = $this->db->query(
+			"SELECT m.*, c.name as categoria
+			 FROM matches m
+			 JOIN category c ON c.id = m.category
+			 WHERE m.deadline = ?
+			 AND m.ganador_id IS NULL
+			 AND m.fecha IS NULL",
+			array($deadline)
 		)->result();
 
 		if(empty($partidos)) {
-			echo "No hay partidos para recordar.\n";
-			return;
+			$this->protect->ajaxDie(array('action'=>false, 'msg'=>'No hay partidos para este deadline.'));
 		}
 
 		$this->load->library('email');
@@ -2970,14 +3034,14 @@ public function enviarNotificacion() {
 					'categoria' => $p->categoria,
 					'ronda' => $p->ronda,
 					'deadline' => date('d/m/Y', strtotime($p->deadline)),
-					'dias_restantes' => 3
+					'dias_restantes' => ''
 				);
 				$body = $this->load->view('email/recordatorio_deadline_automatico.php', $data, true);
 				$this->email->initialize(array());
 				$this->email
 					->from('secretaria@baltc.net', 'Secretaría BALTC')
 					->to($partner->email)
-					->subject('Recordatorio: Tu partido vence en 3 días - Torneo BALTC')
+					->subject('Recordatorio: Tu partido - Torneo BALTC')
 					->message($body)
 					->send();
 				$enviados++;
@@ -2993,20 +3057,20 @@ public function enviarNotificacion() {
 					'categoria' => $p->categoria,
 					'ronda' => $p->ronda,
 					'deadline' => date('d/m/Y', strtotime($p->deadline)),
-					'dias_restantes' => 3
+					'dias_restantes' => ''
 				);
 				$body = $this->load->view('email/recordatorio_deadline_automatico.php', $data, true);
 				$this->email->initialize(array());
 				$this->email
 					->from('secretaria@baltc.net', 'Secretaría BALTC')
 					->to($partner->email)
-					->subject('Recordatorio: Tu partido vence en 3 días - Torneo BALTC')
+					->subject('Recordatorio: Tu partido - Torneo BALTC')
 					->message($body)
 					->send();
 				$enviados++;
 			}
 		}
 
-		echo "Recordatorios enviados: $enviados\n";
+		$this->protect->ajaxDie(array('action' => true, 'msg' => "Recordatorios enviados: $enviados correos"));
 	}
 }
