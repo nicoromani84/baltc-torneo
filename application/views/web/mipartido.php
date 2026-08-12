@@ -1,8 +1,5 @@
 <?php defined('BASEPATH') OR exit('No direct script access allowed'); ?>
 
-<!-- Flatpickr CSS -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-
 <header>
 	<div class="container">
 		<div class="logo">
@@ -354,46 +351,6 @@
 }
 .resultado-vacio i { font-size: 50px; color: #a5d051; margin-bottom: 15px; display: block; }
 .resultado-vacio p { font-size: 18px; }
-
-/* Flatpickr theme overrides */
-.flatpickr-calendar {
-	background: rgba(26, 26, 46, 0.95);
-	border: 1px solid rgba(165, 208, 81, 0.5);
-	border-radius: 8px;
-	box-shadow: 0 4px 15px rgba(0,0,0,0.8);
-}
-.flatpickr-calendar.open {
-	box-shadow: 0 4px 20px rgba(165, 208, 81, 0.3);
-}
-.flatpickr-weekdays {
-	background: rgba(165, 208, 81, 0.1);
-}
-.flatpickr-weekday {
-	color: rgba(165, 208, 81, 0.8);
-}
-.flatpickr-day {
-	color: rgba(255,255,255,0.8);
-}
-.flatpickr-day:hover {
-	background: rgba(165, 208, 81, 0.4);
-	color: #fff;
-}
-.flatpickr-day.selected {
-	background: #a5d051;
-	border-color: #a5d051;
-	color: #1a1a2e;
-}
-.flatpickr-day.today {
-	border-color: #a5d051;
-	color: #a5d051;
-}
-.flatpickr-day.disabled {
-	color: rgba(255,255,255,0.2);
-}
-.flatpickr-day.disabled:hover {
-	background: transparent;
-}
-
 @media (max-width: 575.98px) {
 	#mipartido-page h1 { font-size: 26px; }
 	.mipartido-nombre { font-size: 14px; }
@@ -517,39 +474,16 @@ $(function(){
 		var deadline = $f.data('deadline');
 		var hoy = new Date();
 		var hoyStr = hoy.getFullYear() + '-' + String(hoy.getMonth()+1).padStart(2,'0') + '-' + String(hoy.getDate()).padStart(2,'0');
-		var $dateInput = $f.find('.fecha-input-date');
-		$dateInput.attr('max', deadline).val(hoyStr);
+		$f.find('.fecha-input-date').attr('max', deadline).val(hoyStr);
 		$f.find('.fecha-input-time').val('10:00');
 		var label = formatFechaLabel(hoyStr, '10:00');
 		$('#fecha-confirm-' + id).find('.fecha-confirm-label').text('Confirmar: ' + label);
 		$('#fecha-confirm-' + id).show();
 
-		// Inicializar Flatpickr en este input si aún no está inicializado
-		if(window.flatpickr && $dateInput.length && !$dateInput.data('flatpickr')) {
-			flatpickr($dateInput[0], {
-				mode: 'single',
-				dateFormat: 'Y-m-d',
-				minDate: 'today',
-				maxDate: deadline,
-				defaultDate: hoyStr,
-				locale: {
-					firstDayOfWeek: 1,
-					months: {
-						shorthand: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
-						longhand: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
-					},
-					weekdays: {
-						shorthand: ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sab'],
-						longhand: ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
-					}
-				},
-				onChange: function(selectedDates, dateStr, instance) {
-					// Cuando el usuario selecciona una fecha desde el calendario
-					$dateInput.val(dateStr).trigger('change');
-				}
-			});
-			$dateInput.data('flatpickr', true);
-		}
+		// Focus en el input de fecha para mostrar el calendario
+		setTimeout(function() {
+			$f.find('.fecha-input-date').focus();
+		}, 100);
 	}
 
 	$(document).on('click', '.mipartido-fecha-trigger, .mipartido-fecha-edit', function(){
@@ -621,6 +555,3 @@ $(function(){
 	});
 });
 </script>
-
-<!-- Flatpickr JS -->
-<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
