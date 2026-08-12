@@ -38,6 +38,26 @@
 		</div><!-- /.modal-dialog -->
 	</div><!-- /.modal -->
 
+	<!-- MODAL AGREGAR A PANTALLA DE INICIO -->
+	<div class="modal fade" id="addToHomeModal" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false">
+		<div class="modal-dialog modal-sm">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h4 class="modal-title"><i class="fas fa-home"></i> Acceso rápido</h4>
+				</div>
+				<div class="modal-body" style="text-align:center;">
+					<p style="font-size:16px; margin-bottom:20px;">¿Agregar <strong>Torneo BALTC</strong> a pantalla de inicio?</p>
+					<p style="color:#666; font-size:13px; margin-bottom:20px;">Accede más rápido sin escribir la URL</p>
+					<img src="https://www.baltc.net/wp-content/uploads/2016/09/cropped-favicon-1-192x192.png" style="width:80px; margin-bottom:15px;">
+				</div>
+				<div class="modal-footer" style="text-align:center;">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Ahora no</button>
+					<button type="button" class="btn btn-success" id="btn-agregar-home">Agregar</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
 </body>
 
 <footer>
@@ -85,5 +105,46 @@
 	<script type="text/javascript" src="<?=asset_url('js')?>/multimodal.js"></script>
 	<!-- BOOTSTRAP CORE -->
 	<script src="<?=asset_url('vendor')?>/bootstrap/js/bootstrap.min.js"></script>
+
+	<!-- AGREGAR A PANTALLA DE INICIO (Chrome/Android) -->
+	<script>
+	$(function(){
+		var deferredPrompt = null;
+		var promptShown = localStorage.getItem('torneo-add-home-prompt-shown');
+
+		// Capturar beforeinstallprompt (solo Chrome/Android)
+		window.addEventListener('beforeinstallprompt', function(e) {
+			e.preventDefault();
+			deferredPrompt = e;
+
+			// Mostrar modal solo si no lo ha visto antes
+			if(!promptShown) {
+				setTimeout(function() {
+					$('#addToHomeModal').modal('show');
+				}, 1500); // Esperar 1.5 segundos después de loguear
+			}
+		});
+
+		// Botón Agregar
+		$('#btn-agregar-home').on('click', function(){
+			if(deferredPrompt) {
+				deferredPrompt.prompt();
+				deferredPrompt.userChoice.then(function(choiceResult) {
+					if(choiceResult.outcome === 'accepted') {
+						console.log('✓ Agregado a pantalla de inicio');
+					}
+					deferredPrompt = null;
+					$('#addToHomeModal').modal('hide');
+					localStorage.setItem('torneo-add-home-prompt-shown', 'true');
+				});
+			}
+		});
+
+		// Guardar que se mostró cuando dice "Ahora no"
+		$('#addToHomeModal').on('hide.bs.modal', function(){
+			localStorage.setItem('torneo-add-home-prompt-shown', 'true');
+		});
+	});
+	</script>
 </footer>
 </html>
