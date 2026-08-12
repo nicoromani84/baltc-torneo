@@ -2921,6 +2921,31 @@ public function enviarNotificacion() {
 		$this->load->view('admin/footer');
 	}
 
+	public function verPartidosProgramados() {
+		if(!$this->Administrator->isLogged()) redirect(base_url('admin'));
+
+		// Obtener partidos programados
+		$partidos = $this->db->query(
+			"SELECT m.*, c.name as categoria,
+					(SELECT GROUP_CONCAT(p.name SEPARATOR ' / ') FROM reservations_partners rp JOIN partners p ON p.id = rp.partner_id WHERE rp.reservation_id = m.jugador1_id) as jugador1_nombres,
+					(SELECT GROUP_CONCAT(p.name SEPARATOR ' / ') FROM reservations_partners rp JOIN partners p ON p.id = rp.partner_id WHERE rp.reservation_id = m.jugador2_id) as jugador2_nombres
+			 FROM matches m
+			 JOIN category c ON c.id = m.category
+			 WHERE m.fecha IS NOT NULL
+			 AND m.ganador_id IS NULL
+			 ORDER BY m.fecha ASC, m.hora ASC"
+		)->result();
+
+		$d['titulo'] = 'Partidos Programados';
+		$d['token'] = $this->protect->eToken();
+		$d['section'] = 'admin-programados';
+		$d['partidos'] = $partidos;
+
+		$this->load->view('admin/header', $d);
+		$this->load->view('admin/ver_partidos_programados', $d);
+		$this->load->view('admin/footer');
+	}
+
 	public function debugDeadlines() {
 		// Endpoint de debug - solo para verificar
 		echo "DEBUG: Verificando deadlines...\n\n";

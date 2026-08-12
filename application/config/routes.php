@@ -47,6 +47,8 @@ $route['admin/enviarRecordatorios'] = 'admin/enviarRecordatorios';
 $route['admin/getDeadlinesPendientes'] = 'admin/getDeadlinesPendientes';
 $route['admin/getPartidosPorDeadline'] = 'admin/getPartidosPorDeadline';
 $route['admin/enviarRecordatoriosPorDeadline'] = 'admin/enviarRecordatoriosPorDeadline';
+$route['admin/debugDeadlines'] = 'admin/debugDeadlines';
+$route['admin/verPartidosProgramados'] = 'admin/verPartidosProgramados';
 
 $route['admin/mails'] = 'admin/mails';
 $route['admin/mails2ndchance'] = 'admin/mails2ndchance';
