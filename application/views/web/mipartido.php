@@ -468,29 +468,48 @@ $(function(){
 		return label;
 	}
 
-	function abrirFechaForm(id) {
-		$('#fecha-form-' + id).slideDown(150);
-		var $f = $('#fecha-form-' + id);
-		var deadline = $f.data('deadline');
+	// Mostrar formulario de fecha cuando hace click
+	$(document).on('click', '.mipartido-fecha-trigger', function(){
+		var btn = this;
+		var id = $(btn).data('id');
+		var form = $('#fecha-form-' + id);
+		var deadline = form.data('deadline');
 		var hoy = new Date();
 		var hoyStr = hoy.getFullYear() + '-' + String(hoy.getMonth()+1).padStart(2,'0') + '-' + String(hoy.getDate()).padStart(2,'0');
-		$f.find('.fecha-input-date').attr('max', deadline).val(hoyStr);
-		$f.find('.fecha-input-time').val('10:00');
+
+		// Mostrar el formulario
+		form.show();
+		$(btn).hide();
+
+		// Configurar inputs
+		form.find('.fecha-input-date').attr('max', deadline).val(hoyStr).focus();
+		form.find('.fecha-input-time').val('10:00');
+
 		var label = formatFechaLabel(hoyStr, '10:00');
 		$('#fecha-confirm-' + id).find('.fecha-confirm-label').text('Confirmar: ' + label);
 		$('#fecha-confirm-' + id).show();
+	});
 
-		// Focus en el input de fecha para mostrar el calendario
-		setTimeout(function() {
-			$f.find('.fecha-input-date').focus();
-		}, 100);
-	}
+	// Editar fecha cuando ya existe
+	$(document).on('click', '.mipartido-fecha-edit', function(){
+		var btn = this;
+		var id = $(btn).data('id');
+		var form = $('#fecha-form-' + id);
+		var deadline = form.data('deadline');
+		var hoy = new Date();
+		var hoyStr = hoy.getFullYear() + '-' + String(hoy.getMonth()+1).padStart(2,'0') + '-' + String(hoy.getDate()).padStart(2,'0');
 
-	$(document).on('click', '.mipartido-fecha-trigger, .mipartido-fecha-edit', function(){
-		var id = $(this).data('id');
-		$('.mipartido-fecha-trigger[data-id="'+id+'"]').hide();
-		$('.mipartido-fecha-acordada[id="fecha-acordada-'+id+'"]').hide();
-		abrirFechaForm(id);
+		// Mostrar el formulario
+		form.show();
+		$('#fecha-acordada-' + id).hide();
+
+		// Configurar inputs
+		form.find('.fecha-input-date').attr('max', deadline).val(hoyStr).focus();
+		form.find('.fecha-input-time').val('10:00');
+
+		var label = formatFechaLabel(hoyStr, '10:00');
+		$('#fecha-confirm-' + id).find('.fecha-confirm-label').text('Confirmar: ' + label);
+		$('#fecha-confirm-' + id).show();
 	});
 
 	$(document).on('change', '.fecha-input-date, .fecha-input-time', function(){
