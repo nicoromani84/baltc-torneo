@@ -38,6 +38,45 @@
 		</div><!-- /.modal-dialog -->
 	</div><!-- /.modal -->
 
+	<!-- MODAL ACCESO DIRECTO -->
+	<div class="modal fade" id="instalarAppModal" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false">
+		<div class="modal-dialog modal-sm">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+					<h4 class="modal-title"><i class="fas fa-home"></i> Agregar acceso directo</h4>
+				</div>
+				<div class="modal-body">
+					<div style="text-align: center; padding: 10px 0;">
+						<p style="font-size: 16px; font-weight: bold; margin-bottom: 15px;">📱 Torneo BALTC</p>
+						<p style="color: #666; margin-bottom: 20px;">Agrega un acceso directo a tu pantalla de inicio para abrir rápidamente sin escribir la URL.</p>
+
+						<div id="android-install" style="display: none;">
+							<button id="btn-instalar-app" class="btn btn-success btn-block" style="padding: 12px; font-size: 16px; font-weight: bold;">
+								<i class="fas fa-download"></i> Agregar a pantalla de inicio
+							</button>
+							<p style="color: #999; font-size: 12px; margin-top: 10px;">El ícono aparecerá en tu home screen</p>
+						</div>
+
+						<div id="ios-install" style="display: none;">
+							<div style="text-align: left; background: #f5f5f5; padding: 15px; border-radius: 8px;">
+								<p style="font-weight: bold; margin-bottom: 10px;">Instrucciones para iOS:</p>
+								<ol style="margin: 0; padding-left: 20px; font-size: 13px;">
+									<li>Tap el botón <strong>Compartir</strong> (↑ arriba)</li>
+									<li>Scroll down y tap <strong>"Add to Home Screen"</strong></li>
+									<li>Tap "Add" en la esquina superior derecha</li>
+								</ol>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
 </body>
 
 <footer>
@@ -85,5 +124,53 @@
 	<script type="text/javascript" src="<?=asset_url('js')?>/multimodal.js"></script>
 	<!-- BOOTSTRAP CORE -->
 	<script src="<?=asset_url('vendor')?>/bootstrap/js/bootstrap.min.js"></script>
+
+	<!-- ACCESO DIRECTO SHORTCUT -->
+	<script>
+	$(function(){
+		var deferredPrompt = null;
+		var userHasSeenInstallPrompt = localStorage.getItem('torneo-install-prompt-shown');
+
+		// Capturar el evento beforeinstallprompt (Android/Chrome)
+		window.addEventListener('beforeinstallprompt', function(e) {
+			// Prevenir que el navegador muestre su propio prompt
+			e.preventDefault();
+			deferredPrompt = e;
+
+			// Mostrar nuestro modal solo si es la primera vez en esta sesión
+			if(!userHasSeenInstallPrompt) {
+				setTimeout(function() {
+					$('#android-install').show();
+					$('#instalarAppModal').modal('show');
+					localStorage.setItem('torneo-install-prompt-shown', 'true');
+				}, 1000); // Esperar 1 segundo después de cargar
+			}
+		});
+
+		// Detectar iOS
+		var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+		if(isIOS && !userHasSeenInstallPrompt) {
+			setTimeout(function() {
+				$('#ios-install').show();
+				$('#instalarAppModal').modal('show');
+				localStorage.setItem('torneo-install-prompt-shown', 'true');
+			}, 1000);
+		}
+
+		// Botón Instalar
+		$('#btn-instalar-app').on('click', function(){
+			if(deferredPrompt) {
+				deferredPrompt.prompt();
+				deferredPrompt.userChoice.then(function(choiceResult) {
+					if(choiceResult.outcome === 'accepted') {
+						console.log('Usuario instaló la app');
+					}
+					deferredPrompt = null;
+					$('#instalarAppModal').modal('hide');
+				});
+			}
+		});
+	});
+	</script>
 </footer>
 </html>

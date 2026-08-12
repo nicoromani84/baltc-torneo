@@ -1,0 +1,31 @@
+{
+  "name": "Torneo BALTC",
+  "short_name": "Torneo BALTC",
+  "description": "Torneo Interno de Dobles del BALTC",
+  "start_url": "/torneo/",
+  "scope": "/torneo/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#a5d051",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "https://www.baltc.net/wp-content/uploads/2016/09/cropped-favicon-1-32x32.png",
+      "sizes": "32x32",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "https://www.baltc.net/wp-content/uploads/2016/09/cropped-favicon-1-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "https://www.baltc.net/wp-content/uploads/2016/09/cropped-favicon-1-270x270.png",
+      "sizes": "270x270",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
