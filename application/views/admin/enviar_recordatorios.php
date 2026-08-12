@@ -16,6 +16,9 @@
 			</div>
 
 			<div id="partidos-container" style="display:none;" class="mt-4">
+				<div class="alert alert-secondary mb-3">
+					<i class="fas fa-info-circle"></i> <strong>Partidos sin programar y sin resultado cargado:</strong> Se muestran solo los partidos que aún no tienen fecha acordada Y no tienen resultado cargado.
+				</div>
 				<h5 class="mb-3">Partidos pendientes para este deadline</h5>
 				<div class="table-responsive">
 					<table class="table table-sm table-striped">
