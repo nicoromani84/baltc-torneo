@@ -2914,6 +2914,7 @@ public function enviarNotificacion() {
 
 		$d['titulo'] = 'Enviar Recordatorios';
 		$d['token'] = $this->protect->eToken();
+		$d['section'] = 'admin-recordatorios';
 
 		$this->load->view('admin/header', $d);
 		$this->load->view('admin/enviar_recordatorios', $d);

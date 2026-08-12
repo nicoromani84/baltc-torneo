@@ -113,6 +113,11 @@
 				<i class="fas fa-envelope"></i> Mails
 			</a>
 		</li>
+		<li class="<?=$section=='admin-recordatorios'?'active':''?>">
+			<a href="<?=base_url('admin/enviarRecordatorios')?>">
+				<i class="fas fa-bell"></i> Recordatorios
+			</a>
+		</li>
 		<li class="<?=$section=='admin-mails-2ndchance'?'active':''?>">
 			<a href="<?=base_url('admin/mails2ndchance')?>">
 				<i class="fas fa-sync-alt"></i> 2nd Chance
