@@ -38,6 +38,50 @@
 		</div><!-- /.modal-dialog -->
 	</div><!-- /.modal -->
 
+	<!-- MODAL iOS INSTRUCCIONES -->
+	<div class="modal fade" id="iosInstructionsModal" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false">
+		<div class="modal-dialog modal-sm">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h4 class="modal-title"><i class="fas fa-home"></i> Acceso rápido</h4>
+				</div>
+				<div class="modal-body">
+					<p style="text-align:center; font-size:16px; font-weight:bold; margin-bottom:20px;">Torneo BALTC</p>
+					<p style="text-align:center; color:#666; margin-bottom:20px;">Agrégalo a tu pantalla de inicio en 3 pasos</p>
+
+					<div style="background:#f5f5f5; padding:15px; border-radius:8px;">
+						<div style="display:flex; gap:12px; margin-bottom:15px;">
+							<div style="background:#a5d051; color:#fff; width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold; flex-shrink:0;">1</div>
+							<div>
+								<strong>Tap el botón Compartir</strong>
+								<p style="font-size:13px; color:#666; margin:5px 0 0 0;">Flecha hacia arriba (↑) en la barra inferior</p>
+							</div>
+						</div>
+
+						<div style="display:flex; gap:12px; margin-bottom:15px;">
+							<div style="background:#a5d051; color:#fff; width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold; flex-shrink:0;">2</div>
+							<div>
+								<strong>Scroll down</strong>
+								<p style="font-size:13px; color:#666; margin:5px 0 0 0;">Busca "Add to Home Screen"</p>
+							</div>
+						</div>
+
+						<div style="display:flex; gap:12px;">
+							<div style="background:#a5d051; color:#fff; width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold; flex-shrink:0;">3</div>
+							<div>
+								<strong>Tap "Add"</strong>
+								<p style="font-size:13px; color:#666; margin:5px 0 0 0;">Confirma el nombre y listo</p>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-success btn-block" data-dismiss="modal">Entendido</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
 </body>
 
 <footer>
@@ -85,5 +129,20 @@
 	<script type="text/javascript" src="<?=asset_url('js')?>/multimodal.js"></script>
 	<!-- BOOTSTRAP CORE -->
 	<script src="<?=asset_url('vendor')?>/bootstrap/js/bootstrap.min.js"></script>
+
+	<!-- iOS INSTRUCCIONES ACCESO DIRECTO -->
+	<script>
+	$(function(){
+		var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+		var iosModalShown = localStorage.getItem('torneo-ios-instructions-shown');
+
+		if(isIOS && !iosModalShown) {
+			setTimeout(function() {
+				$('#iosInstructionsModal').modal('show');
+				localStorage.setItem('torneo-ios-instructions-shown', 'true');
+			}, 1500);
+		}
+	});
+	</script>
 </footer>
 </html>
