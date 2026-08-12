@@ -2908,4 +2908,105 @@ public function enviarNotificacion() {
 			'affected' => $affected
 		));
 	}
+
+	public function enviarRecordatoriosAutomatico() {
+		// Este endpoint puede ser llamado desde cron, sin protección
+		// URL: https://www.baltc.net/torneo/admin/enviarRecordatoriosAutomatico
+
+		date_default_timezone_set('America/Argentina/Buenos_Aires');
+
+		// Buscar partidos que falten 3 días para deadline
+		// - Sin resultado (ganador_id IS NULL)
+		// - Sin fecha programada (fecha IS NULL)
+		// - Con deadline válido
+		$partidos = $this->db->query(
+			"SELECT m.*, c.name as categoria,
+					(SELECT GROUP_CONCAT(p.name SEPARATOR ' / ') FROM reservations_partners rp JOIN partners p ON p.id = rp.partner_id WHERE rp.reservation_id = m.jugador1_id) as jugador1_nombres,
+					(SELECT GROUP_CONCAT(p.name SEPARATOR ' / ') FROM reservations_partners rp JOIN partners p ON p.id = rp.partner_id WHERE rp.reservation_id = m.jugador2_id) as jugador2_nombres
+			 FROM matches m
+			 JOIN category c ON c.id = m.category
+			 WHERE m.ganador_id IS NULL
+			 AND m.fecha IS NULL
+			 AND m.deadline IS NOT NULL
+			 AND DATEDIFF(m.deadline, NOW()) = 3"
+		)->result();
+
+		if(empty($partidos)) {
+			echo "No hay partidos para recordar.\n";
+			return;
+		}
+
+		$this->load->library('email');
+		$enviados = 0;
+
+		foreach($partidos as $p) {
+			// Obtener jugadores
+			$j1_partners = $this->db->query(
+				"SELECT p.name, p.email FROM reservations_partners rp
+				 JOIN partners p ON p.id = rp.partner_id
+				 WHERE rp.reservation_id = ?
+				 ORDER BY p.name ASC",
+				array($p->jugador1_id)
+			)->result();
+
+			$j2_partners = $this->db->query(
+				"SELECT p.name, p.email FROM reservations_partners rp
+				 JOIN partners p ON p.id = rp.partner_id
+				 WHERE rp.reservation_id = ?
+				 ORDER BY p.name ASC",
+				array($p->jugador2_id)
+			)->result();
+
+			$j1_names = !empty($j1_partners) ? implode(' / ', array_map(function($x) { return $x->name; }, $j1_partners)) : 'Rival';
+			$j2_names = !empty($j2_partners) ? implode(' / ', array_map(function($x) { return $x->name; }, $j2_partners)) : 'Rival';
+
+			// Enviar a J1
+			foreach($j1_partners as $partner) {
+				if(!$partner || !filter_var($partner->email, FILTER_VALIDATE_EMAIL)) continue;
+
+				$data = array(
+					'nombre' => $partner->name,
+					'rival' => $j2_names,
+					'categoria' => $p->categoria,
+					'ronda' => $p->ronda,
+					'deadline' => date('d/m/Y', strtotime($p->deadline)),
+					'dias_restantes' => 3
+				);
+				$body = $this->load->view('email/recordatorio_deadline_automatico.php', $data, true);
+				$this->email->initialize(array());
+				$this->email
+					->from('secretaria@baltc.net', 'Secretaría BALTC')
+					->to($partner->email)
+					->subject('Recordatorio: Tu partido vence en 3 días - Torneo BALTC')
+					->message($body)
+					->send();
+				$enviados++;
+			}
+
+			// Enviar a J2
+			foreach($j2_partners as $partner) {
+				if(!$partner || !filter_var($partner->email, FILTER_VALIDATE_EMAIL)) continue;
+
+				$data = array(
+					'nombre' => $partner->name,
+					'rival' => $j1_names,
+					'categoria' => $p->categoria,
+					'ronda' => $p->ronda,
+					'deadline' => date('d/m/Y', strtotime($p->deadline)),
+					'dias_restantes' => 3
+				);
+				$body = $this->load->view('email/recordatorio_deadline_automatico.php', $data, true);
+				$this->email->initialize(array());
+				$this->email
+					->from('secretaria@baltc.net', 'Secretaría BALTC')
+					->to($partner->email)
+					->subject('Recordatorio: Tu partido vence en 3 días - Torneo BALTC')
+					->message($body)
+					->send();
+				$enviados++;
+			}
+		}
+
+		echo "Recordatorios enviados: $enviados\n";
+	}
 }
