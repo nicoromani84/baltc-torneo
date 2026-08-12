@@ -70,11 +70,25 @@
 	<link rel="stylesheet" type="text/css" href="<?=asset_url('vendor')?>/animate.css/animate.css" />
 	<!-- ESTILO DE APLICACION -->
 	<link rel="stylesheet" href="<?=asset_url('css')?>/style.css">
+	<!-- Manifest para PWA -->
+	<link rel="manifest" href="<?=base_url('manifest.json')?>">
+	<meta name="theme-color" content="#a5d051">
 	<!-- JQUERY 1.12.1 -->
 	<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
 
 	<!-- Datepicker -->
 	<script src="<?=asset_url('vendor')?>/jquery.datepicker/datepicker.js"></script>
+
+	<!-- Registrar Service Worker -->
+	<script>
+	if('serviceWorker' in navigator) {
+		navigator.serviceWorker.register('<?=base_url("service-worker.js")?>').then(function(reg) {
+			console.log('✓ Service Worker registrado');
+		}).catch(function(err) {
+			console.log('✗ Service Worker error:', err);
+		});
+	}
+	</script>
 </head>
 
 <body id="<?=$classname?>-page">
