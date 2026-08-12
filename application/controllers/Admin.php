@@ -3065,7 +3065,7 @@ public function enviarNotificacion() {
 				$this->email
 					->from('secretaria@baltc.net', 'Secretaría BALTC')
 					->to($partner->email)
-					->subject('Recordatorio: Tu partido - Torneo BALTC')
+					->subject('Recordatorio: Programá tu Partido')
 					->message($body)
 					->send();
 				$enviados++;
@@ -3088,7 +3088,7 @@ public function enviarNotificacion() {
 				$this->email
 					->from('secretaria@baltc.net', 'Secretaría BALTC')
 					->to($partner->email)
-					->subject('Recordatorio: Tu partido - Torneo BALTC')
+					->subject('Recordatorio: Programá tu Partido')
 					->message($body)
 					->send();
 				$enviados++;
