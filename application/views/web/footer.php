@@ -38,6 +38,23 @@
 		</div><!-- /.modal-dialog -->
 	</div><!-- /.modal -->
 
+	<!-- BOTTOM SHEET INSTALAR APP -->
+	<div id="installSheet" style="display:none; position:fixed; bottom:0; left:0; right:0; background:#1a1a2e; border-top:1px solid #a5d051; padding:20px; z-index:999; font-family:Arial,sans-serif; box-shadow:0 -2px 15px rgba(0,0,0,0.4);">
+		<div style="max-width:500px; margin:0 auto;">
+			<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:15px;">
+				<div style="display:flex; align-items:center; gap:12px;">
+					<img src="https://www.baltc.net/wp-content/uploads/2016/09/cropped-favicon-1-32x32.png" style="width:40px; height:40px; border-radius:8px;">
+					<div>
+						<div style="color:#fff; font-weight:bold; font-size:15px;">Torneo BALTC</div>
+						<div style="color:#a5d051; font-size:12px;">Acceso rápido en tu home</div>
+					</div>
+				</div>
+				<button id="closeSheet" style="background:none; border:none; color:#fff; font-size:24px; cursor:pointer; padding:0; width:32px; height:32px; display:flex; align-items:center; justify-content:center;">✕</button>
+			</div>
+			<button id="installBtn" style="width:100%; background:#a5d051; color:#1a1a2e; border:none; padding:12px; border-radius:6px; font-weight:bold; font-size:14px; cursor:pointer;">Agregar a pantalla de inicio</button>
+		</div>
+	</div>
+
 </body>
 
 <footer>
@@ -85,5 +102,47 @@
 	<script type="text/javascript" src="<?=asset_url('js')?>/multimodal.js"></script>
 	<!-- BOOTSTRAP CORE -->
 	<script src="<?=asset_url('vendor')?>/bootstrap/js/bootstrap.min.js"></script>
+
+	<!-- INSTALAR APP - BOTTOM SHEET -->
+	<script>
+	$(function(){
+		var deferredPrompt = null;
+		var sheetShown = localStorage.getItem('torneo-install-sheet-shown');
+		var isAndroid = /Android/.test(navigator.userAgent);
+		var isChrome = /Chrome/.test(navigator.userAgent);
+
+		// Solo mostrar en Android Chrome
+		if(!isAndroid || !isChrome || sheetShown) return;
+
+		// Capturar beforeinstallprompt
+		window.addEventListener('beforeinstallprompt', function(e) {
+			e.preventDefault();
+			deferredPrompt = e;
+
+			// Mostrar sheet
+			setTimeout(function() {
+				$('#installSheet').slideDown(300);
+			}, 2000);
+		});
+
+		// Botón Agregar
+		$('#installBtn').on('click', function(){
+			if(deferredPrompt) {
+				deferredPrompt.prompt();
+				deferredPrompt.userChoice.then(function(choice) {
+					$('#installSheet').slideUp(300);
+					localStorage.setItem('torneo-install-sheet-shown', 'true');
+					deferredPrompt = null;
+				});
+			}
+		});
+
+		// Botón Cerrar
+		$('#closeSheet').on('click', function(){
+			$('#installSheet').slideUp(300);
+			localStorage.setItem('torneo-install-sheet-shown', 'true');
+		});
+	});
+	</script>
 </footer>
 </html>
