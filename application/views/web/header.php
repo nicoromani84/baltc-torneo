@@ -70,9 +70,6 @@
 	<link rel="stylesheet" type="text/css" href="<?=asset_url('vendor')?>/animate.css/animate.css" />
 	<!-- ESTILO DE APLICACION -->
 	<link rel="stylesheet" href="<?=asset_url('css')?>/style.css">
-	<!-- Manifest para acceso directo -->
-	<link rel="manifest" href="<?=base_url('manifest.json')?>">
-	<meta name="theme-color" content="#a5d051">
 	<!-- JQUERY 1.12.1 -->
 	<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
 
