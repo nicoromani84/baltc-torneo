@@ -2921,6 +2921,29 @@ public function enviarNotificacion() {
 		$this->load->view('admin/footer');
 	}
 
+	public function debugDeadlines() {
+		// Endpoint de debug - solo para verificar
+		echo "DEBUG: Verificando deadlines...\n\n";
+
+		$deadlines = $this->db->query(
+			"SELECT DISTINCT m.deadline, COUNT(*) as total_partidos
+			 FROM matches m
+			 WHERE m.deadline IS NOT NULL
+			 AND m.ganador_id IS NULL
+			 AND m.fecha IS NULL
+			 GROUP BY m.deadline
+			 ORDER BY m.deadline ASC"
+		)->result();
+
+		echo "Total de deadlines distintos: " . count($deadlines) . "\n";
+		foreach($deadlines as $d) {
+			echo "Deadline: {$d->deadline} -> {$d->total_partidos} partidos\n";
+		}
+
+		echo "\n\nQuery raw:\n";
+		echo $this->db->last_query() . "\n";
+	}
+
 	public function getDeadlinesPendientes() {
 		$this->protect->setAjax();
 		$this->protect->setRequest('POST');
@@ -2969,7 +2992,7 @@ public function enviarNotificacion() {
 			 WHERE m.deadline = ?
 			 AND m.ganador_id IS NULL
 			 AND m.fecha IS NULL
-			 ORDER BY m.categoria ASC, m.ronda ASC",
+			 ORDER BY c.name ASC, m.ronda ASC",
 			array($deadline)
 		)->result();
 
