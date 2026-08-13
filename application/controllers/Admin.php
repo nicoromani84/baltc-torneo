@@ -3125,16 +3125,7 @@ public function enviarNotificacion() {
 
 	public function cronRecordatorios() {
 		// Endpoint para cron job - envía recordatorios automáticos 3 días antes del deadline
-		// Uso: https://baltc.net/torneo/admin/cronRecordatorios?token=xxxxx
-
-		// Validar token de seguridad
-		$token = $this->input->get('token');
-		$expected_token = md5('baltc_torneo_cron_recordatorios_' . date('Y-m-d'));
-
-		if($token !== $expected_token) {
-			echo "Error: Token inválido";
-			return;
-		}
+		// Ejecutado automáticamente por EasyCron cada día a las 8 AM
 
 		// Buscar partidos cuyo deadline sea exactamente en 3 días
 		$fecha_limite = date('Y-m-d', strtotime('+3 days'));
