@@ -3010,6 +3010,7 @@ public function enviarNotificacion() {
 
 		$partidos = $this->db->query(
 			"SELECT m.*, c.name as categoria,
+					DATE_FORMAT(m.deadline, '%d/%m/%Y') as deadline_formato,
 					(SELECT GROUP_CONCAT(p.name SEPARATOR ' / ') FROM reservations_partners rp JOIN partners p ON p.id = rp.partner_id WHERE rp.reservation_id = m.jugador1_id) as jugador1_nombres,
 					(SELECT GROUP_CONCAT(p.name SEPARATOR ' / ') FROM reservations_partners rp JOIN partners p ON p.id = rp.partner_id WHERE rp.reservation_id = m.jugador2_id) as jugador2_nombres
 			 FROM matches m

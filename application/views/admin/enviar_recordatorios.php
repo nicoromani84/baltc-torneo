@@ -165,7 +165,7 @@ $(function(){
 						html += '<td>' + p.ronda + '</td>';
 						html += '<td>' + (p.jugador1_nombres || 'N/A') + '</td>';
 						html += '<td>' + (p.jugador2_nombres || 'N/A') + '</td>';
-						html += '<td>' + new Date(p.deadline).toLocaleDateString() + '</td>';
+						html += '<td>' + (p.deadline_formato || p.deadline) + '</td>';
 						html += '</tr>';
 					});
 					$('#partidos-tabla').html(html);
