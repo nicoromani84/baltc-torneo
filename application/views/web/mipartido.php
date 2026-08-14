@@ -404,27 +404,37 @@ $(function(){
 	// Tour guiado para acordar fecha con deadline
 	var hasTourBeenShown = localStorage.getItem('mipartido-tour-shown');
 	var hasDeadline = $('[data-has-deadline="1"]').length > 0;
+	var hasIntroBtn = $('[data-intro]').length > 0;
 
-	if(hasDeadline && !hasTourBeenShown) {
+	console.log('Tour: hasDeadline=', hasDeadline, 'hasIntroBtn=', hasIntroBtn, 'alreadyShown=', hasTourBeenShown);
+
+	if(hasDeadline && hasIntroBtn && !hasTourBeenShown && typeof introJs !== 'undefined') {
 		setTimeout(function() {
-			introJs().setOptions({
-				steps: [
-					{
-						element: '[data-intro]',
-						intro: '📅 Aquí es donde coordinas la fecha del partido con tu rival. Elige día y hora antes del deadline.',
-						position: 'bottom'
-					}
-				],
-				doneLabel: 'Entendido',
-				skipLabel: 'Saltar',
-				showProgress: false,
-				disableInteraction: false,
-				overlayOpacity: 0.8
-			}).start();
-
-			// Marcar como visto
-			localStorage.setItem('mipartido-tour-shown', 'true');
-		}, 800);
+			try {
+				var introInstance = introJs();
+				introInstance.setOptions({
+					steps: [
+						{
+							element: '[data-intro]',
+							intro: '📅 Aquí es donde coordinas la fecha del partido con tu rival. Elige día y hora antes del deadline.',
+							position: 'bottom'
+						}
+					],
+					doneLabel: 'Entendido',
+					skipLabel: 'Saltar',
+					showProgress: false,
+					disableInteraction: false,
+					overlayOpacity: 0.8,
+					exitOnOverlayClick: true,
+					exitOnEsc: true
+				});
+				introInstance.start();
+				localStorage.setItem('mipartido-tour-shown', 'true');
+				console.log('Tour iniciado correctamente');
+			} catch(e) {
+				console.error('Error al iniciar tour:', e);
+			}
+		}, 1200);
 	}
 
 	// Backspace: si campo vacío, ir al anterior
