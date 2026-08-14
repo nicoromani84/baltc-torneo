@@ -3122,4 +3122,66 @@ public function enviarNotificacion() {
 
 		$this->protect->ajaxDie(array('action' => true, 'msg' => "Recordatorios enviados: $enviados correos"));
 	}
+
+	public function listarDestinatariosDeadline() {
+		$this->protect->setRequest('POST');
+		if(!$this->Administrator->isLogged()) $this->protect->ajaxDie(array('action'=>false));
+
+		$deadline = $this->input->post('deadline', true);
+		if(!$deadline) $this->protect->ajaxDie(array('action'=>false));
+
+		$partidos = $this->db->query(
+			"SELECT m.id, m.jugador1_id, m.jugador2_id, m.categoria, m.ronda, c.name as categoria_name,
+					(SELECT GROUP_CONCAT(p.name SEPARATOR ' / ') FROM reservations_partners rp JOIN partners p ON p.id = rp.partner_id WHERE rp.reservation_id = m.jugador1_id) as j1_nombres,
+					(SELECT GROUP_CONCAT(p.name SEPARATOR ' / ') FROM reservations_partners rp JOIN partners p ON p.id = rp.partner_id WHERE rp.reservation_id = m.jugador2_id) as j2_nombres
+			 FROM matches m
+			 JOIN category c ON c.id = m.category
+			 WHERE m.deadline = ?
+			 AND m.ganador_id IS NULL
+			 AND m.fecha IS NULL
+			 ORDER BY c.name ASC, m.ronda ASC",
+			array($deadline)
+		)->result();
+
+		$destinatarios = array();
+		foreach($partidos as $p) {
+			$j1_partners = $this->db->query(
+				"SELECT p.* FROM reservations_partners rp JOIN partners p ON p.id = rp.partner_id WHERE rp.reservation_id = ?",
+				array($p->jugador1_id)
+			)->result();
+			$j2_partners = $this->db->query(
+				"SELECT p.* FROM reservations_partners rp JOIN partners p ON p.id = rp.partner_id WHERE rp.reservation_id = ?",
+				array($p->jugador2_id)
+			)->result();
+
+			foreach($j1_partners as $partner) {
+				if($partner && filter_var($partner->email, FILTER_VALIDATE_EMAIL)) {
+					$destinatarios[] = array(
+						'nombre' => $partner->name,
+						'email' => $partner->email,
+						'pareja' => $p->j1_nombres,
+						'rival' => $p->j2_nombres,
+						'categoria' => $p->categoria_name,
+						'ronda' => $p->ronda,
+						'partido_id' => $p->id
+					);
+				}
+			}
+			foreach($j2_partners as $partner) {
+				if($partner && filter_var($partner->email, FILTER_VALIDATE_EMAIL)) {
+					$destinatarios[] = array(
+						'nombre' => $partner->name,
+						'email' => $partner->email,
+						'pareja' => $p->j2_nombres,
+						'rival' => $p->j1_nombres,
+						'categoria' => $p->categoria_name,
+						'ronda' => $p->ronda,
+						'partido_id' => $p->id
+					);
+				}
+			}
+		}
+
+		$this->protect->ajaxDie(array('action' => true, 'total' => count($destinatarios), 'destinatarios' => $destinatarios));
+	}
 }
