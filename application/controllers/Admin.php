@@ -3136,64 +3136,81 @@ public function enviarNotificacion() {
 	}
 
 	public function listarDestinatariosDeadline() {
+		$this->protect->setAjax();
 		$this->protect->setRequest('POST');
-		if(!$this->Administrator->isLogged()) $this->protect->ajaxDie(array('action'=>false));
+		if(!$this->Administrator->isLogged()) $this->protect->ajaxDie(array('action'=>false, 'msg'=>'No autorizado'));
 
 		$deadline = $this->input->post('deadline', true);
-		if(!$deadline) $this->protect->ajaxDie(array('action'=>false));
+		if(!$deadline) $this->protect->ajaxDie(array('action'=>false, 'msg'=>'Deadline requerido'));
 
-		$partidos = $this->db->query(
-			"SELECT m.id, m.jugador1_id, m.jugador2_id, m.categoria, m.ronda, c.name as categoria_name,
-					(SELECT GROUP_CONCAT(p.name SEPARATOR ' / ') FROM reservations_partners rp JOIN partners p ON p.id = rp.partner_id WHERE rp.reservation_id = m.jugador1_id) as j1_nombres,
-					(SELECT GROUP_CONCAT(p.name SEPARATOR ' / ') FROM reservations_partners rp JOIN partners p ON p.id = rp.partner_id WHERE rp.reservation_id = m.jugador2_id) as j2_nombres
-			 FROM matches m
-			 JOIN category c ON c.id = m.category
-			 WHERE m.deadline = ?
-			 AND m.ganador_id IS NULL
-			 AND m.fecha IS NULL
-			 ORDER BY c.name ASC, m.ronda ASC",
-			array($deadline)
-		)->result();
-
-		$destinatarios = array();
-		foreach($partidos as $p) {
-			$j1_partners = $this->db->query(
-				"SELECT p.* FROM reservations_partners rp JOIN partners p ON p.id = rp.partner_id WHERE rp.reservation_id = ?",
-				array($p->jugador1_id)
+		try {
+			// Query optimizada que trae todo en una sola consulta
+			$destinatarios = $this->db->query(
+				"SELECT
+					p.name as nombre,
+					p.email,
+					GROUP_CONCAT(DISTINCT p1.name SEPARATOR ' / ') as pareja,
+					GROUP_CONCAT(DISTINCT p2.name SEPARATOR ' / ') as rival,
+					c.name as categoria,
+					m.ronda,
+					m.id as partido_id
+				 FROM matches m
+				 JOIN category c ON c.id = m.category
+				 JOIN reservations_partners rp1 ON rp1.reservation_id = m.jugador1_id
+				 JOIN partners p1 ON p1.id = rp1.partner_id
+				 JOIN reservations_partners rp2 ON rp2.reservation_id = m.jugador2_id
+				 JOIN partners p2 ON p2.id = rp2.partner_id
+				 CROSS JOIN partners p ON (p.id = rp1.partner_id OR p.id = rp2.partner_id)
+				 WHERE m.deadline = ?
+				 AND m.ganador_id IS NULL
+				 AND m.fecha IS NULL
+				 AND p.email IS NOT NULL
+				 AND p.email != ''
+				 GROUP BY m.id, p.id, p.name, p.email
+				 ORDER BY c.name ASC, m.ronda ASC, p.name ASC",
+				array($deadline)
 			)->result();
-			$j2_partners = $this->db->query(
-				"SELECT p.* FROM reservations_partners rp JOIN partners p ON p.id = rp.partner_id WHERE rp.reservation_id = ?",
-				array($p->jugador2_id)
-			)->result();
 
-			foreach($j1_partners as $partner) {
-				if($partner && filter_var($partner->email, FILTER_VALIDATE_EMAIL)) {
-					$destinatarios[] = array(
-						'nombre' => $partner->name,
-						'email' => $partner->email,
-						'pareja' => $p->j1_nombres,
-						'rival' => $p->j2_nombres,
-						'categoria' => $p->categoria_name,
-						'ronda' => $p->ronda,
-						'partido_id' => $p->id
-					);
-				}
+			if(!$destinatarios) {
+				$this->protect->ajaxDie(array('action' => true, 'total' => 0, 'destinatarios' => array()));
 			}
-			foreach($j2_partners as $partner) {
-				if($partner && filter_var($partner->email, FILTER_VALIDATE_EMAIL)) {
-					$destinatarios[] = array(
-						'nombre' => $partner->name,
-						'email' => $partner->email,
-						'pareja' => $p->j2_nombres,
-						'rival' => $p->j1_nombres,
-						'categoria' => $p->categoria_name,
-						'ronda' => $p->ronda,
-						'partido_id' => $p->id
-					);
-				}
-			}
+
+			$this->protect->ajaxDie(array('action' => true, 'total' => count($destinatarios), 'destinatarios' => $destinatarios));
+		} catch(Exception $e) {
+			$this->protect->ajaxDie(array('action' => false, 'msg' => 'Error: ' . $e->getMessage()));
 		}
+	}
 
-		$this->protect->ajaxDie(array('action' => true, 'total' => count($destinatarios), 'destinatarios' => $destinatarios));
+	public function enviarEmailPrueba() {
+		$this->protect->setAjax();
+		$this->protect->setRequest('POST');
+		if(!$this->Administrator->isLogged()) $this->protect->ajaxDie(array('action'=>false, 'msg'=>'No autorizado'));
+
+		$email_destino = $this->input->post('email', true);
+		if(!$email_destino) $this->protect->ajaxDie(array('action'=>false, 'msg'=>'Email requerido'));
+
+		try {
+			$data = array(
+				'nombre' => 'Juan Pérez',
+				'rival' => 'Carlos García / Martín López',
+				'categoria' => '4ta Caballeros',
+				'ronda' => 'Grupo A',
+				'deadline' => date('d/m/Y', strtotime('+3 days')),
+				'dias_restantes' => 3
+			);
+
+			$body = $this->load->view('email/recordatorio_deadline_automatico.php', $data, true);
+			$this->email->initialize(array());
+			$this->email
+				->from('secretaria@baltc.net', 'Secretaría BALTC')
+				->to($email_destino)
+				->subject('Recordatorio: Programá tu Partido [PRUEBA]')
+				->message($body)
+				->send();
+
+			$this->protect->ajaxDie(array('action' => true, 'msg' => 'Email de prueba enviado a ' . $email_destino));
+		} catch(Exception $e) {
+			$this->protect->ajaxDie(array('action' => false, 'msg' => 'Error: ' . $e->getMessage()));
+		}
 	}
 }

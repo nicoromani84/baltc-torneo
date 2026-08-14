@@ -15,6 +15,26 @@
 				</select>
 			</div>
 
+			<hr>
+
+			<div class="form-group">
+				<label><strong>📧 Enviar Email de Prueba:</strong></label>
+				<p class="text-muted small">Antes de enviar masivamente, podés enviar una prueba a tu email</p>
+				<div class="form-row">
+					<div class="col">
+						<input type="email" id="email-prueba" class="form-control" placeholder="tu@email.com">
+					</div>
+					<div class="col-auto">
+						<button id="btn-prueba" class="btn btn-info">
+							<i class="fas fa-envelope"></i> Enviar Prueba
+						</button>
+					</div>
+				</div>
+				<div id="resultado-prueba" style="margin-top: 10px; display: none;"></div>
+			</div>
+
+			<hr>
+
 			<div id="partidos-container" style="display:none;" class="mt-4">
 				<div class="alert alert-secondary mb-3">
 					<i class="fas fa-info-circle"></i> <strong>Partidos sin programar y sin resultado cargado:</strong> Se muestran solo los partidos que aún no tienen fecha acordada Y no tienen resultado cargado.
@@ -60,6 +80,43 @@ $(function(){
 
 	// Cargar deadlines al iniciar
 	cargarDeadlines();
+
+	// Enviar email de prueba
+	$('#btn-prueba').on('click', function(){
+		var email = $('#email-prueba').val();
+		if(!email) {
+			alert('Ingresá un email');
+			return;
+		}
+
+		var btn = $(this);
+		btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Enviando...');
+
+		$.ajax({
+			url: baseurl + 'admin/enviarEmailPrueba',
+			type: 'POST',
+			data: { email: email },
+			headers: { 'X-Auth-Token': token },
+			success: function(res) {
+				btn.prop('disabled', false).html('<i class="fas fa-envelope"></i> Enviar Prueba');
+				if(res.action) {
+					$('#resultado-prueba').html(
+						'<div class="alert alert-success"><i class="fas fa-check-circle"></i> ' + res.msg + '</div>'
+					).show();
+				} else {
+					$('#resultado-prueba').html(
+						'<div class="alert alert-danger"><i class="fas fa-times-circle"></i> Error: ' + (res.msg || 'Error desconocido') + '</div>'
+					).show();
+				}
+			},
+			error: function(){
+				btn.prop('disabled', false).html('<i class="fas fa-envelope"></i> Enviar Prueba');
+				$('#resultado-prueba').html(
+					'<div class="alert alert-danger"><i class="fas fa-times-circle"></i> Error de conexión</div>'
+				).show();
+			}
+		});
+	});
 
 	function cargarDeadlines() {
 		$.ajax({
