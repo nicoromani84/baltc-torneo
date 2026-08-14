@@ -3123,6 +3123,18 @@ public function enviarNotificacion() {
 		$this->protect->ajaxDie(array('action' => true, 'msg' => "Recordatorios enviados: $enviados correos"));
 	}
 
+	public function previewRecordatorios() {
+		$this->protect->setRequest('GET');
+		if(!$this->Administrator->isLogged()) redirect('admin');
+
+		$d['titulo'] = 'Preview Recordatorios';
+		$d['token'] = $this->protect->eToken();
+		$d['section'] = 'admin-preview-recordatorios';
+		$this->load->view('admin/header', $d);
+		$this->load->view('admin/preview_recordatorios');
+		$this->load->view('admin/footer');
+	}
+
 	public function listarDestinatariosDeadline() {
 		$this->protect->setRequest('POST');
 		if(!$this->Administrator->isLogged()) $this->protect->ajaxDie(array('action'=>false));

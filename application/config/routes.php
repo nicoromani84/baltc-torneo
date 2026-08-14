@@ -50,6 +50,7 @@ $route['admin/enviarRecordatoriosPorDeadline'] = 'admin/enviarRecordatoriosPorDe
 $route['admin/listarDestinatariosDeadline'] = 'admin/listarDestinatariosDeadline';
 $route['admin/debugDeadlines'] = 'admin/debugDeadlines';
 $route['admin/verPartidosProgramados'] = 'admin/verPartidosProgramados';
+$route['admin/previewRecordatorios'] = 'admin/previewRecordatorios';
 
 $route['admin/mails'] = 'admin/mails';
 $route['admin/mails2ndchance'] = 'admin/mails2ndchance';

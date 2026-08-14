@@ -396,7 +396,10 @@
 </style>
 
 <script>
+console.log('🎯 mipartido.php cargado');
+
 $(function(){
+	console.log('🎯 jQuery ready');
 	var baseurl = '<?=base_url()?>';
 	var token = '<?=$token?>';
 	var scoreOrder = ['s1a','s1b','s2a','s2b','s3a','s3b'];
@@ -406,7 +409,8 @@ $(function(){
 	var hasDeadline = $('[data-has-deadline="1"]').length > 0;
 	var hasIntroBtn = $('[data-intro]').length > 0;
 
-	console.log('Tour: hasDeadline=', hasDeadline, 'hasIntroBtn=', hasIntroBtn, 'alreadyShown=', hasTourBeenShown);
+	console.log('🎯 Tour: hasDeadline=', hasDeadline, 'hasIntroBtn=', hasIntroBtn, 'alreadyShown=', hasTourBeenShown);
+	console.log('🎯 Intro.js disponible?', typeof window.introJs);
 
 	if(hasDeadline && hasIntroBtn && !hasTourBeenShown && typeof introJs !== 'undefined') {
 		setTimeout(function() {
