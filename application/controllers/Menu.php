@@ -58,11 +58,15 @@ class Menu extends CI_Controller {
 				$resto[] = $p;
 			}
 		}
-		// Dentro de cada grupo, primero pendientes luego jugados
+		// Dentro de cada grupo, primero jugados (descendente) luego pendientes
 		function sortPartidos($arr) {
 			$pendientes = array_filter($arr, function($p){ return empty($p->ganador_id); });
 			$jugados = array_filter($arr, function($p){ return !empty($p->ganador_id); });
-			return array_merge(array_values($pendientes), array_values($jugados));
+			// Ordenar jugados descendentemente por ID
+			usort($jugados, function($a, $b) {
+				return $b->id - $a->id;
+			});
+			return array_merge(array_values($jugados), array_values($pendientes));
 		}
 		$d['partidos'] = array_merge(sortPartidos($mios), sortPartidos($resto));
 		$d['mi_category']   = $user_category;
