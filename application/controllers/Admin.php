@@ -3184,33 +3184,36 @@ public function enviarNotificacion() {
 	public function enviarEmailPrueba() {
 		$this->protect->setAjax();
 		$this->protect->setRequest('POST');
-		if(!$this->Administrator->isLogged()) $this->protect->ajaxDie(array('action'=>false, 'msg'=>'No autorizado'));
+		if(!$this->Administrator->isLogged()) $this->protect->ajaxDie(array('action'=>false));
 
 		$email_destino = $this->input->post('email', true);
-		if(!$email_destino) $this->protect->ajaxDie(array('action'=>false, 'msg'=>'Email requerido'));
+		if(!$email_destino) $this->protect->ajaxDie(array('action'=>false));
 
-		try {
-			$data = array(
-				'nombre' => 'Juan Pérez',
-				'rival' => 'Carlos García / Martín López',
-				'categoria' => '4ta Caballeros',
-				'ronda' => 'Grupo A',
-				'deadline' => date('d/m/Y', strtotime('+3 days')),
-				'dias_restantes' => 3
-			);
+		$data = array(
+			'nombre' => 'Juan Pérez',
+			'rival' => 'Carlos García / Martín López',
+			'categoria' => '4ta Caballeros',
+			'ronda' => 'Grupo A',
+			'deadline' => date('d/m/Y', strtotime('+3 days')),
+			'dias_restantes' => 3
+		);
 
-			$body = $this->load->view('email/recordatorio_deadline_automatico.php', $data, true);
-			$this->email->initialize(array());
-			$this->email
-				->from('secretaria@baltc.net', 'Secretaría BALTC')
-				->to($email_destino)
-				->subject('Recordatorio: Programá tu Partido [PRUEBA]')
-				->message($body)
-				->send();
+		$body = $this->load->view('email/recordatorio_deadline_automatico.php', $data, true);
 
-			$this->protect->ajaxDie(array('action' => true, 'msg' => 'Email de prueba enviado a ' . $email_destino));
-		} catch(Exception $e) {
-			$this->protect->ajaxDie(array('action' => false, 'msg' => 'Error: ' . $e->getMessage()));
+		$headers = "MIME-Version: 1.0\r\n";
+		$headers .= "Content-type: text/html; charset=UTF-8\r\n";
+		$headers .= "From: secretaria@baltc.net\r\n";
+		$headers .= "Reply-To: secretaria@baltc.net\r\n";
+		$headers .= "Return-Path: secretaria@baltc.net\r\n";
+		$headers .= "X-Priority: 3\r\n";
+		$headers .= "X-Mailer: PHP/" . phpversion() . "\r\n";
+
+		$sent = mail($email_destino, 'Recordatorio: Programá tu Partido [PRUEBA]', $body, $headers);
+
+		if($sent) {
+			$this->protect->ajaxDie(array('action' => true, 'msg' => 'Email enviado a ' . $email_destino));
+		} else {
+			$this->protect->ajaxDie(array('action' => false, 'msg' => 'Error al enviar email'));
 		}
 	}
 }
