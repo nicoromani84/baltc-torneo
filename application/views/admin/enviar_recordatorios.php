@@ -126,11 +126,77 @@ $(function(){
 			return;
 		}
 
-		if(!confirm('¿Estás seguro? Se enviarán recordatorios a todos los jugadores de estos partidos.')) {
-			return;
-		}
+		// Cargar lista de destinatarios
+		$.ajax({
+			url: baseurl + 'admin/listarDestinatariosDeadline',
+			type: 'POST',
+			data: { deadline: deadline },
+			headers: { 'X-Auth-Token': token },
+			success: function(res) {
+				if(res.action && res.destinatarios) {
+					mostrarModalConfirmacion(res.destinatarios, deadline);
+				} else {
+					alert('No hay destinatarios para este deadline');
+				}
+			},
+			error: function(){
+				alert('Error al cargar destinatarios');
+			}
+		});
+	});
 
-		var btn = $(this);
+	function mostrarModalConfirmacion(destinatarios, deadline) {
+		var emailsUnicos = {};
+		destinatarios.forEach(function(d) {
+			emailsUnicos[d.email] = d.nombre;
+		});
+		var emails = Object.keys(emailsUnicos);
+
+		var html = '<div class="modal fade" id="modalConfirmEnvio" tabindex="-1" role="dialog">';
+		html += '<div class="modal-dialog modal-lg" role="document">';
+		html += '<div class="modal-content">';
+		html += '<div class="modal-header">';
+		html += '<h5 class="modal-title"><i class="fas fa-paper-plane"></i> Confirmar Envío de Recordatorios</h5>';
+		html += '<button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>';
+		html += '</div>';
+		html += '<div class="modal-body">';
+		html += '<div class="alert alert-info mb-3">';
+		html += '<strong>Se enviarán ' + emails.length + ' emails</strong> a los siguientes destinatarios:';
+		html += '</div>';
+		html += '<div class="table-responsive">';
+		html += '<table class="table table-sm table-bordered">';
+		html += '<thead class="table-light"><tr><th>#</th><th>Email</th><th>Jugador</th></tr></thead>';
+		html += '<tbody>';
+		emails.forEach(function(email, idx) {
+			html += '<tr><td>' + (idx+1) + '</td><td><code>' + email + '</code></td><td>' + emailsUnicos[email] + '</td></tr>';
+		});
+		html += '</tbody>';
+		html += '</table>';
+		html += '</div>';
+		html += '</div>';
+		html += '<div class="modal-footer">';
+		html += '<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>';
+		html += '<button type="button" class="btn btn-success btn-enviar-confirmado" data-deadline="' + deadline + '"><i class="fas fa-check"></i> Confirmar Envío</button>';
+		html += '</div>';
+		html += '</div>';
+		html += '</div>';
+		html += '</div>';
+
+		$('body').append(html);
+		$('#modalConfirmEnvio').modal('show');
+
+		$('.btn-enviar-confirmado').off('click').on('click', function(){
+			var deadlineConfirm = $(this).data('deadline');
+			$('#modalConfirmEnvio').modal('hide');
+			enviarRecordatorios(deadlineConfirm);
+			setTimeout(function(){
+				$('#modalConfirmEnvio').remove();
+			}, 500);
+		});
+	}
+
+	function enviarRecordatorios(deadline) {
+		var btn = $('#btn-enviar');
 		btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Enviando...');
 
 		$.ajax({
@@ -170,6 +236,6 @@ $(function(){
 				).show();
 			}
 		});
-	});
+	}
 });
 </script>
