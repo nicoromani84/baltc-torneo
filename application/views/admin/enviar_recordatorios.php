@@ -84,8 +84,13 @@ $(function(){
 	// Enviar email de prueba
 	$('#btn-prueba').on('click', function(){
 		var email = $('#email-prueba').val();
+		var deadline = $('#deadline').val();
 		if(!email) {
 			alert('Ingresá un email');
+			return;
+		}
+		if(!deadline) {
+			alert('Selecciona un deadline primero');
 			return;
 		}
 
@@ -95,7 +100,7 @@ $(function(){
 		$.ajax({
 			url: baseurl + 'admin/enviarEmailPrueba',
 			type: 'POST',
-			data: { email: email },
+			data: { email: email, deadline: deadline },
 			headers: { 'X-Auth-Token': token },
 			success: function(res) {
 				btn.prop('disabled', false).html('<i class="fas fa-envelope"></i> Enviar Prueba');

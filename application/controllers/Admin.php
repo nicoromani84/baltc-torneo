@@ -3187,15 +3187,19 @@ public function enviarNotificacion() {
 		if(!$this->Administrator->isLogged()) $this->protect->ajaxDie(array('action'=>false));
 
 		$email_destino = $this->input->post('email', true);
+		$deadline = $this->input->post('deadline', true);
 		if(!$email_destino) $this->protect->ajaxDie(array('action'=>false));
+
+		$dias_restantes = ceil((strtotime($deadline) - time()) / (60 * 60 * 24));
+		if($dias_restantes < 0) $dias_restantes = 0;
 
 		$data = array(
 			'nombre' => 'Juan Pérez',
 			'rival' => 'Carlos García / Martín López',
 			'categoria' => '4ta Caballeros',
 			'ronda' => 'Grupo A',
-			'deadline' => date('d/m/Y', strtotime('+3 days')),
-			'dias_restantes' => 3
+			'deadline' => date('d/m/Y', strtotime($deadline)),
+			'dias_restantes' => $dias_restantes
 		);
 
 		$body = $this->load->view('email/recordatorio_deadline_automatico.php', $data, true);
