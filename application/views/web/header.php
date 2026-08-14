@@ -75,6 +75,9 @@
 
 	<!-- Datepicker -->
 	<script src="<?=asset_url('vendor')?>/jquery.datepicker/datepicker.js"></script>
+	<!-- Intro.js (Tour Guide) -->
+	<link rel="stylesheet" href="https://introjs.com/minified/introjs.min.css">
+	<script src="https://introjs.com/minified/intro.min.js"></script>
 </head>
 
 <body id="<?=$classname?>-page">

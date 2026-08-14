@@ -33,15 +33,15 @@
 				<div class="mipartido-ronda"><?=$p->ronda?> — <?=$p->categoria?></div>
 				<?php if(!empty($p->deadline)): ?>
 				<div class="mipartido-deadline"><i class="fas fa-clock"></i> Jugarlo antes del <strong><?=date('d/m/Y', strtotime($p->deadline))?></strong></div>
-				<div class="mipartido-fecha-wrap" id="fecha-wrap-<?=$p->id?>">
+				<div class="mipartido-fecha-wrap" id="fecha-wrap-<?=$p->id?>" data-has-deadline="1">
 					<?php if(!empty($p->fecha)): ?>
 					<div class="mipartido-fecha-acordada" id="fecha-acordada-<?=$p->id?>">
 						<i class="fas fa-calendar-check"></i>
 						<span>Acordado: <strong><?=date('d/m/Y', strtotime($p->fecha))?><?=!empty($p->hora) ? ' a las ' . date('H:i', strtotime($p->hora)) : ''?></strong></span>
-						<button class="mipartido-fecha-edit" data-id="<?=$p->id?>"><i class="fas fa-pencil-alt"></i></button>
+						<button class="mipartido-fecha-edit" data-id="<?=$p->id?>" data-intro="Toca aquí para cambiar la fecha acordada" data-step="1"><i class="fas fa-pencil-alt"></i></button>
 					</div>
 					<?php else: ?>
-					<button class="mipartido-fecha-trigger" data-id="<?=$p->id?>">
+					<button class="mipartido-fecha-trigger" data-id="<?=$p->id?>" data-intro="Toca aquí para acordar la fecha del partido con tu rival" data-step="1">
 						<i class="fas fa-calendar-plus"></i> ¿Ya coordinaste con tu rival? Agrega la fecha acá
 					</button>
 					<?php endif; ?>
@@ -355,6 +355,44 @@
 	#mipartido-page h1 { font-size: 26px; }
 	.mipartido-nombre { font-size: 14px; }
 }
+
+/* Tour guiado - Intro.js personalización */
+.introjs-helperLayer {
+	box-shadow: 0 0 0 9999px rgba(0,0,0,0.8);
+}
+.introjs-tooltip {
+	background: #1a1a2e !important;
+	border: 2px solid #a5d051 !important;
+	border-radius: 8px !important;
+	box-shadow: 0 4px 15px rgba(0,0,0,0.8) !important;
+}
+.introjs-tooltip .introjs-arrow.top { border-top-color: #a5d051 !important; }
+.introjs-tooltip .introjs-arrow.bottom { border-bottom-color: #a5d051 !important; }
+.introjs-tooltip .introjs-arrow.left { border-left-color: #a5d051 !important; }
+.introjs-tooltip .introjs-arrow.right { border-right-color: #a5d051 !important; }
+.introjs-tooltip .introjs-tooltiptext {
+	color: #fff !important;
+	font-size: 14px !important;
+	line-height: 1.5;
+}
+.introjs-button {
+	background: #a5d051 !important;
+	color: #1a1a2e !important;
+	border: none !important;
+	border-radius: 6px !important;
+	padding: 8px 16px !important;
+	font-weight: 700 !important;
+	cursor: pointer !important;
+}
+.introjs-button:hover {
+	background: #b8e66b !important;
+}
+.introjs-skipbutton {
+	color: rgba(255,255,255,0.5) !important;
+}
+.introjs-skipbutton:hover {
+	color: #a5d051 !important;
+}
 </style>
 
 <script>
@@ -362,6 +400,32 @@ $(function(){
 	var baseurl = '<?=base_url()?>';
 	var token = '<?=$token?>';
 	var scoreOrder = ['s1a','s1b','s2a','s2b','s3a','s3b'];
+
+	// Tour guiado para acordar fecha con deadline
+	var hasTourBeenShown = localStorage.getItem('mipartido-tour-shown');
+	var hasDeadline = $('[data-has-deadline="1"]').length > 0;
+
+	if(hasDeadline && !hasTourBeenShown) {
+		setTimeout(function() {
+			introJs().setOptions({
+				steps: [
+					{
+						element: '[data-intro]',
+						intro: '📅 Aquí es donde coordinas la fecha del partido con tu rival. Elige día y hora antes del deadline.',
+						position: 'bottom'
+					}
+				],
+				doneLabel: 'Entendido',
+				skipLabel: 'Saltar',
+				showProgress: false,
+				disableInteraction: false,
+				overlayOpacity: 0.8
+			}).start();
+
+			// Marcar como visto
+			localStorage.setItem('mipartido-tour-shown', 'true');
+		}, 800);
+	}
 
 	// Backspace: si campo vacío, ir al anterior
 	$(document).on('keydown', '.score-n', function(e){
