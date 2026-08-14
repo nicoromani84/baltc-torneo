@@ -3223,7 +3223,7 @@ public function enviarNotificacion() {
 		$headers .= "X-Priority: 3\r\n";
 		$headers .= "X-Mailer: PHP/" . phpversion() . "\r\n";
 
-		$sent = mail($email_destino, 'Recordatorio: Programá tu Partido [PRUEBA]', $body, $headers);
+		$sent = mail($email_destino, 'Recordatorio: Programá tu Partido', $body, $headers);
 
 		if($sent) {
 			$this->protect->ajaxDie(array('action' => true, 'msg' => 'Email enviado a ' . $email_destino));
