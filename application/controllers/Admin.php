@@ -3230,6 +3230,33 @@ public function enviarNotificacion() {
 		$this->protect->ajaxDie(array('action' => true, 'msg' => 'Email enviado a ' . $email_destino));
 	}
 
+	public function buscarPartido() {
+		$this->protect->setAjax();
+		$this->protect->setRequest('POST');
+		if(!$this->Administrator->isLogged()) $this->protect->ajaxDie(array('action'=>false));
+
+		$ronda = $this->input->post('ronda', true);
+		$fecha = $this->input->post('fecha', true);
+		$deadline = $this->input->post('deadline', true);
+
+		if(!$ronda || !$fecha || !$deadline) {
+			$this->protect->ajaxDie(array('action'=>false, 'msg'=>'Datos incompletos'));
+		}
+
+		$partidos = $this->db->query(
+			"SELECT m.id, m.ronda, m.fecha, m.hora, m.deadline,
+					(SELECT GROUP_CONCAT(p.name SEPARATOR ' / ') FROM reservations_partners rp JOIN partners p ON p.id = rp.partner_id WHERE rp.reservation_id = m.jugador1_id) as j1,
+					(SELECT GROUP_CONCAT(p.name SEPARATOR ' / ') FROM reservations_partners rp JOIN partners p ON p.id = rp.partner_id WHERE rp.reservation_id = m.jugador2_id) as j2
+			 FROM matches m
+			 WHERE m.ronda = ?
+			 AND m.fecha = ?
+			 AND m.deadline = ?",
+			array($ronda, $fecha, $deadline)
+		)->result();
+
+		$this->protect->ajaxDie(array('action' => true, 'partidos' => $partidos));
+	}
+
 	public function actualizarDeadlinePartido() {
 		$this->protect->setAjax();
 		$this->protect->setRequest('POST');
