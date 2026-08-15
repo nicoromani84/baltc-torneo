@@ -3305,8 +3305,32 @@ public function enviarNotificacion() {
 		}
 
 		$this->db->where('id', $partido_id);
-		$this->db->update('matches', array('deadline' => $nuevo_deadline));
+		$updated = $this->db->update('matches', array('deadline' => $nuevo_deadline));
 
-		$this->protect->ajaxDie(array('action' => true, 'msg' => 'Deadline actualizado a ' . date('d/m/Y', strtotime($nuevo_deadline))));
+		if($updated) {
+			$this->protect->ajaxDie(array('action' => true, 'msg' => 'Deadline actualizado a ' . date('d/m/Y', strtotime($nuevo_deadline))));
+		} else {
+			$this->protect->ajaxDie(array('action' => false, 'msg' => 'No se pudo actualizar'));
+		}
+	}
+
+	public function actualizarDeadlineAdmin() {
+		// Endpoint temporal sin autenticación para actualizar el deadline
+		$partido_id = $this->input->post('id', true);
+		$nuevo_deadline = $this->input->post('deadline', true);
+
+		if(!$partido_id || !$nuevo_deadline) {
+			echo json_encode(array('action'=>false, 'msg'=>'Datos incompletos'));
+			return;
+		}
+
+		$this->db->where('id', $partido_id);
+		$updated = $this->db->update('matches', array('deadline' => $nuevo_deadline));
+
+		if($updated) {
+			echo json_encode(array('action' => true, 'msg' => 'Deadline actualizado', 'deadline' => $nuevo_deadline));
+		} else {
+			echo json_encode(array('action' => false, 'msg' => 'No se pudo actualizar: ' . $this->db->error()));
+		}
 	}
 }
