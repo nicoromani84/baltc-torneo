@@ -3314,23 +3314,19 @@ public function enviarNotificacion() {
 		}
 	}
 
-	public function actualizarDeadlineAdmin() {
-		// Endpoint temporal sin autenticación para actualizar el deadline
-		$partido_id = $this->input->post('id', true);
-		$nuevo_deadline = $this->input->post('deadline', true);
+	public function verPartidoCompleto() {
+		$this->protect->setRequest('GET');
+		if(!$this->Administrator->isLogged()) $this->protect->ajaxDie(array('action'=>false));
 
-		if(!$partido_id || !$nuevo_deadline) {
-			echo json_encode(array('action'=>false, 'msg'=>'Datos incompletos'));
-			return;
-		}
+		$id = $this->input->get('id', true);
+		$partido = $this->db->query(
+			"SELECT id, ronda, fecha, hora, deadline, ganador_id, resultado FROM matches WHERE id = ?",
+			array($id)
+		)->row();
 
-		$this->db->where('id', $partido_id);
-		$updated = $this->db->update('matches', array('deadline' => $nuevo_deadline));
-
-		if($updated) {
-			echo json_encode(array('action' => true, 'msg' => 'Deadline actualizado', 'deadline' => $nuevo_deadline));
-		} else {
-			echo json_encode(array('action' => false, 'msg' => 'No se pudo actualizar: ' . $this->db->error()));
-		}
+		header('Content-Type: application/json');
+		echo json_encode($partido);
+		exit;
 	}
+
 }

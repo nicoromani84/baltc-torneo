@@ -53,7 +53,6 @@ $route['admin/verPartidoJSON'] = 'admin/verPartidoJSON';
 $route['admin/buscarPartidoForm'] = 'admin/buscarPartidoForm';
 $route['admin/buscarPartido'] = 'admin/buscarPartido';
 $route['admin/actualizarDeadlinePartido'] = 'admin/actualizarDeadlinePartido';
-$route['admin/actualizarDeadlineAdmin'] = 'admin/actualizarDeadlineAdmin';
 $route['admin/debugDeadlines'] = 'admin/debugDeadlines';
 $route['admin/verPartidosProgramados'] = 'admin/verPartidosProgramados';
 $route['admin/previewRecordatorios'] = 'admin/previewRecordatorios';
