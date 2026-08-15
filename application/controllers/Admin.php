@@ -3074,6 +3074,10 @@ public function enviarNotificacion() {
 			$j1_names = !empty($j1_partners) ? implode(' / ', array_map(function($x) { return $x->name; }, $j1_partners)) : 'Rival';
 			$j2_names = !empty($j2_partners) ? implode(' / ', array_map(function($x) { return $x->name; }, $j2_partners)) : 'Rival';
 
+			// Calcular días restantes
+			$dias_restantes = ceil((strtotime($p->deadline) - time()) / (60 * 60 * 24));
+			if($dias_restantes < 0) $dias_restantes = 0;
+
 			// Enviar a J1
 			foreach($j1_partners as $partner) {
 				if(!$partner || !filter_var($partner->email, FILTER_VALIDATE_EMAIL)) continue;
@@ -3084,7 +3088,7 @@ public function enviarNotificacion() {
 					'categoria' => $p->categoria,
 					'ronda' => $p->ronda,
 					'deadline' => date('d/m/Y', strtotime($p->deadline)),
-					'dias_restantes' => ''
+					'dias_restantes' => $dias_restantes
 				);
 				$body = $this->load->view('email/recordatorio_deadline_automatico.php', $data, true);
 				$this->email->initialize(array());
