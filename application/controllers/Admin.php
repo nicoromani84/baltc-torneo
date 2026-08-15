@@ -3214,21 +3214,19 @@ public function enviarNotificacion() {
 		);
 
 		$body = $this->load->view('email/recordatorio_deadline_automatico.php', $data, true);
+		$this->email->initialize(array());
+		$this->email->set_header('MIME-Version', '1.0');
+		$this->email->set_header('Content-Type', 'text/html; charset=UTF-8');
+		$this->email->set_header('Reply-To', 'secretaria@baltc.net');
+		$this->email->set_header('Return-Path', 'secretaria@baltc.net');
+		$this->email->set_header('X-Priority', '3');
+		$this->email
+			->from('secretaria@baltc.net', 'Secretaría BALTC')
+			->to($email_destino)
+			->subject('Recordatorio: Programá tu Partido')
+			->message($body)
+			->send();
 
-		$headers = "MIME-Version: 1.0\r\n";
-		$headers .= "Content-type: text/html; charset=UTF-8\r\n";
-		$headers .= "From: secretaria@baltc.net\r\n";
-		$headers .= "Reply-To: secretaria@baltc.net\r\n";
-		$headers .= "Return-Path: secretaria@baltc.net\r\n";
-		$headers .= "X-Priority: 3\r\n";
-		$headers .= "X-Mailer: PHP/" . phpversion() . "\r\n";
-
-		$sent = mail($email_destino, 'Recordatorio: Programá tu Partido', $body, $headers);
-
-		if($sent) {
-			$this->protect->ajaxDie(array('action' => true, 'msg' => 'Email enviado a ' . $email_destino));
-		} else {
-			$this->protect->ajaxDie(array('action' => false, 'msg' => 'Error al enviar email'));
-		}
+		$this->protect->ajaxDie(array('action' => true, 'msg' => 'Email enviado a ' . $email_destino));
 	}
 }
