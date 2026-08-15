@@ -50,6 +50,7 @@ $route['admin/enviarRecordatoriosPorDeadline'] = 'admin/enviarRecordatoriosPorDe
 $route['admin/listarDestinatariosDeadline'] = 'admin/listarDestinatariosDeadline';
 $route['admin/enviarEmailPrueba'] = 'admin/enviarEmailPrueba';
 $route['admin/verPartidoJSON'] = 'admin/verPartidoJSON';
+$route['admin/quitarFechaPartido'] = 'admin/quitarFechaPartido';
 $route['admin/buscarPartidoForm'] = 'admin/buscarPartidoForm';
 $route['admin/buscarPartido'] = 'admin/buscarPartido';
 $route['admin/actualizarDeadlinePartido'] = 'admin/actualizarDeadlinePartido';

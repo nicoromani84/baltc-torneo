@@ -3329,4 +3329,22 @@ public function enviarNotificacion() {
 		exit;
 	}
 
+	public function quitarFechaPartido() {
+		$partido_id = $this->input->post('id', true);
+
+		if(!$partido_id) {
+			echo json_encode(array('action'=>false, 'msg'=>'ID requerido'));
+			return;
+		}
+
+		$this->db->where('id', $partido_id);
+		$updated = $this->db->update('matches', array('fecha' => NULL, 'hora' => NULL));
+
+		if($updated) {
+			echo json_encode(array('action' => true, 'msg' => 'Fecha y hora eliminadas del partido ' . $partido_id));
+		} else {
+			echo json_encode(array('action' => false, 'msg' => 'No se pudo actualizar'));
+		}
+	}
+
 }
