@@ -3345,16 +3345,23 @@ public function enviarNotificacion() {
 		}
 	}
 
+	public function verCategorias() {
+		$categorias = $this->db->query("SELECT id, name FROM category WHERE name LIKE '%3%' ORDER BY name")->result();
+		header('Content-Type: application/json');
+		echo json_encode(array('categorias' => $categorias));
+		exit;
+	}
+
 	public function crearPartidoGanadores() {
 		$pareja1_nombres = array('frenkel', 'lupis');
 		$pareja2_nombres = array('granillo', 'hermida');
-		$categoria = '3era Caballeros';
+		$categoria = '3era';
 		$ronda = 'Cuartos de Final';
 
 		// Buscar categoría
-		$cat = $this->db->query("SELECT id FROM category WHERE name = ?", array($categoria))->row();
+		$cat = $this->db->query("SELECT id FROM category WHERE name = ?", array('3era'))->row();
 		if(!$cat) {
-			echo json_encode(array('action'=>false, 'msg'=>'Categoría no encontrada'));
+			echo json_encode(array('action'=>false, 'msg'=>'Categoría 3era no encontrada'));
 			return;
 		}
 
