@@ -3345,4 +3345,63 @@ public function enviarNotificacion() {
 		}
 	}
 
+	public function crearPartidoGanadores() {
+		$pareja1_nombres = array('frenkel', 'lupis');
+		$pareja2_nombres = array('granillo', 'hermida');
+		$categoria = '3era Caballeros';
+		$ronda = 'Cuartos de Final';
+
+		// Buscar categoría
+		$cat = $this->db->query("SELECT id FROM category WHERE name = ?", array($categoria))->row();
+		if(!$cat) {
+			echo json_encode(array('action'=>false, 'msg'=>'Categoría no encontrada'));
+			return;
+		}
+
+		// Buscar pareja 1
+		$pareja1 = $this->db->query(
+			"SELECT DISTINCT rp.reservation_id FROM reservations_partners rp
+			 JOIN partners p ON p.id = rp.partner_id
+			 JOIN reservations r ON r.id = rp.reservation_id
+			 WHERE r.tournament_type = 'doubles' AND r.category_id = ?
+			 AND (LOWER(p.name) LIKE ? OR LOWER(p.name) LIKE ?)
+			 LIMIT 1",
+			array($cat->id, '%frenkel%', '%lupis%')
+		)->row();
+
+		// Buscar pareja 2
+		$pareja2 = $this->db->query(
+			"SELECT DISTINCT rp.reservation_id FROM reservations_partners rp
+			 JOIN partners p ON p.id = rp.partner_id
+			 JOIN reservations r ON r.id = rp.reservation_id
+			 WHERE r.tournament_type = 'doubles' AND r.category_id = ?
+			 AND (LOWER(p.name) LIKE ? OR LOWER(p.name) LIKE ?)
+			 LIMIT 1",
+			array($cat->id, '%granillo%', '%hermida%')
+		)->row();
+
+		if(!$pareja1 || !$pareja2) {
+			echo json_encode(array('action'=>false, 'msg'=>'No se encontraron las parejas'));
+			return;
+		}
+
+		// Crear partido
+		$partido_data = array(
+			'category' => $cat->id,
+			'jugador1_id' => $pareja1->reservation_id,
+			'jugador2_id' => $pareja2->reservation_id,
+			'ronda' => $ronda,
+			'fecha' => NULL,
+			'hora' => NULL,
+			'score' => NULL,
+			'ganador_id' => NULL,
+			'resultado' => NULL
+		);
+
+		$this->db->insert('matches', $partido_data);
+		$partido_id = $this->db->insert_id();
+
+		echo json_encode(array('action' => true, 'msg' => 'Partido creado', 'partido_id' => $partido_id));
+	}
+
 }

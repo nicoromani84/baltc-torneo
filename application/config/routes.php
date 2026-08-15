@@ -51,6 +51,7 @@ $route['admin/listarDestinatariosDeadline'] = 'admin/listarDestinatariosDeadline
 $route['admin/enviarEmailPrueba'] = 'admin/enviarEmailPrueba';
 $route['admin/verPartidoJSON'] = 'admin/verPartidoJSON';
 $route['admin/quitarFechaPartido'] = 'admin/quitarFechaPartido';
+$route['admin/crearPartidoGanadores'] = 'admin/crearPartidoGanadores';
 $route['admin/buscarPartidoForm'] = 'admin/buscarPartidoForm';
 $route['admin/buscarPartido'] = 'admin/buscarPartido';
 $route['admin/actualizarDeadlinePartido'] = 'admin/actualizarDeadlinePartido';
