@@ -3229,4 +3229,22 @@ public function enviarNotificacion() {
 
 		$this->protect->ajaxDie(array('action' => true, 'msg' => 'Email enviado a ' . $email_destino));
 	}
+
+	public function actualizarDeadlinePartido() {
+		$this->protect->setAjax();
+		$this->protect->setRequest('POST');
+		if(!$this->Administrator->isLogged()) $this->protect->ajaxDie(array('action'=>false));
+
+		$partido_id = $this->input->post('partido_id', true);
+		$nuevo_deadline = $this->input->post('deadline', true);
+
+		if(!$partido_id || !$nuevo_deadline) {
+			$this->protect->ajaxDie(array('action'=>false, 'msg'=>'Datos incompletos'));
+		}
+
+		$this->db->where('id', $partido_id);
+		$this->db->update('matches', array('deadline' => $nuevo_deadline));
+
+		$this->protect->ajaxDie(array('action' => true, 'msg' => 'Deadline actualizado a ' . date('d/m/Y', strtotime($nuevo_deadline))));
+	}
 }
