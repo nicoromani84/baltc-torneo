@@ -3088,10 +3088,7 @@ public function enviarNotificacion() {
 				);
 				$body = $this->load->view('email/recordatorio_deadline_automatico.php', $data, true);
 				$this->email->initialize(array());
-				$this->email->set_header('MIME-Version', '1.0');
-				$this->email->set_header('Content-Type', 'text/html; charset=UTF-8');
 				$this->email->set_header('Reply-To', 'secretaria@baltc.net');
-				$this->email->set_header('Return-Path', 'secretaria@baltc.net');
 				$this->email->set_header('X-Priority', '3');
 				$this->email
 					->from('secretaria@baltc.net', 'Secretaría BALTC')
@@ -3116,10 +3113,7 @@ public function enviarNotificacion() {
 				);
 				$body = $this->load->view('email/recordatorio_deadline_automatico.php', $data, true);
 				$this->email->initialize(array());
-				$this->email->set_header('MIME-Version', '1.0');
-				$this->email->set_header('Content-Type', 'text/html; charset=UTF-8');
 				$this->email->set_header('Reply-To', 'secretaria@baltc.net');
-				$this->email->set_header('Return-Path', 'secretaria@baltc.net');
 				$this->email->set_header('X-Priority', '3');
 				$this->email
 					->from('secretaria@baltc.net', 'Secretaría BALTC')
