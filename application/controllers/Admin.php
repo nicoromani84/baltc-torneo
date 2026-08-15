@@ -3269,6 +3269,29 @@ public function enviarNotificacion() {
 		$this->protect->ajaxDie(array('action' => true, 'partidos' => $partidos));
 	}
 
+	public function verPartidoJSON() {
+		$this->protect->setRequest('GET');
+		if(!$this->Administrator->isLogged()) $this->protect->ajaxDie(array('action'=>false));
+
+		$ronda = $this->input->get('ronda', true);
+		$fecha = $this->input->get('fecha', true);
+
+		$partidos = $this->db->query(
+			"SELECT m.id, m.ronda, m.fecha, m.hora, m.deadline,
+					(SELECT GROUP_CONCAT(p.name SEPARATOR ' / ') FROM reservations_partners rp JOIN partners p ON p.id = rp.partner_id WHERE rp.reservation_id = m.jugador1_id) as j1,
+					(SELECT GROUP_CONCAT(p.name SEPARATOR ' / ') FROM reservations_partners rp JOIN partners p ON p.id = rp.partner_id WHERE rp.reservation_id = m.jugador2_id) as j2
+			 FROM matches m
+			 WHERE m.ronda = ?
+			 AND m.fecha = ?
+			 ORDER BY m.hora",
+			array($ronda, $fecha)
+		)->result();
+
+		header('Content-Type: application/json');
+		echo json_encode(array('action' => true, 'partidos' => $partidos));
+		exit;
+	}
+
 	public function actualizarDeadlinePartido() {
 		$this->protect->setAjax();
 		$this->protect->setRequest('POST');
