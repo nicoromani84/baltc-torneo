@@ -11,12 +11,12 @@
 <div style="max-width:600px;margin:0 auto;padding:20px 0;">
 
     <!-- Header -->
-    <div style="background:#a5d051;padding:20px 30px;border-radius:12px 12px 0 0;">
+    <div style="background:#e9eaef;padding:20px 30px;border-radius:12px 12px 0 0;">
         <img src="https://www.baltc.net/torneo/static/img/logo.png" alt="BALTC" style="display:block; width:210px;">
     </div>
 
     <!-- Hero -->
-    <div style="background:linear-gradient(135deg,#a5d051 0%,#8fb73e 100%);padding:32px 30px;text-align:center;">
+    <div style="background:linear-gradient(135deg,#f0ad4e 0%,#ec971f 100%);padding:32px 30px;text-align:center;">
         <div style="font-size:48px;margin-bottom:10px;">⏰</div>
         <h1 style="margin:0;color:#fff;font-size:26px;font-weight:800;letter-spacing:-0.5px;">¡Recordatorio importante!</h1>
         <p style="margin:8px 0 0;color:rgba(255,255,255,0.9);font-size:14px;font-weight:600;">Tu partido vence en <?=$dias_restantes?> días</p>
@@ -53,7 +53,7 @@
 
         <!-- CTA button -->
         <div style="text-align:center;margin:28px 0;">
-            <a href="https://www.baltc.net/torneo/mipartido" style="display:inline-block;background:#a5d051;color:#fff;font-weight:700;font-size:15px;text-decoration:none;padding:14px 32px;border-radius:8px;">
+            <a href="https://www.baltc.net/torneo/mipartido" style="display:inline-block;background:#f0ad4e;color:#fff;font-weight:700;font-size:15px;text-decoration:none;padding:14px 32px;border-radius:8px;">
                 👉 Ver Mi Partido
             </a>
         </div>
@@ -69,9 +69,9 @@
     </div>
 
     <!-- Footer -->
-    <div style="background:#a5d051;padding:16px 30px;text-align:center;border-radius:0 0 12px 12px;">
-        <p style="margin:0;color:#fff;font-size:12px;">
-            Secretaría BALTC &nbsp;·&nbsp; <a href="https://www.baltc.net/torneo" style="color:#fff;font-weight:600;">baltc.net/torneo</a>
+    <div style="background:#e9eaef;padding:16px 30px;text-align:center;border-radius:0 0 12px 12px;">
+        <p style="margin:0;color:#888;font-size:12px;">
+            Secretaría BALTC &nbsp;·&nbsp; <a href="https://www.baltc.net/torneo" style="color:#7a9e3a;">baltc.net/torneo</a>
         </p>
     </div>
 
