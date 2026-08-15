@@ -3230,6 +3230,18 @@ public function enviarNotificacion() {
 		$this->protect->ajaxDie(array('action' => true, 'msg' => 'Email enviado a ' . $email_destino));
 	}
 
+	public function buscarPartidoForm() {
+		$this->protect->setRequest('GET');
+		if(!$this->Administrator->isLogged()) redirect('admin');
+
+		$d['titulo'] = 'Buscar Partido';
+		$d['token'] = $this->protect->eToken();
+		$d['section'] = 'admin-buscar-partido';
+		$this->load->view('admin/header', $d);
+		$this->load->view('admin/buscar_partido');
+		$this->load->view('admin/footer');
+	}
+
 	public function buscarPartido() {
 		$this->protect->setAjax();
 		$this->protect->setRequest('POST');
