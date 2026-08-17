@@ -4,7 +4,7 @@ class Partido_model extends CI_Model {
 
 	// Obtener todos los partidos con nombres y gender
 	public function getAllWithGender() {
-		$sql = "SELECT m.id, m.ronda, m.bracket_pos, m.score, m.fecha, m.hora, m.category, m.gender,
+		$sql = "SELECT m.id, m.ronda, m.bracket_pos, m.score, m.fecha, m.hora, m.category, m.gender, m.timestamp, m.ganador_id,
 				c.name as categoria,
 				(SELECT GROUP_CONCAT(p.name SEPARATOR ' / ')
 					FROM reservations_partners rp
@@ -24,10 +24,13 @@ class Partido_model extends CI_Model {
 						FROM reservations_partners rp
 						JOIN partners p ON p.id = rp.partner_id
 						WHERE rp.reservation_id = m.ganador_id)
-				END as ganador, m.ganador_id
+				END as ganador
 			FROM matches m
 			LEFT JOIN category c ON c.id = m.category
-			ORDER BY m.category ASC, m.gender ASC, m.ronda ASC, m.bracket_pos ASC, m.id ASC";
+			ORDER BY
+				CASE WHEN m.ganador_id IS NOT NULL THEN 0 ELSE 1 END ASC,
+				CASE WHEN m.ganador_id IS NOT NULL THEN m.timestamp ELSE NULL END DESC,
+				m.category ASC, m.gender ASC, m.ronda ASC, m.bracket_pos ASC, m.id ASC";
 		$q = $this->db->query($sql);
 		return ($q->num_rows() > 0) ? $q->result() : array();
 	}

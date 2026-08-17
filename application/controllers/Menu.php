@@ -44,31 +44,7 @@ class Menu extends CI_Controller {
 		// Buscar en qué categoría juega el usuario
 		$user_category = $this->Reservation->getCategoryByPlayer($user_id);
 
-		$todos = $this->Partido_model->getAllWithGender();
-
-		// Ordenar: primero los del usuario (por categoria+gender), luego el resto
-		$mios = array();
-		$resto = array();
-		foreach($todos as $p) {
-			$es_mi_categoria = $user_category && $p->category == $user_category && $p->gender == $user_gender;
-			$es_mi_genero = !$user_category && $p->gender == $user_gender;
-			if($es_mi_categoria || $es_mi_genero) {
-				$mios[] = $p;
-			} else {
-				$resto[] = $p;
-			}
-		}
-		// Dentro de cada grupo, primero jugados (descendente) luego pendientes
-		function sortPartidos($arr) {
-			$pendientes = array_filter($arr, function($p){ return empty($p->ganador_id); });
-			$jugados = array_filter($arr, function($p){ return !empty($p->ganador_id); });
-			// Ordenar jugados descendentemente por ID
-			usort($jugados, function($a, $b) {
-				return $b->id - $a->id;
-			});
-			return array_merge(array_values($jugados), array_values($pendientes));
-		}
-		$d['partidos'] = array_merge(sortPartidos($mios), sortPartidos($resto));
+		$d['partidos'] = $this->Partido_model->getAllWithGender();
 		$d['mi_category']   = $user_category;
 		$d['mi_gender']     = $user_gender;
 		$d['mi_partner_id'] = $user_id;

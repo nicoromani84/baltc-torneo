@@ -3352,63 +3352,95 @@ public function enviarNotificacion() {
 		exit;
 	}
 
+	public function verParejasCategoria() {
+		$parejas = $this->db->query(
+			"SELECT r.id, GROUP_CONCAT(p.name SEPARATOR ' / ') as nombres
+			 FROM reservations r
+			 JOIN reservations_partners rp ON rp.reservation_id = r.id
+			 JOIN partners p ON p.id = rp.partner_id
+			 WHERE r.tournament_type = 'doubles' AND r.category_id = 3
+			 GROUP BY r.id
+			 ORDER BY nombres"
+		)->result();
+		header('Content-Type: application/json');
+		echo json_encode(array('parejas' => $parejas));
+		exit;
+	}
+
+	public function verParejasCategoria3Json() {
+		$this->protect->setAjax();
+		$this->protect->setRequest('GET');
+
+		$parejas = $this->db->query(
+			"SELECT r.id, GROUP_CONCAT(p.name SEPARATOR ' / ') as nombres
+			 FROM reservations r
+			 JOIN reservations_partners rp ON r.id = rp.reservation_id
+			 JOIN partners p ON p.id = rp.partner_id
+			 WHERE r.category_id = 3 AND r.reservation_type = 'doubles'
+			 GROUP BY r.id
+			 ORDER BY p.name"
+		)->result();
+
+		$this->protect->ajaxDie(array(
+			'action' => true,
+			'parejas' => $parejas
+		));
+	}
+
 	public function crearPartidoGanadores() {
-		$pareja1_nombres = array('frenkel', 'lupis');
-		$pareja2_nombres = array('granillo', 'hermida');
-		$categoria = '3era';
-		$ronda = 'Cuartos de Final';
+		$pareja1_id = $this->input->post('pareja1_id');
+		$pareja2_id = $this->input->post('pareja2_id');
 
-		// Buscar categoría
-		$cat = $this->db->query("SELECT id FROM category WHERE name = ?", array('3era'))->row();
-		if(!$cat) {
-			echo json_encode(array('action'=>false, 'msg'=>'Categoría 3era no encontrada'));
+		if (!$pareja1_id || !$pareja2_id) {
+			echo json_encode(array('action' => false, 'msg' => 'Falta pareja1_id o pareja2_id'));
 			return;
 		}
 
-		// Buscar pareja 1
-		$pareja1 = $this->db->query(
-			"SELECT DISTINCT rp.reservation_id FROM reservations_partners rp
-			 JOIN partners p ON p.id = rp.partner_id
-			 JOIN reservations r ON r.id = rp.reservation_id
-			 WHERE r.tournament_type = 'doubles' AND r.category_id = ?
-			 AND (LOWER(p.name) LIKE ? OR LOWER(p.name) LIKE ?)
-			 LIMIT 1",
-			array($cat->id, '%frenkel%', '%lupis%')
-		)->row();
-
-		// Buscar pareja 2
-		$pareja2 = $this->db->query(
-			"SELECT DISTINCT rp.reservation_id FROM reservations_partners rp
-			 JOIN partners p ON p.id = rp.partner_id
-			 JOIN reservations r ON r.id = rp.reservation_id
-			 WHERE r.tournament_type = 'doubles' AND r.category_id = ?
-			 AND (LOWER(p.name) LIKE ? OR LOWER(p.name) LIKE ?)
-			 LIMIT 1",
-			array($cat->id, '%granillo%', '%hermida%')
-		)->row();
-
-		if(!$pareja1 || !$pareja2) {
-			echo json_encode(array('action'=>false, 'msg'=>'No se encontraron las parejas'));
-			return;
-		}
-
-		// Crear partido
 		$partido_data = array(
-			'category' => $cat->id,
-			'jugador1_id' => $pareja1->reservation_id,
-			'jugador2_id' => $pareja2->reservation_id,
-			'ronda' => $ronda,
-			'fecha' => NULL,
-			'hora' => NULL,
-			'score' => NULL,
-			'ganador_id' => NULL,
-			'resultado' => NULL
+			'category_id' => 3,
+			'jugador1_id' => $pareja1_id,
+			'jugador2_id' => $pareja2_id,
+			'ronda' => 'Cuartos de Final'
 		);
 
 		$this->db->insert('matches', $partido_data);
 		$partido_id = $this->db->insert_id();
 
-		echo json_encode(array('action' => true, 'msg' => 'Partido creado', 'partido_id' => $partido_id));
+		echo json_encode(array(
+			'action' => true,
+			'msg' => 'Partido creado',
+			'partido_id' => $partido_id
+		));
+	}
+
+	public function queryMatches() {
+		header('Content-Type: text/plain; charset=utf-8');
+		$category = intval($this->input->get('category', true));
+		$gender = $this->input->get('gender', true);
+
+		if (!$category) {
+			die('Falta category');
+		}
+
+		$query = "SELECT m.id, m.ronda, m.bracket_pos, m.jugador1_id, m.jugador2_id, m.ganador_id,
+			(SELECT GROUP_CONCAT(p.name SEPARATOR ' / ') FROM reservations_partners rp JOIN partners p ON p.id = rp.partner_id WHERE rp.reservation_id = m.jugador1_id) as j1,
+			(SELECT GROUP_CONCAT(p.name SEPARATOR ' / ') FROM reservations_partners rp JOIN partners p ON p.id = rp.partner_id WHERE rp.reservation_id = m.jugador2_id) as j2
+			FROM matches m
+			WHERE m.category = " . $this->db->escape($category);
+
+		if ($gender) {
+			$query .= " AND m.gender = " . $this->db->escape($gender);
+		}
+
+		$query .= " ORDER BY m.ronda ASC, m.bracket_pos ASC";
+
+		$result = $this->db->query($query)->result();
+
+		foreach($result as $m) {
+			echo "ID: {$m->id} | Ronda: {$m->ronda} | Pos: {$m->bracket_pos} | Ganador: {$m->ganador_id}\n";
+			echo "  J1 ({$m->jugador1_id}): {$m->j1}\n";
+			echo "  J2 ({$m->jugador2_id}): {$m->j2}\n\n";
+		}
 	}
 
 }
