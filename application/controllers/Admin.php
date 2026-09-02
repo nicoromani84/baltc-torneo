@@ -3443,4 +3443,199 @@ public function enviarNotificacion() {
 		}
 	}
 
+	public function debugStandings() {
+		$this->protect->setAjax();
+		$category = $this->input->get('category', true);
+		$gender = $this->input->get('gender', true);
+		$ronda = $this->input->get('ronda', true);
+
+		if (!$category || !$gender || !$ronda) {
+			$this->protect->ajaxDie(array('error' => 'Parámetros requeridos'));
+		}
+
+		$standings = $this->Partido_model->getGroupStandings($category, $gender, $ronda);
+		$partidos = $this->Partido_model->getByRonda($category, $gender, $ronda);
+
+		$this->protect->ajaxDie(array(
+			'standings' => $standings,
+			'partidos' => $partidos,
+			'category' => $category,
+			'gender' => $gender,
+			'ronda' => $ronda
+		));
+	}
+
+	public function debugAllGroups() {
+		$key = $this->input->get('key');
+		if($key !== 'perdedores2024') {
+			die(json_encode(array('error' => 'Unauthorized')));
+		}
+
+		$category = $this->input->get('category', true);
+		$gender = $this->input->get('gender', true);
+
+		if (!$category || !$gender) {
+			die(json_encode(array('error' => 'Parámetros requeridos')));
+		}
+
+		// Obtener todas las rondas únicas
+		$sql = "SELECT DISTINCT m.ronda
+				FROM matches m
+				WHERE m.category = " . intval($category) . "
+				AND m.gender = '" . $this->db->escape_str($gender) . "'
+				ORDER BY m.ronda ASC";
+
+		$rondas = $this->db->query($sql)->result();
+		$resultado = array();
+
+		foreach($rondas as $r) {
+			$ronda = $r->ronda;
+
+			// Standings del grupo
+			$standings = $this->Partido_model->getGroupStandings($category, $gender, $ronda);
+
+			// Partidos del grupo
+			$sql_partidos = "SELECT m.id, m.score, m.jugador1_id, m.jugador2_id, m.ganador_id,
+					(SELECT GROUP_CONCAT(p.name SEPARATOR ' / ')
+						FROM reservations_partners rp
+						JOIN partners p ON p.id = rp.partner_id
+						WHERE rp.reservation_id = m.jugador1_id) as j1_nombre,
+					(SELECT GROUP_CONCAT(p.name SEPARATOR ' / ')
+						FROM reservations_partners rp
+						JOIN partners p ON p.id = rp.partner_id
+						WHERE rp.reservation_id = m.jugador2_id) as j2_nombre
+				FROM matches m
+				WHERE m.category = " . intval($category) . "
+				AND m.gender = '" . $this->db->escape_str($gender) . "'
+				AND m.ronda = '" . $this->db->escape_str($ronda) . "'
+				ORDER BY m.id ASC";
+
+			$partidos = $this->db->query($sql_partidos)->result();
+
+			$resultado[$ronda] = array(
+				'standings' => $standings,
+				'partidos' => $partidos
+			);
+		}
+
+		header('Content-Type: application/json; charset=utf-8');
+		die(json_encode($resultado, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+	}
+
+	public function debugGroupStandings() {
+		$key = $this->input->get('key');
+		if($key !== 'perdedores2024') {
+			die(json_encode(array('error' => 'Unauthorized')));
+		}
+
+		$category = $this->input->get('category', true);
+		$gender = $this->input->get('gender', true);
+		$ronda = $this->input->get('ronda', true);
+
+		if (!$category || !$gender || !$ronda) {
+			die(json_encode(array('error' => 'Parámetros requeridos')));
+		}
+
+		// Obtener standings
+		$standings = $this->Partido_model->getGroupStandings($category, $gender, $ronda);
+
+		// Obtener partidos para debug
+		$sql = "SELECT m.id, m.score, m.jugador1_id, m.jugador2_id, m.ganador_id,
+				(SELECT GROUP_CONCAT(p.name SEPARATOR ' / ')
+					FROM reservations_partners rp
+					JOIN partners p ON p.id = rp.partner_id
+					WHERE rp.reservation_id = m.jugador1_id) as j1_nombre,
+				(SELECT GROUP_CONCAT(p.name SEPARATOR ' / ')
+					FROM reservations_partners rp
+					JOIN partners p ON p.id = rp.partner_id
+					WHERE rp.reservation_id = m.jugador2_id) as j2_nombre
+			FROM matches m
+			WHERE m.category = " . intval($category) . "
+			AND m.gender = '" . $this->db->escape_str($gender) . "'
+			AND m.ronda = '" . $this->db->escape_str($ronda) . "'
+			AND m.ganador_id IS NOT NULL";
+
+		$partidos = $this->db->query($sql)->result();
+
+		header('Content-Type: application/json; charset=utf-8');
+		die(json_encode(array(
+			'standings' => $standings,
+			'partidos' => $partidos,
+			'category' => $category,
+			'gender' => $gender,
+			'ronda' => $ronda
+		), JSON_UNESCAPED_UNICODE));
+	}
+
+	public function debugCategorias() {
+		$key = $this->input->get('key');
+		if($key !== 'perdedores2024') {
+			die(json_encode(array('error' => 'Unauthorized')));
+		}
+
+		// Ver todas las categorías
+		$cats = $this->db->get('category')->result();
+		$debug = array('categorias' => $cats);
+
+		// Contar partidos con ganador por categoría
+		$sql = "SELECT c.name, m.gender, COUNT(*) as total, SUM(CASE WHEN m.ganador_id IS NOT NULL THEN 1 ELSE 0 END) as con_ganador
+				FROM matches m
+				JOIN category c ON c.id = m.category
+				GROUP BY c.id, m.gender
+				ORDER BY c.name, m.gender";
+		$debug['partidos_por_categoria'] = $this->db->query($sql)->result();
+
+		// Ver si hay algún partido con ganador
+		$debug['total_partidos_con_ganador'] = $this->db->query("SELECT COUNT(*) as total FROM matches WHERE ganador_id IS NOT NULL")->row();
+
+		header('Content-Type: application/json; charset=utf-8');
+		die(json_encode($debug, JSON_UNESCAPED_UNICODE));
+	}
+
+	public function getPerdedores() {
+		$key = $this->input->get('key');
+		if($key !== 'perdedores2024') {
+			die(json_encode(array('error' => 'Unauthorized')));
+		}
+
+		$resultado_final = array();
+		$categorias_genero = array(
+			'2da Caballeros' => array('cat' => '2da', 'gender' => 'M'),
+			'3era Caballeros' => array('cat' => '3era', 'gender' => 'M'),
+			'2da Damas' => array('cat' => '2da', 'gender' => 'F'),
+			'3era Damas' => array('cat' => '3era', 'gender' => 'F')
+		);
+
+		foreach($categorias_genero as $label => $params) {
+			$sql = "
+				SELECT DISTINCT
+					IF(m.jugador1_id = m.ganador_id, m.jugador2_id, m.jugador1_id) as res_id
+				FROM matches m
+				JOIN category c ON c.id = m.category
+				WHERE c.name = '{$params['cat']}'
+				AND m.gender = '{$params['gender']}'
+				AND m.ganador_id IS NOT NULL
+				AND m.jugador2_id IS NOT NULL
+			";
+			$res = $this->db->query($sql)->result();
+			$perdedores = array();
+			foreach($res as $r) {
+				$nombres = $this->db->query(
+					"SELECT GROUP_CONCAT(p.name SEPARATOR ' / ') as nombre
+					 FROM reservations_partners rp
+					 JOIN partners p ON p.id = rp.partner_id
+					 WHERE rp.reservation_id = " . intval($r->res_id)
+				)->row();
+				if($nombres && $nombres->nombre) {
+					$perdedores[] = $nombres->nombre;
+				}
+			}
+			sort($perdedores);
+			$resultado_final[$label] = $perdedores;
+		}
+
+		header('Content-Type: application/json; charset=utf-8');
+		die(json_encode($resultado_final, JSON_UNESCAPED_UNICODE));
+	}
+
 }

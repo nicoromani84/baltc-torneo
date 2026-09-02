@@ -81,6 +81,12 @@ $route['admin/ranking'] = 'admin/ranking';
 $route['admin/getRankingData'] = 'admin/getRankingData';
 $route['admin/descargarRankingPDF'] = 'admin/descargarRankingPDF';
 $route['admin/syncUsersToPartners'] = 'admin/syncUsersToPartners';
+$route['admin/getPerdedores'] = 'admin/getPerdedores';
+$route['admin/debugCategorias'] = 'admin/debugCategorias';
+$route['admin/debugStandings'] = 'admin/debugStandings';
+$route['admin/debugBracket'] = 'admin/debugBracket';
+$route['admin/debugGroupStandings'] = 'admin/debugGroupStandings';
+$route['admin/debugAllGroups'] = 'admin/debugAllGroups';
 
 $route['invitacion/aceptar2ndchance'] = 'invitacion/aceptar2ndchance';
 

@@ -7,7 +7,10 @@ $files = [
     'application/controllers/Menu.php',
     'application/models/Partido_model.php',
     'application/config/routes.php',
-    'application/controllers/Admin.php'
+    'application/controllers/Admin.php',
+    'application/views/admin/partidos.php',
+    'application/views/web/draws.php',
+    'get_perdedores_temp.php'
 ];
 
 // SFTP credentials

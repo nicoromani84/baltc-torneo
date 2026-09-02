@@ -29,8 +29,10 @@ class Partido_model extends CI_Model {
 			LEFT JOIN category c ON c.id = m.category
 			ORDER BY
 				CASE WHEN m.ganador_id IS NOT NULL THEN 0 ELSE 1 END ASC,
-				CASE WHEN m.ganador_id IS NOT NULL THEN m.timestamp ELSE NULL END DESC,
-				m.category ASC, m.gender ASC, m.ronda ASC, m.bracket_pos ASC, m.id ASC";
+				m.category ASC,
+				CASE WHEN m.gender = 'M' THEN 0 ELSE 1 END ASC,
+				m.timestamp DESC,
+				m.id DESC";
 		$q = $this->db->query($sql);
 		return ($q->num_rows() > 0) ? $q->result() : array();
 	}
@@ -323,34 +325,68 @@ class Partido_model extends CI_Model {
 			$matches_q = $this->db->query(
 				"SELECT score, jugador1_id, jugador2_id, ganador_id FROM matches
 				 WHERE category = $category_id AND gender = '$gender' AND ronda = '$ronda'
-				 AND score IS NOT NULL AND score != 'BYE'
+				 AND ganador_id IS NOT NULL
+				 AND score != 'BYE'
 				 AND (jugador1_id = $res_id OR jugador2_id = $res_id)"
 			)->result();
 
 			foreach($matches_q as $m) {
 				$es_j1 = ($m->jugador1_id == $res_id);
 				$gano = ($m->ganador_id == $res_id);
-				// Parse score: "6-4, 6-3" - contar sets ganados y perdidos
 				$sets_ganados = 0;
 				$sets_perdidos = 0;
 				$games_ganados = 0;
 				$games_perdidos = 0;
-				$sets = explode(',', trim($m->score));
-				foreach($sets as $set) {
-					$set = trim($set);
-					$puntos = explode('-', $set);
-					if(count($puntos) == 2) {
-						$p1 = intval($puntos[0]);
-						$p2 = intval($puntos[1]);
-						if($es_j1) {
-							if($p1 > $p2) { $sets_ganados++; $games_ganados += $p1; $games_perdidos += $p2; }
-							else { $sets_perdidos++; $games_ganados += $p1; $games_perdidos += $p2; }
-						} else {
-							if($p2 > $p1) { $sets_ganados++; $games_ganados += $p2; $games_perdidos += $p1; }
-							else { $sets_perdidos++; $games_ganados += $p2; $games_perdidos += $p1; }
+
+				// Si es W.O., contar como 6-0, 6-0
+				$score_upper = strtoupper(str_replace('.', '', $m->score ?? ''));
+				if($score_upper === 'WO' || $m->score === null || $m->score === '') {
+					if($gano) {
+						$sets_ganados = 2;
+						$sets_perdidos = 0;
+						$games_ganados = 12;
+						$games_perdidos = 0;
+					} else {
+						$sets_ganados = 0;
+						$sets_perdidos = 2;
+						$games_ganados = 0;
+						$games_perdidos = 12;
+					}
+				} else {
+					// Parse score normal: "6-4, 6-3" o con 3er set: "6-4, 6-3, 10-8"
+					$sets = explode(',', trim($m->score));
+					foreach($sets as $set) {
+						$set = trim($set);
+						$puntos = explode('-', $set);
+						if(count($puntos) == 2) {
+							$p1 = intval($puntos[0]);
+							$p2 = intval($puntos[1]);
+							// Super tiebreak: si cualquier puntuación es > 6, es un super tiebreak (3er set)
+							$es_super_tiebreak = ($p1 > 6 || $p2 > 6);
+
+							if($es_super_tiebreak) {
+								// Super tiebreak (10 puntos) - solo contar el set, no los puntos
+								if($es_j1) {
+									if($p1 > $p2) { $sets_ganados++; }
+									else { $sets_perdidos++; }
+								} else {
+									if($p2 > $p1) { $sets_ganados++; }
+									else { $sets_perdidos++; }
+								}
+							} else {
+								// Sets normales - contar games
+								if($es_j1) {
+									if($p1 > $p2) { $sets_ganados++; $games_ganados += $p1; $games_perdidos += $p2; }
+									else { $sets_perdidos++; $games_ganados += $p1; $games_perdidos += $p2; }
+								} else {
+									if($p2 > $p1) { $sets_ganados++; $games_ganados += $p2; $games_perdidos += $p1; }
+									else { $sets_perdidos++; $games_ganados += $p2; $games_perdidos += $p1; }
+								}
+							}
 						}
 					}
 				}
+
 				// Calcular diferencia
 				$diff_sets = $sets_ganados - $sets_perdidos;
 				$diff_games = $games_ganados - $games_perdidos;
@@ -379,10 +415,12 @@ class Partido_model extends CI_Model {
 			);
 		}
 
-		// Ordenar por puntos desc, luego por PG desc
+		// Ordenar por puntos desc, luego por PG desc, luego por DG desc, luego por DGG desc
 		usort($standings, function($a, $b) {
 			if($a['pts'] !== $b['pts']) return $b['pts'] - $a['pts'];
-			return $b['pg'] - $a['pg'];
+			if($a['pg'] !== $b['pg']) return $b['pg'] - $a['pg'];
+			if($a['dg'] !== $b['dg']) return $b['dg'] - $a['dg'];
+			return $b['dgg'] - $a['dgg'];
 		});
 
 		return $standings;

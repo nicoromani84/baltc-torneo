@@ -103,11 +103,19 @@
 					<label>Ronda</label>
 					<select id="partido-ronda" class="form-control">
 						<option value="">Seleccionar...</option>
-						<option value="1ra Ronda">1ra Ronda</option>
-						<option value="2da Ronda">2da Ronda</option>
-						<option value="Cuartos de Final">Cuartos de Final</option>
-						<option value="Semifinal">Semifinal</option>
-						<option value="Final">Final</option>
+						<optgroup label="Fases">
+							<option value="1ra Ronda">1ra Ronda</option>
+							<option value="2da Ronda">2da Ronda</option>
+							<option value="Cuartos de Final">Cuartos de Final</option>
+							<option value="Semifinal">Semifinal</option>
+							<option value="Final">Final</option>
+						</optgroup>
+						<optgroup label="Grupos">
+							<option value="Grupo A">Grupo A</option>
+							<option value="Grupo B">Grupo B</option>
+							<option value="Grupo C">Grupo C</option>
+							<option value="Grupo D">Grupo D</option>
+						</optgroup>
 					</select>
 				</div>
 			</div>
