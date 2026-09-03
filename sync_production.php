@@ -4,13 +4,19 @@
 
 $files = [
     'application/models/Administrator.php',
-    'application/controllers/Menu.php',
     'application/models/Partido_model.php',
-    'application/config/routes.php',
+    'application/models/Protect.php',
+    'application/models/Common.php',
+    'application/controllers/Menu.php',
     'application/controllers/Admin.php',
+    'application/controllers/Mipartido.php',
+    'application/controllers/Draws.php',
+    'application/config/routes.php',
+    'application/config/autoload.php',
     'application/views/admin/partidos.php',
     'application/views/web/draws.php',
-    'get_perdedores_temp.php'
+    'application/views/web/partidos.php',
+    'sync_production.php'
 ];
 
 // SFTP credentials
