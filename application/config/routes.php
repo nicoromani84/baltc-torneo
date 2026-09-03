@@ -82,6 +82,7 @@ $route['admin/getRankingData'] = 'admin/getRankingData';
 $route['admin/descargarRankingPDF'] = 'admin/descargarRankingPDF';
 $route['admin/syncUsersToPartners'] = 'admin/syncUsersToPartners';
 $route['admin/getPerdedores'] = 'admin/getPerdedores';
+$route['admin/getPerdedoresPorFecha'] = 'admin/getPerdedoresPorFecha';
 $route['admin/debugCategorias'] = 'admin/debugCategorias';
 $route['admin/debugStandings'] = 'admin/debugStandings';
 $route['admin/debugBracket'] = 'admin/debugBracket';

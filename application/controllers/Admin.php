@@ -3638,4 +3638,65 @@ public function enviarNotificacion() {
 		die(json_encode($resultado_final, JSON_UNESCAPED_UNICODE));
 	}
 
+	public function getPerdedoresPorFecha() {
+		$key = $this->input->get('key');
+		if($key !== 'perdedores2024') {
+			die(json_encode(array('error' => 'Unauthorized')));
+		}
+
+		$from_date = $this->input->get('from') ?: '2026-08-28';
+		$to_date = $this->input->get('to') ?: date('Y-m-d');
+
+		$categorias_genero = array(
+			'2da Caballeros' => array('cat' => '2da', 'gender' => 'M'),
+			'3era Caballeros' => array('cat' => '3era', 'gender' => 'M'),
+			'2da Damas' => array('cat' => '2da', 'gender' => 'F'),
+			'3era Damas' => array('cat' => '3era', 'gender' => 'F')
+		);
+
+		$resultado_final = array(
+			'periodo' => "$from_date a $to_date",
+			'categorias' => array()
+		);
+
+		foreach($categorias_genero as $label => $params) {
+			$sql = "
+				SELECT DISTINCT
+					IF(m.jugador1_id = m.ganador_id, m.jugador2_id, m.jugador1_id) as res_id,
+					m.created_at
+				FROM matches m
+				JOIN category c ON c.id = m.category
+				WHERE c.name = '{$params['cat']}'
+				AND m.gender = '{$params['gender']}'
+				AND m.ganador_id IS NOT NULL
+				AND m.jugador2_id IS NOT NULL
+				AND DATE(m.created_at) BETWEEN '$from_date' AND '$to_date'
+				ORDER BY m.created_at DESC
+			";
+			$res = $this->db->query($sql)->result();
+			$perdedores = array();
+
+			foreach($res as $r) {
+				$nombres = $this->db->query(
+					"SELECT GROUP_CONCAT(p.name SEPARATOR ' / ') as nombre
+					 FROM reservations_partners rp
+					 JOIN partners p ON p.id = rp.partner_id
+					 WHERE rp.reservation_id = " . intval($r->res_id)
+				)->row();
+
+				if($nombres && $nombres->nombre) {
+					$perdedores[] = array(
+						'nombre' => $nombres->nombre,
+						'fecha' => $r->created_at
+					);
+				}
+			}
+
+			$resultado_final['categorias'][$label] = $perdedores;
+		}
+
+		header('Content-Type: application/json; charset=utf-8');
+		die(json_encode($resultado_final, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+	}
+
 }
