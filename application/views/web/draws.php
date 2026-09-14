@@ -424,19 +424,25 @@ $(function(){
 					RONDAS = detectarRondas();
 					rondaInicioIdx = getRondaInicio(RONDAS);
 					rondaActivaIdx = rondaInicioIdx;
-					// Obtener cantidad de partidos en la primera ronda para calcular las siguientes
-					var rondaPrimera = todosPartidos.filter(function(p){ return p.ronda === RONDAS[rondaInicioIdx]; });
-					var cantPrimera = rondaPrimera.length;
-					// Buscar la ronda más avanzada COMPLETA (desde el final hacia el inicio)
+
+					// Buscar la ronda más avanzada COMPLETADA (todos sus partidos tienen resultado)
+					var rondaMasAvanzada = rondaInicioIdx;
 					for(var i = RONDAS.length - 1; i >= rondaInicioIdx; i--) {
-						var rp = todosPartidos.filter(function(p){ return p.ronda === RONDAS[i]; });
-						var cantEsperada = Math.max(1, cantPrimera / Math.pow(2, i - rondaInicioIdx));
-						// Si la ronda está completa (tiene todos los partidos esperados)
-						if(rp.length === cantEsperada && rp.length > 0) {
-							rondaActivaIdx = i;
-							break;
+						var partidos_ronda = todosPartidos.filter(function(p){ return p.ronda === RONDAS[i]; });
+						if(partidos_ronda.length === 0) continue; // Ronda no existe
+
+						// Verificar si TODOS los partidos tienen resultado (ganador definido)
+						var todos_completados = partidos_ronda.every(function(p){
+							return p.ganador_id != null && p.ganador_id !== undefined;
+						});
+
+						if(todos_completados) {
+							rondaMasAvanzada = i;
+							break; // Salir cuando encuentre la más avanzada completada
 						}
 					}
+
+					rondaActivaIdx = rondaMasAvanzada;
 					renderBracket();
 				}
 				$('#draw-resultado').show();
