@@ -364,7 +364,7 @@ $(function(){
 	var todosPartidos = [];
 	var sembradosActivos = {};
 
-	function detectarRondas() {
+	function detectarRondas(categoryId) {
 		// Obtener rondas únicas de los partidos
 		var rondasUnicas = [];
 		todosPartidos.forEach(function(p) {
@@ -375,6 +375,13 @@ $(function(){
 
 		// Definir orden esperado
 		var ordenEsperado = ['Grupo A', 'Grupo B', 'Grupo C', 'Grupo D', '1ra Ronda', '2da Ronda', 'Cuartos de Final', 'Semifinal', 'Final'];
+
+		// Filtrar rondas según la categoría (hardcodeado)
+		if(categoryId == 1) { // 1ra Caballeros/Damas
+			ordenEsperado = ['Semifinal']; // Solo mostrar Semifinal
+		} else if(categoryId == 7) { // 4ta Damas
+			ordenEsperado = ['Final']; // Solo mostrar Final
+		}
 
 		// Ordenar rondasUnicas según ordenEsperado
 		var rondasOrdenadas = [];
@@ -421,7 +428,7 @@ $(function(){
 					renderGroups(res.groups);
 				} else {
 					// Detectar dinámicamente las rondas presentes en los partidos
-					RONDAS = detectarRondas();
+					RONDAS = detectarRondas(cat);
 					rondaInicioIdx = getRondaInicio(RONDAS);
 					rondaActivaIdx = rondaInicioIdx;
 
