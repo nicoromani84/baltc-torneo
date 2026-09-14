@@ -71,11 +71,14 @@ class Draws extends CI_Controller {
 		// Detectar si hay grupos
 		$is_groups = false;
 		$groups_data = array();
+		$has_brackets = false;
 		if(!empty($partidos)) {
 			foreach($partidos as $p) {
 				if(strpos($p->ronda, 'Grupo') === 0) {
 					$is_groups = true;
-					break;
+				}
+				if(in_array($p->ronda, ['Semifinal', 'Final', 'Cuartos de Final'])) {
+					$has_brackets = true;
 				}
 			}
 		}
@@ -94,6 +97,11 @@ class Draws extends CI_Controller {
 				$grupos[$ronda] = $standings;
 			}
 			$groups_data = $grupos;
+		}
+
+		// Si hay brackets después de grupos, mostrar también los partidos de bracket
+		if($has_brackets) {
+			$is_groups = false; // Cambiar a modo bracket si hay brackets
 		}
 
 		$this->protect->ajaxDie(array(
