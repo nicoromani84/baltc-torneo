@@ -359,14 +359,37 @@ $(function(){
 	var baseurl = '<?=base_url()?>';
 	var token = '<?=$token?>';
 	var RONDAS = ['1ra Ronda','2da Ronda','Cuartos de Final','Semifinal','Final'];
+	var rondaInicioIdx = 0;
+	var rondaActivaIdx = 0;
 	var todosPartidos = [];
 	var sembradosActivos = {};
-	var rondaActivaIdx = 0;
-	var rondaInicioIdx = 0;
 
-	function getRondaInicio() {
-		for(var i = 0; i < RONDAS.length; i++) {
-			if(todosPartidos.some(function(p){ return p.ronda === RONDAS[i]; })) return i;
+	function detectarRondas() {
+		// Obtener rondas únicas de los partidos
+		var rondasUnicas = [];
+		todosPartidos.forEach(function(p) {
+			if(rondasUnicas.indexOf(p.ronda) === -1) {
+				rondasUnicas.push(p.ronda);
+			}
+		});
+
+		// Definir orden esperado
+		var ordenEsperado = ['Grupo A', 'Grupo B', 'Grupo C', 'Grupo D', '1ra Ronda', '2da Ronda', 'Cuartos de Final', 'Semifinal', 'Final'];
+
+		// Ordenar rondasUnicas según ordenEsperado
+		var rondasOrdenadas = [];
+		ordenEsperado.forEach(function(ronda) {
+			if(rondasUnicas.indexOf(ronda) !== -1) {
+				rondasOrdenadas.push(ronda);
+			}
+		});
+
+		return rondasOrdenadas;
+	}
+
+	function getRondaInicio(rondasActuales) {
+		for(var i = 0; i < rondasActuales.length; i++) {
+			if(todosPartidos.some(function(p){ return p.ronda === rondasActuales[i]; })) return i;
 		}
 		return 0;
 	}
@@ -397,7 +420,9 @@ $(function(){
 				if(res.is_groups) {
 					renderGroups(res.groups);
 				} else {
-					rondaInicioIdx = getRondaInicio();
+					// Detectar dinámicamente las rondas presentes en los partidos
+					RONDAS = detectarRondas();
+					rondaInicioIdx = getRondaInicio(RONDAS);
 					rondaActivaIdx = rondaInicioIdx;
 					// Obtener cantidad de partidos en la primera ronda para calcular las siguientes
 					var rondaPrimera = todosPartidos.filter(function(p){ return p.ronda === RONDAS[rondaInicioIdx]; });
