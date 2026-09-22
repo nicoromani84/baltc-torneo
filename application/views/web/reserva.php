@@ -35,9 +35,9 @@
 					</div>
 					<div class="form-group xs-fullwidth" id="partner-search-group">
 						<div class="input-group">
-							<div class="input-group-prepend"><span class="input-group-text" style="font-size:18px;font-weight:bold;">👨👩</span></div>
+							<div class="input-group-prepend"><span class="input-group-text" style="font-size:20px;color:#00AA00;">👨👩</span></div>
 							<input type="search" name="partner" autocomplete="off" placeholder="Elegí tu pareja" class="typeahead form-control" id="partner-input">
-							<i class="fas fa-search"></i>
+							<div class="input-group-append"><span class="input-group-text"><i class="fas fa-search"></i></span></div>
 						</div>
 						<small id="mixed-partner-info" style="display:none;color:#666;margin-top:5px;">Buscando parejas disponibles...</small>
 					</div>
