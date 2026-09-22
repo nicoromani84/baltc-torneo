@@ -3707,14 +3707,8 @@ public function enviarNotificacion() {
 		$my_gender = $this->input->post('gender');
 		$opposite_gender = ($my_gender === 'M') ? 'F' : 'M';
 
-		// Buscar jugadores del género opuesto en la misma categoría que no tengan pareja
-		$sql = "SELECT DISTINCT r.id, r.name, u.email
-				FROM reservations r
-				JOIN users u ON r.user_id = u.id
-				WHERE r.category_id = $category
-				AND r.gender = '$opposite_gender'
-				AND r.id NOT IN (SELECT reservation_id FROM reservations_partners)
-				ORDER BY r.name";
+		// Buscar TODOS los jugadores del género opuesto de la tabla partners
+		$sql = "SELECT id, name FROM partners WHERE gender = '$opposite_gender' ORDER BY name";
 
 		$result = $this->db->query($sql);
 		$partners = [];
@@ -3723,8 +3717,7 @@ public function enviarNotificacion() {
 			foreach($result->result() as $p) {
 				$partners[] = [
 					'id' => $p->id,
-					'name' => $p->name,
-					'email' => $p->email
+					'name' => $p->name
 				];
 			}
 		}
