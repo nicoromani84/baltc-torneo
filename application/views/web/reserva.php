@@ -35,7 +35,7 @@
 					</div>
 					<div class="form-group xs-fullwidth" id="partner-search-group">
 						<div class="input-group">
-							<div class="input-group-prepend"><span class="input-group-text"><i class="icon fas fa-users" style="color:#00AA00;"></i></span></div>
+							<div class="input-group-prepend"><span class="input-group-text"><i class="icon fas fa-users"></i></span></div>
 							<input type="search" name="partner" autocomplete="off" placeholder="Elegí tu pareja" class="typeahead form-control" id="partner-input">
 							<div class="input-group-append"><span class="input-group-text"><i class="fas fa-search"></i></span></div>
 						</div>
