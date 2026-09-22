@@ -89,6 +89,9 @@ $route['admin/debugBracket'] = 'admin/debugBracket';
 $route['admin/debugGroupStandings'] = 'admin/debugGroupStandings';
 $route['admin/debugAllGroups'] = 'admin/debugAllGroups';
 
+$route['admin/searchMixedPartners'] = 'admin/searchMixedPartners';
+$route['admin/assignMixedPartner'] = 'admin/assignMixedPartner';
+
 $route['invitacion/aceptar2ndchance'] = 'invitacion/aceptar2ndchance';
 
 $route['mipartido'] = 'mipartido/index';

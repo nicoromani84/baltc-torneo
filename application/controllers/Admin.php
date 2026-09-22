@@ -3699,4 +3699,57 @@ public function enviarNotificacion() {
 		die(json_encode($resultado_final, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
 	}
 
+	public function searchMixedPartners() {
+		$this->protect->setAjax();
+		$this->protect->setRequest('POST');
+
+		$category = intval($this->input->post('category'));
+		$my_gender = $this->input->post('gender');
+		$opposite_gender = ($my_gender === 'M') ? 'F' : 'M';
+
+		// Buscar jugadores del género opuesto en la misma categoría que no tengan pareja
+		$sql = "SELECT DISTINCT r.id, r.name, u.email
+				FROM reservations r
+				JOIN users u ON r.user_id = u.id
+				WHERE r.category_id = $category
+				AND r.gender = '$opposite_gender'
+				AND r.id NOT IN (SELECT reservation_id FROM reservations_partners)
+				ORDER BY r.name";
+
+		$result = $this->db->query($sql);
+		$partners = [];
+
+		if($result->num_rows() > 0) {
+			foreach($result->result() as $p) {
+				$partners[] = [
+					'id' => $p->id,
+					'name' => $p->name,
+					'email' => $p->email
+				];
+			}
+		}
+
+		$this->protect->ajaxDie(['partners' => $partners, 'count' => count($partners)]);
+	}
+
+	public function assignMixedPartner() {
+		$this->protect->setAjax();
+		$this->protect->setRequest('POST');
+
+		$my_id = intval($this->input->post('my_id'));
+		$partner_id = intval($this->input->post('partner_id'));
+		$category = intval($this->input->post('category'));
+
+		// Crear la pareja (reservations_partners)
+		$sql = "INSERT INTO reservations_partners (reservation_id, partner_id)
+				VALUES ($my_id, $partner_id), ($partner_id, $my_id)
+				ON DUPLICATE KEY UPDATE partner_id = VALUES(partner_id)";
+
+		if($this->db->query($sql)) {
+			$this->protect->ajaxDie(['success' => true, 'message' => 'Pareja asignada correctamente']);
+		} else {
+			$this->protect->ajaxDie(['success' => false, 'error' => 'Error al asignar pareja']);
+		}
+	}
+
 }
