@@ -15,6 +15,15 @@ class Reservation extends CI_Model {
 		return ( $q->num_rows() > 0 ) ? $q->result() : false;
 	}
 
+	public function getMixedCategories($exclude_2nd_chance = false) {
+		$this->db->where('name LIKE', '%Mixta%');
+		if($exclude_2nd_chance) {
+			$this->db->where('name NOT LIKE', '%2nd chance%');
+		}
+		$q = $this->db->get('category');
+		return ( $q->num_rows() > 0 ) ? $q->result() : false;
+	}
+
 	public function add($data) {
 		$data = array_intersect_key($data, array_flip(array('category', 'tournament_type')));
 		return $this->db->insert('reservations', $data) ? $this->db->insert_id() : $this->db->error();
