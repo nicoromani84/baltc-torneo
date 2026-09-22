@@ -39,9 +39,13 @@ var reserva = {
 				var categoryGender = selectedOption.attr('data-gender');
 				var isMixta = categoryGender === 'X';
 
+				console.log('Category changed. ID: ' + selectedId + ', Gender: ' + categoryGender + ', isMixta: ' + isMixta);
+
 				if(isMixta) {
+					console.log('Loading mixed partners for category ' + selectedId);
 					reserva.reserva.loadMixedPartners(selectedId);
 				} else {
+					console.log('Loading all partners (non-mixed)');
 					reserva.reserva.reloadAllPartners();
 				}
 			});
@@ -213,6 +217,7 @@ var reserva = {
 
 		loadMixedPartners: function(categoryId) {
 			var that = this;
+			console.log('loadMixedPartners called with categoryId: ' + categoryId + ', userGender: ' + userGender);
 			$('#mixed-partner-info').show().text('Buscando parejas disponibles...');
 
 			$.ajax({
@@ -224,6 +229,7 @@ var reserva = {
 				},
 				headers: { 'X-Auth-Token' : token },
 				success: function(res) {
+					console.log('searchMixedPartners response:', res);
 					if(res.action && res.data) {
 						that.vars.data = res.data.map(function(a){
 							return {id: a.id, name: a.name.toLowerCase()};
@@ -241,11 +247,13 @@ var reserva = {
 
 						that.initTypeahead();
 					} else {
-						$('#mixed-partner-info').text('Error al buscar parejas');
+						$('#mixed-partner-info').text('Error al buscar parejas: ' + (res.msg || 'Sin respuesta'));
+						console.log('Error response:', res);
 					}
 				},
-				error: function() {
+				error: function(err) {
 					$('#mixed-partner-info').text('Error al conectar con el servidor');
+					console.log('AJAX error:', err);
 				}
 			});
 		},
