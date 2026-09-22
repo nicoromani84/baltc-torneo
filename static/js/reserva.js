@@ -17,6 +17,10 @@ var reserva = {
 			if(!isMobile().any())
 				$('.niceselect').niceSelect();
 
+			// Deshabilitar input de pareja al cargar
+			$('#partner-input').prop('disabled', true);
+			$('#mixed-partner-info').hide();
+
 			that.getPartners(function(res){
 				if(res.action) {
 					that.vars.data = res.data.map(function(a){
@@ -218,7 +222,8 @@ var reserva = {
 		loadMixedPartners: function(categoryId) {
 			var that = this;
 			console.log('loadMixedPartners called with categoryId: ' + categoryId + ', userGender: ' + userGender);
-			$('#mixed-partner-info').show().text('Buscando parejas disponibles...');
+			$('#mixed-partner-info').hide();
+			$('#partner-input').prop('disabled', false);
 
 			$.ajax({
 				url: baseurl + '/admin/searchMixedPartners',
@@ -239,20 +244,15 @@ var reserva = {
 							return a.name.toLowerCase();
 						})
 
-						if(res.data.length === 0) {
-							$('#mixed-partner-info').text('No hay parejas disponibles en esta categoría');
-						} else {
-							$('#mixed-partner-info').text('Se encontraron ' + res.data.length + ' pareja(s) disponible(s)');
-						}
-
+						$('#mixed-partner-info').hide();
 						that.initTypeahead();
 					} else {
-						$('#mixed-partner-info').text('Error al buscar parejas: ' + (res.msg || 'Sin respuesta'));
+						$('#mixed-partner-info').hide();
 						console.log('Error response:', res);
 					}
 				},
 				error: function(err) {
-					$('#mixed-partner-info').text('Error al conectar con el servidor');
+					$('#mixed-partner-info').hide();
 					console.log('AJAX error:', err);
 				}
 			});
@@ -261,6 +261,7 @@ var reserva = {
 		reloadAllPartners: function() {
 			var that = this;
 			$('#mixed-partner-info').hide();
+			$('#partner-input').prop('disabled', true).val('');
 			that.getPartners(function(res){
 				if(res.action) {
 					that.vars.data = res.data.map(function(a){
