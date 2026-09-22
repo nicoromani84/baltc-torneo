@@ -45,12 +45,32 @@ class Reserva extends CI_Controller {
 			$this->protect->ajaxDie($response);
 		}
 
-		// Validar que el partner existe y es del mismo género
+		// Validar que el partner existe y tiene el género correcto
 		$partner = $this->User->getById(intval($post['partner']));
-		if(!$partner || $partner->gender != $this->session->gender) {
+		if(!$partner) {
 			$response['action'] = false;
-			$response['msg'] = 'El compañero seleccionado no existe o no es del mismo género.';
+			$response['msg'] = 'El compañero seleccionado no existe.';
 			$this->protect->ajaxDie($response);
+		}
+
+		// Categorías Mixtas son 8, 9, 10 - requieren género opuesto
+		$isMixedCategory = in_array(intval($post['category']), [8, 9, 10]);
+		$opposite_gender = ($this->session->gender === 'M') ? 'F' : 'M';
+
+		if($isMixedCategory) {
+			// Para Mixtas, el partner debe ser del género opuesto
+			if($partner->gender != $opposite_gender) {
+				$response['action'] = false;
+				$response['msg'] = 'En Doble Mixto, la pareja debe ser del género opuesto.';
+				$this->protect->ajaxDie($response);
+			}
+		} else {
+			// Para otras categorías, el partner debe ser del mismo género
+			if($partner->gender != $this->session->gender) {
+				$response['action'] = false;
+				$response['msg'] = 'El compañero seleccionado no existe o no es del mismo género.';
+				$this->protect->ajaxDie($response);
+			}
 		}
 
 		// Validar que no sea la misma persona
