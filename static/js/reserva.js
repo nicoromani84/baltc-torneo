@@ -28,18 +28,20 @@ var reserva = {
 					})
 
 					// Partners autocomplete
-					$('.typeahead').typeahead(
-					{
-						hint: true,
-						highlight: true,
-						minLength: 1,
-						menu: isMobile().any() ? $('.mobile-suggestions') : '',
-						classNames: { menu: 'tt-menu simplebar' }
-					}, {
-						name: 'states',
-						source: that.substringMatcher(that.vars.names),
-						limit: 10000
-					});
+					that.initTypeahead();
+				}
+			});
+
+			// Manejador para cambio de categoría
+			$(document).on('change', '#category', function(){
+				var selectedId = $(this).val();
+				var selectedText = $(this).find('option[value="' + selectedId + '"]').text();
+				var isMixta = selectedText.indexOf('Mixta') >= 0;
+
+				if(isMixta) {
+					that.loadMixedPartners(selectedId);
+				} else {
+					that.reloadAllPartners();
 				}
 			});
 
@@ -71,8 +73,8 @@ var reserva = {
 				},
 				messages: {
 					partner: {
-						required: 'Debes ingresar tu compañero',
-						validName: 'El compañero ingresado no existe'
+						required: 'Debes ingresar tu pareja',
+						validName: 'La pareja ingresada no existe o no está disponible'
 					}
 				},
 		        errorPlacement: function (error, element) {
@@ -188,6 +190,83 @@ var reserva = {
 			});
 		},
 
+		initTypeahead: function() {
+			var that = this;
+			// Destroy existing typeahead
+			$('.typeahead').typeahead('destroy');
+
+			// Partners autocomplete
+			$('.typeahead').typeahead(
+			{
+				hint: true,
+				highlight: true,
+				minLength: 1,
+				menu: isMobile().any() ? $('.mobile-suggestions') : '',
+				classNames: { menu: 'tt-menu simplebar' }
+			}, {
+				name: 'states',
+				source: that.substringMatcher(that.vars.names),
+				limit: 10000
+			});
+		},
+
+		loadMixedPartners: function(categoryId) {
+			var that = this;
+			$('#mixed-partner-info').show().text('Buscando parejas disponibles...');
+
+			$.ajax({
+				url: baseurl + '/admin/searchMixedPartners',
+				type: "POST",
+				data: {
+					category: categoryId,
+					gender: userGender
+				},
+				headers: { 'X-Auth-Token' : token },
+				success: function(res) {
+					if(res.action && res.data) {
+						that.vars.data = res.data.map(function(a){
+							return {id: a.id, name: a.name.toLowerCase()};
+						})
+
+						that.vars.names = res.data.map(function(a){
+							return a.name.toLowerCase();
+						})
+
+						if(res.data.length === 0) {
+							$('#mixed-partner-info').text('No hay parejas disponibles en esta categoría');
+						} else {
+							$('#mixed-partner-info').text('Se encontraron ' + res.data.length + ' pareja(s) disponible(s)');
+						}
+
+						that.initTypeahead();
+					} else {
+						$('#mixed-partner-info').text('Error al buscar parejas');
+					}
+				},
+				error: function() {
+					$('#mixed-partner-info').text('Error al conectar con el servidor');
+				}
+			});
+		},
+
+		reloadAllPartners: function() {
+			var that = this;
+			$('#mixed-partner-info').hide();
+			that.getPartners(function(res){
+				if(res.action) {
+					that.vars.data = res.data.map(function(a){
+						return {id: a.id, name: a.name.toLowerCase()};
+					})
+
+					that.vars.names = res.data.map(function(a){
+						return a.name.toLowerCase();
+					})
+
+					that.initTypeahead();
+				}
+			});
+		},
+
 		showSuccess: function(data) {
 			var splashHTML = [
 				'<div id="inscripcion-splash">',
@@ -195,8 +274,8 @@ var reserva = {
 						'<div class="splash-check"><i class="fas fa-check-circle"></i></div>',
 						'<h2 class="splash-titulo">¡Estás inscripto!</h2>',
 						'<div class="splash-categoria"><i class="fas fa-star"></i> Categoría ' + data.category + '</div>',
-						'<div class="splash-partner"><i class="fas fa-user-friends"></i> Compañero: <strong>' + data.partner + '</strong></div>',
-						'<div class="splash-fecha"><i class="fas fa-calendar-alt"></i> Inicio: <strong>10 de agosto 2026</strong></div>',
+						'<div class="splash-partner"><i class="fas fa-user-friends"></i> Pareja: <strong>' + data.partner + '</strong></div>',
+						'<div class="splash-fecha"><i class="fas fa-calendar-alt"></i> Inicio: <strong>15 de Octubre 2026</strong></div>',
 						'<div class="splash-aviso"><i class="fas fa-info-circle"></i> Tu categoría puede quedar sujeta a revisión por parte de la organización.</div>',
 						'<button class="btn btn-secondary splash-btn" id="splash-cerrar">Cerrar</button>',
 					'</div>',

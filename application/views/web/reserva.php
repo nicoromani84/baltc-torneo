@@ -17,9 +17,9 @@
 <div class="page reserve-page">
 	<div id="reservar" class="container">
 		<div class="container">
-			<h1 class="d-none d-sm-block">Hola <strong><?=$user->name?></strong><br>Inscribite en el Torneo de Dobles</h1>
-			<h1 class="d-sm-none">Hola <strong><?=$user->name?></strong><br>Inscribite en el Torneo de Dobles</h1>
-			<p>A partir del 10 de agosto 2026</p>
+			<h1 class="d-none d-sm-block">Hola <strong><?=$user->name?></strong><br>Inscribite en Doble Mixto</h1>
+			<h1 class="d-sm-none">Hola <strong><?=$user->name?></strong><br>Doble Mixto</h1>
+			<p>Comienzo: 15 de Octubre 2026</p>
 			<div class="form">
 				<form class="form-inline">
 					<div class="form-group xs-fullwidth">
@@ -33,12 +33,13 @@
 							</select>
 						</div>
 					</div>
-					<div class="form-group xs-fullwidth">
+					<div class="form-group xs-fullwidth" id="partner-search-group">
 						<div class="input-group">
 							<div class="input-group-prepend"><span class="input-group-text"><i class="icon fas fa-user-friends"></i></span></div>
-							<input type="search" name="partner" autocomplete="off" placeholder="Elegí tu compañero" class="typeahead form-control">
+							<input type="search" name="partner" autocomplete="off" placeholder="Elegí tu pareja" class="typeahead form-control" id="partner-input">
 							<i class="fas fa-search"></i>
 						</div>
+						<small id="mixed-partner-info" style="display:none;color:#666;margin-top:5px;">Buscando parejas disponibles...</small>
 					</div>
 					<div class="mobile-suggestions simplebar"></div>
 					<div class="form-group xs-fullwidth acepto-reglamento-group">
@@ -186,6 +187,7 @@
 var reservaurl = '<?=base_url('reserva')?>';
 var token = '<?=$token?>';
 var baseurl = '<?=base_url()?>';
+var userGender = '<?=$user->gender?>';
 
 $(function() {
 	reserva.run();
