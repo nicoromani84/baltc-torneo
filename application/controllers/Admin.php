@@ -3722,7 +3722,7 @@ public function enviarNotificacion() {
 			}
 		}
 
-		$this->protect->ajaxDie(['partners' => $partners, 'count' => count($partners)]);
+		$this->protect->ajaxDie(['action' => true, 'data' => $partners]);
 	}
 
 	public function assignMixedPartner() {
