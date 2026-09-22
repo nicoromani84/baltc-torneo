@@ -6,6 +6,7 @@ class Reservation extends CI_Model {
 		if($gender) {
 			$this->db->where('gender', $gender);
 			$this->db->or_where('gender', NULL);
+			$this->db->or_where('gender', 'X');
 		}
 		if($exclude_2nd_chance) {
 			$this->db->where('name NOT LIKE', '%2nd chance%');
