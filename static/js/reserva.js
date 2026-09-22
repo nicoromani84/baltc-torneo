@@ -40,9 +40,9 @@ var reserva = {
 				var isMixta = categoryGender === 'X';
 
 				if(isMixta) {
-					that.loadMixedPartners(selectedId);
+					reserva.reserva.loadMixedPartners(selectedId);
 				} else {
-					that.reloadAllPartners();
+					reserva.reserva.reloadAllPartners();
 				}
 			});
 
