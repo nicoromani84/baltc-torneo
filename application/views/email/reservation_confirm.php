@@ -24,7 +24,7 @@
 			<img src="https://www.baltc.net/torneo/static/img/logo.png" alt="BALTC" style="height:50px;width:auto;" />
 			<div style="margin-left:16px;">
 				<div style="color:#1a1a2e;font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:1px;">Buenos Aires Lawn Tennis Club</div>
-				<div style="color:#555;font-size:11px;">Torneo Interno de Dobles</div>
+				<div style="color:#555;font-size:11px;">Torneo Interno - Doble Mixto</div>
 			</div>
 		</div>
 
@@ -32,7 +32,7 @@
 		<!-- BODY -->
 		<div style="padding:32px 24px;">
 			<h1 style="margin:0 0 8px 0;color:#1a1a2e;font-size:24px;">¡Estás inscripto!</h1>
-			<p style="color:#555;font-size:16px;margin:0 0 24px 0;">Hola <strong style="text-transform:capitalize;"><?=ucwords(strtolower($nombre))?></strong>, tu inscripción al Torneo Interno de Dobles del BALTC fue confirmada.</p>
+			<p style="color:#555;font-size:16px;margin:0 0 24px 0;">Hola <strong style="text-transform:capitalize;"><?=ucwords(strtolower($nombre))?></strong>, tu inscripción al Torneo Interno - Doble Mixto del BALTC fue confirmada.</p>
 
 			<div style="background:#f8f9fa;border-radius:8px;padding:20px;margin-bottom:24px;">
 				<table style="width:100%;border-collapse:collapse;">
@@ -41,12 +41,12 @@
 						<td style="padding:8px 0;font-weight:700;color:#333;border-bottom:1px solid #eee;"><?=$category?></td>
 					</tr>
 					<tr>
-						<td style="padding:8px 0;color:#888;font-size:13px;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid #eee;">Compañero</td>
+						<td style="padding:8px 0;color:#888;font-size:13px;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid #eee;">Pareja</td>
 						<td style="padding:8px 0;font-weight:700;color:#333;border-bottom:1px solid #eee;text-transform:capitalize;"><?=ucwords(strtolower($partner))?></td>
 					</tr>
 					<tr>
-						<td style="padding:8px 0;color:#888;font-size:13px;text-transform:uppercase;letter-spacing:0.5px;">Inicio del torneo</td>
-						<td style="padding:8px 0;font-weight:700;color:#5a7a2e;">10 de agosto 2026</td>
+						<td style="padding:8px 0;color:#888;font-size:13px;text-transform:uppercase;letter-spacing:0.5px;">Comienzo</td>
+						<td style="padding:8px 0;font-weight:700;color:#5a7a2e;">15 de Octubre 2026</td>
 					</tr>
 				</table>
 			</div>

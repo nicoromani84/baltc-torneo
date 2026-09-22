@@ -1361,7 +1361,7 @@ class Admin extends CI_Controller {
 		return array(
 			'bienvenida' => array(
 				'nombre' => '🎾 Bienvenida al torneo',
-				'asunto' => '¡Bienvenido al Torneo Interno de Dobles - Open BALTC!',
+				'asunto' => '¡Bienvenido al Torneo Interno Doble Mixto - BALTC!',
 			),
 		);
 	}
