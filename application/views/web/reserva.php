@@ -28,7 +28,7 @@
 							<select name="category" id="category" class="mr3 form-control niceselect">
 								<option disabled selected value="">Elegir categoría</option>
 								<?php foreach($categories as $category){ ?>
-								<option value="<?=$category->id?>" data-gender="<?=$category->gender?>"><?=$category->name?><?php if(!empty($category->description)): ?> (<?=$category->description?>)<?php endif; ?></option>
+								<option value="<?=$category->id?>" data-gender="<?=$category->gender?>"><?=$category->name?></option>
 								<?php } ?>
 							</select>
 						</div>
