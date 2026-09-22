@@ -35,8 +35,9 @@ var reserva = {
 			// Manejador para cambio de categoría
 			$(document).on('change', '#category', function(){
 				var selectedId = $(this).val();
-				var selectedText = $(this).find('option[value="' + selectedId + '"]').text();
-				var isMixta = selectedText.indexOf('Mixta') >= 0;
+				var selectedOption = $(this).find('option[value="' + selectedId + '"]');
+				var categoryGender = selectedOption.attr('data-gender');
+				var isMixta = categoryGender === 'X';
 
 				if(isMixta) {
 					that.loadMixedPartners(selectedId);

@@ -16,7 +16,7 @@ class Reservation extends CI_Model {
 	}
 
 	public function getMixedCategories($exclude_2nd_chance = false) {
-		$this->db->where('name LIKE', '%Mixta%');
+		$this->db->where('gender', 'X');
 		if($exclude_2nd_chance) {
 			$this->db->where('name NOT LIKE', '%2nd chance%');
 		}
