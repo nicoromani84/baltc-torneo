@@ -119,7 +119,7 @@ var token = '<?=$token?>';
     <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Reglamento – Torneo Interno BALTC – Etapa: Dobles</h5>
+                <h5 class="modal-title">Reglamento – Torneo Interno BALTC – Etapa: Dobles Mixto</h5>
                 <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
             </div>
             <div class="modal-body">
@@ -134,24 +134,22 @@ var token = '<?=$token?>';
                     </ul>
 
                     <h5>2. Inscripción y arancel</h5>
-                    <p>Los participantes podrán inscribirse en una o más etapas.</p>
-                    <p>El arancel de $20.000 será por etapa y se debitará junto con la liquidación de la cuota mensual.</p>
-                    <p>En la etapa de DOBLES no habrá second chance.</p>
+                    <p>Los participantes podrán inscribirse en hasta 2 categorías.</p>
+                    <p>El arancel de $20.000 será por categoría y se debitará junto con la liquidación de la cuota mensual.</p>
+                    <p>En la etapa de DOBLES MIXTO no necesariamente habrá second chance.</p>
 
                     <h5>3. Categorías</h5>
-                    <p>El torneo contará con hasta cuatro categorías (sujeto a cantidad de participantes), definidas según el nivel de juego, donde:</p>
+                    <p>El torneo contará con hasta TRES categorías (sujeto a cantidad de participantes), definidas según el nivel de juego, donde:</p>
                     <ul>
-                        <li>1.ª (nivel avanzado)</li>
-                        <li>2.ª (nivel intermedio alto)</li>
-                        <li>3.ª (nivel intermedio)</li>
-                        <li>4.ª (nivel inicial)</li>
+                        <li>1ª: nivel más alto</li>
+                        <li>2ª: nivel intermedio</li>
+                        <li>3ª: nivel más bajo</li>
                     </ul>
                     <p>La organización se reserva el derecho de reubicar a cualquier jugador en la categoría que considere más adecuada a su nivel real.</p>
 
                     <h5>4. Participantes</h5>
                     <p>Podrán participar todos los socios activos del club que se encuentren al día con sus obligaciones sociales.</p>
                     <p>Los menores podrán participar siempre que tengan más de 12 años y cuenten con el nivel requerido de juego.</p>
-                    <p>Cada jugador podrá inscribirse en una sola categoría.</p>
 
                     <h5>5. Formato de juego</h5>
                     <p>Los partidos se disputarán al mejor de tres (3) sets:</p>
@@ -169,7 +167,7 @@ var token = '<?=$token?>';
 
                     <h5>7. Uso de canchas</h5>
                     <p>Los participantes podrán jugar cualquier día y horario que quieran, respetando el reglamento interno del club.</p>
-                    <p>Se recomienda a los que vayan a jugar después de las 18:00 reservar cancha previamente (con luz), sobre todo los días de semana (martes a viernes).</p>
+                    <p>Se recomienda a los que vayan a jugar después de las 19:00 reservar cancha previamente (con luz), sobre todo los días de semana (martes a viernes).</p>
 
                     <h5>8. Pelotas</h5>
                     <p>La organización proveerá las pelotas, siempre y cuando se juegue durante el horario de la Secretaría.</p>
