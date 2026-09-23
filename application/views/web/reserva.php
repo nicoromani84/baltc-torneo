@@ -18,8 +18,8 @@
 	<div id="reservar" class="container">
 		<div class="container">
 			<h1 class="d-none d-sm-block">Hola <strong><?=$user->name?></strong><br>Inscribite en Doble Mixto</h1>
-			<h1 class="d-sm-none">Hola <strong><?=$user->name?></strong><br>Doble Mixto</h1>
-			<p>Comienzo: 15 de Octubre 2026</p>
+			<h1 class="d-sm-none">Hola <strong><?=$user->name?></strong><br>Inscribite en Doble Mixto</h1>
+			<p>Comienzo: 6 de Octubre 2026</p>
 			<div class="form">
 				<form class="form-inline">
 					<div class="form-group xs-fullwidth">

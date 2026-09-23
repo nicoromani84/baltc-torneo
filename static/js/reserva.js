@@ -58,14 +58,6 @@ var reserva = {
 				return that.vars.names.indexOf(value) >= 0;
 			});
 
-			$(document).on('input', 'input.typeahead', function(){
-				$('html, body').animate({ scrollTop: $(this).offset().top }, 0);
-			})
-
-			$(document).on('focus', 'input.typeahead', function(){
-				$('html, body').animate({ scrollTop: $(this).offset().top }, 0);
-			})
-
 			$('#reservar form').validate({
 				ignore: [],
 		        errorElement: "div",
@@ -285,7 +277,7 @@ var reserva = {
 						'<h2 class="splash-titulo">¡Estás inscripto!</h2>',
 						'<div class="splash-categoria"><i class="fas fa-star"></i> Categoría ' + data.category + '</div>',
 						'<div class="splash-partner"><i class="fas fa-user-friends"></i> Pareja: <strong>' + data.partner + '</strong></div>',
-						'<div class="splash-fecha"><i class="fas fa-calendar-alt"></i> Inicio: <strong>15 de Octubre 2026</strong></div>',
+						'<div class="splash-fecha"><i class="fas fa-calendar-alt"></i> Inicio: <strong>6 de Octubre 2026</strong></div>',
 						'<div class="splash-aviso"><i class="fas fa-info-circle"></i> Tu categoría puede quedar sujeta a revisión por parte de la organización.</div>',
 						'<button class="btn btn-secondary splash-btn" id="splash-cerrar">Cerrar</button>',
 					'</div>',
