@@ -17,9 +17,9 @@
 <div class="page reserve-page">
 	<div id="reservar" class="container">
 		<div class="container">
-			<h1 class="d-none d-sm-block">Hola <strong><?=$user->name?></strong><br>Inscribite en Pádel</h1>
-			<h1 class="d-sm-none">Hola <strong><?=$user->name?></strong><br>Inscribite en Pádel</h1>
-			<p>Comienzo: 6 de Octubre 2026</p>
+			<h1 class="d-none d-sm-block">¡Anotate en el<br>Torneo de Inauguración de Pádel!</h1>
+			<h1 class="d-sm-none">¡Anotate en el Torneo<br>de Inauguración de Pádel!</h1>
+			<p class="padel-fecha"><i class="fas fa-calendar-alt"></i> 10 de Octubre • 17hs</p>
 			<div class="form">
 				<form class="form-inline">
 					<div class="form-group xs-fullwidth">
@@ -137,6 +137,57 @@
 #modalReglamento .modal-content {
     max-height: 90vh;
     overflow: hidden;
+}
+/* Colores de Pádel */
+h1 {
+    color: #ff6b35 !important;
+    font-weight: 900 !important;
+    text-shadow: 2px 2px 8px rgba(0,0,0,0.4);
+}
+.padel-fecha {
+    color: #ffd700 !important;
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    margin-bottom: 24px !important;
+}
+.padel-fecha i {
+    color: #ff6b35;
+    margin-right: 8px;
+}
+.form-control, .niceselect {
+    border-color: #ff6b35 !important;
+    background: rgba(255, 107, 53, 0.05) !important;
+    color: #333 !important;
+}
+.form-control:focus, .niceselect:focus {
+    border-color: #ffd700 !important;
+    box-shadow: 0 0 8px rgba(255, 107, 53, 0.3) !important;
+}
+.btn-primary {
+    background: linear-gradient(135deg, #ff6b35 0%, #ff8c42 100%) !important;
+    border-color: #ff6b35 !important;
+    font-weight: 700 !important;
+    font-size: 16px !important;
+}
+.btn-primary:hover {
+    background: linear-gradient(135deg, #ff5722 0%, #ff6b35 100%) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(255, 107, 53, 0.4);
+}
+.input-group-text {
+    background: #ff6b35 !important;
+    color: white !important;
+    border-color: #ff6b35 !important;
+}
+.form-check-label a {
+    color: #ff6b35 !important;
+    text-decoration: underline;
+}
+.form-check-label a:hover {
+    color: #ffd700 !important;
+}
+.acepto-reglamento-group {
+    margin-top: 16px;
 }
 </style>
 

@@ -22,7 +22,7 @@
 				<div class="inscripto-check">
 					<i class="fas fa-check-circle"></i>
 				</div>
-				<h2 class="inscripto-titulo">¡Ya estás inscripto!</h2>
+				<h2 class="inscripto-titulo">¡Anotado en Pádel!</h2>
 				<div class="inscripto-nombre"><?=strtolower($user->name)?></div>
 
 				<div class="inscripto-detalle">
@@ -38,7 +38,7 @@
 					<?php endif; ?>
 					<div class="inscripto-item">
 						<i class="fas fa-calendar-alt"></i>
-						<span>Inicio: <strong>6 de Octubre 2026</strong></span>
+						<span>Inauguración: <strong>10 de Octubre • 17hs</strong></span>
 					</div>
 				</div>
 
@@ -60,16 +60,17 @@
 }
 .inscripto-card {
 	background: rgba(0,0,0,0.55);
-	border: 1px solid rgba(165,208,81,0.35);
+	border: 2px solid #ff6b35;
 	border-radius: 20px;
 	padding: 40px 30px;
 	text-align: center;
 	max-width: 420px;
 	margin: 0 auto;
+	box-shadow: 0 0 20px rgba(255, 107, 53, 0.2);
 }
 .inscripto-check {
 	font-size: 70px;
-	color: #a5d051;
+	color: #ff6b35;
 	margin-bottom: 16px;
 	animation: popIn 0.5s ease;
 }
@@ -88,7 +89,7 @@
 	text-shadow: 2px 2px 8px rgba(0,0,0,0.8);
 }
 .inscripto-nombre {
-	color: #a5d051;
+	color: #ffd700;
 	font-size: 18px;
 	font-weight: 700;
 	text-transform: capitalize;
@@ -112,7 +113,7 @@
 }
 .inscripto-item:last-child { border-bottom: none; }
 .inscripto-item i {
-	color: #a5d051;
+	color: #ff6b35;
 	font-size: 16px;
 	margin-top: 2px;
 	flex-shrink: 0;
@@ -120,13 +121,15 @@
 .inscripto-item strong { color: #fff; }
 .inscripto-reglamento {
 	width: 100%;
-	border-color: rgba(255,255,255,0.3) !important;
-	color: rgba(255,255,255,0.7) !important;
+	border-color: #ff6b35 !important;
+	color: #ff6b35 !important;
 	font-size: 13px !important;
+	background: transparent !important;
 }
 .inscripto-reglamento:hover {
-	background: rgba(255,255,255,0.1) !important;
-	color: #fff !important;
+	background: rgba(255, 107, 53, 0.1) !important;
+	color: #ffd700 !important;
+	border-color: #ffd700 !important;
 }
 @media (max-width: 575.98px) {
 	.inscripto-card { padding: 30px 20px; }
