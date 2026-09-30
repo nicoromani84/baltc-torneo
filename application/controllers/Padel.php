@@ -6,6 +6,11 @@ class Padel extends CI_Controller {
 	public function __construct() {
 		parent::__construct();
 		$this->load->model('User');
+
+		// No cachear las vistas
+		header('Cache-Control: no-cache, no-store, must-revalidate, max-age=0');
+		header('Pragma: no-cache');
+		header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
 	}
 
 	public function index()	{
