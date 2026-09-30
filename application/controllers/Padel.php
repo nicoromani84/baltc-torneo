@@ -6,54 +6,23 @@ class Padel extends CI_Controller {
 	public function __construct() {
 		parent::__construct();
 		$this->load->model('User');
-		$this->load->model('Protect');
 	}
 
-	public function index() {
+	public function index()	{
 		$this->protect->setRequest('GET');
-		if (!$this->User->isLogged()) {
+		if ( !$this->User->isLogged() ) {
 			redirect(base_url());
 		}
 
 		date_default_timezone_set('America/Argentina/Buenos_Aires');
-		$d['titulo'] = 'Pádel';
-		$d['token'] = $this->protect->eToken();
-		$d['user'] = $this->session;
-		$d['category'] = ($this->session->gender === 'M') ? 'Caballeros' : 'Damas';
-
-		$this->load->view('web/header', $d);
-		$this->load->view('web/padel/reserva', $d);
-		$this->load->view('web/footer');
-	}
-
-	public function inscripto() {
-		$this->protect->setRequest('GET');
-		if (!$this->User->isLogged()) {
-			redirect(base_url());
-		}
-
-		date_default_timezone_set('America/Argentina/Buenos_Aires');
-		$d['titulo'] = 'Inscripción Confirmada';
-		$d['token'] = $this->protect->eToken();
+		$d['titulo'] 	= 'Pádel';
+		$d['token']		= $this->protect->eToken();
+		$d['categories'] = array((object)array('id' => 1, 'name' => 'Caballeros', 'gender' => 'M'), (object)array('id' => 2, 'name' => 'Damas', 'gender' => 'F'));
+		$d['partners'] = $this->User->getAllExceptMe($this->session->gender);
 		$d['user'] = $this->session;
 
-		// Obtener última inscripción del usuario
-		$query = $this->db->select('*')
-			->from('padel_reservations')
-			->where('user_id', $this->session->userdata('id'))
-			->order_by('created_at', 'DESC')
-			->limit(1)
-			->get();
-
-		if ($query->num_rows() > 0) {
-			$reservation = $query->row();
-			$partner = $this->User->getById($reservation->partner_id);
-			$d['partner'] = $partner ? strtolower($partner->name) : 'N/A';
-			$d['categoria'] = ($reservation->gender === 'M') ? 'Caballeros' : 'Damas';
-		}
-
-		$this->load->view('web/header', $d);
-		$this->load->view('web/padel/inscripto', $d);
+		$this->load->view('web/header',$d);
+		$this->load->view('web/padel/reserva');
 		$this->load->view('web/footer');
 	}
 
@@ -64,48 +33,60 @@ class Padel extends CI_Controller {
 		$post = $this->input->post();
 		$response = array();
 
-		// Validar partner
+		// Validar campos requeridos
 		$this->form_validation->set_error_delimiters('', '');
-		$this->form_validation->set_rules('partner', 'Compañero', 'required');
+		$this->form_validation->set_rules('partner', 'Compañero', 'required')->set_message('required', 'Debe seleccionar un compañero.');
+		$this->form_validation->set_rules('category', 'Categoría', 'required')->set_message('required', 'Debe seleccionar una categoría.');
 		if ($this->form_validation->run() == FALSE) {
 			$response['action'] = false;
 			$response['msg'] = validation_errors();
 			$this->protect->ajaxDie($response);
 		}
 
-		// Validar que el partner existe
+		// Validar que el partner existe y tiene el género correcto
 		$partner = $this->User->getById(intval($post['partner']));
-		if (!$partner) {
+		if(!$partner) {
 			$response['action'] = false;
 			$response['msg'] = 'El compañero seleccionado no existe.';
 			$this->protect->ajaxDie($response);
 		}
 
-		// Validar género: debe ser del mismo género
-		if ($partner->gender != $this->session->gender) {
+		// Para pádel, solo mismo género
+		if($partner->gender != $this->session->gender) {
 			$response['action'] = false;
-			$response['msg'] = 'El compañero debe ser del mismo género.';
+			$response['msg'] = 'El compañero seleccionado no existe o no es del mismo género.';
 			$this->protect->ajaxDie($response);
 		}
 
-		// No puedes inscribirse contigo mismo
-		if (intval($post['partner']) == intval($this->session->userdata('id'))) {
+		// Validar que no sea la misma persona
+		if(intval($post['partner']) == intval($this->session->userdata('id'))) {
 			$response['action'] = false;
 			$response['msg'] = 'No puedes seleccionarte a ti mismo como compañero.';
 			$this->protect->ajaxDie($response);
 		}
 
-		// Verificar si ya está inscrito
-		$existing = $this->db->where('user_id', $this->session->userdata('id'))->get('padel_reservations');
-		if ($existing->num_rows() > 0) {
+		// Obtener datos del usuario
+		$user = $this->User->getById($this->session->userdata('id'));
+
+		// Validar que ninguno de los dos esté ya inscripto en pádel
+		$userRegistered = $this->db->where('user_id', $this->session->userdata('id'))->get('padel_reservations')->num_rows() > 0;
+		$partnerRegistered = $this->db->where('user_id', intval($post['partner']))->get('padel_reservations')->num_rows() > 0;
+
+		if($userRegistered || $partnerRegistered) {
 			$response['action'] = false;
-			$response['msg'] = 'Ya estás inscripto en pádel.';
+			if($userRegistered && $partnerRegistered) {
+				$response['msg'] = 'Ambos jugadores ya están inscriptos en pádel.';
+			} else if($userRegistered) {
+				$response['msg'] = 'Ya estás inscripto en pádel.';
+			} else {
+				$response['msg'] = $partner->name . ' ya está inscripto en pádel.';
+			}
 			$this->protect->ajaxDie($response);
 		}
 
-		// Grabar inscripción
+		// Guardar la reserva en padel_reservations
 		$data = array(
-			'user_id' => $this->session->userdata('id'),
+			'user_id' => intval($this->session->userdata('id')),
 			'partner_id' => intval($post['partner']),
 			'gender' => $this->session->gender,
 			'created_at' => date('Y-m-d H:i:s')
@@ -113,7 +94,6 @@ class Padel extends CI_Controller {
 
 		if ($this->db->insert('padel_reservations', $data)) {
 			$response['action'] = true;
-			$response['msg'] = 'Inscripción confirmada';
 		} else {
 			$response['action'] = false;
 			$response['msg'] = 'Error al grabar la inscripción';
@@ -122,34 +102,9 @@ class Padel extends CI_Controller {
 		$this->protect->ajaxDie($response);
 	}
 
-	public function getMismoGenero() {
-		$this->protect->setRequest('GET');
-		$response = array();
-
-		$gender = ($this->session->gender === 'M') ? 'M' : 'F';
-
-		// Obtener usuarios del mismo género excepto el usuario actual
-		$query = $this->db->select('id, name')
-			->from('players')
-			->where('gender', $gender)
-			->where('id !=', $this->session->userdata('id'))
-			->where('status', 'active')
-			->get();
-
-		if ($query->num_rows() > 0) {
-			$response['action'] = true;
-			$response['data'] = $query->result();
-		} else {
-			$response['action'] = false;
-			$response['data'] = array();
-		}
-
-		$this->protect->ajaxDie($response);
-	}
-
 	public function dashboard() {
 		$this->protect->setRequest('GET');
-		if (!$this->User->isLogged()) {
+		if ( !$this->User->isLogged() ) {
 			redirect(base_url());
 		}
 

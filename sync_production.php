@@ -11,11 +11,20 @@ $files = [
     'application/controllers/Admin.php',
     'application/controllers/Mipartido.php',
     'application/controllers/Draws.php',
+    'application/controllers/Padel.php',
     'application/config/routes.php',
     'application/config/autoload.php',
     'application/views/admin/partidos.php',
     'application/views/web/draws.php',
     'application/views/web/partidos.php',
+    'application/views/web/reserva.php',
+    'application/views/web/inscripto.php',
+    'application/views/web/menu.php',
+    'application/views/web/padel/reserva.php',
+    'application/views/web/padel/inscripto.php',
+    'application/views/web/padel/dashboard.php',
+    'application/views/email/reservation_confirm.php',
+    'static/js/reserva.js',
     'sync_production.php'
 ];
 

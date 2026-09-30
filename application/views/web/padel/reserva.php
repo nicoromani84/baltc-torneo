@@ -14,28 +14,38 @@
 		</ul>
 	</div>
 </header>
-
 <div class="page reserve-page">
-	<div id="padel-reservar" class="container">
+	<div id="reservar" class="container">
 		<div class="container">
-			<h1 class="d-none d-sm-block">Hola <strong><?=$user->name?></strong><br>Inscribite en Pádel <?=$category?></h1>
-			<h1 class="d-sm-none">Hola <strong><?=$user->name?></strong><br>Pádel <?=$category?></h1>
+			<h1 class="d-none d-sm-block">Hola <strong><?=$user->name?></strong><br>Inscribite en Pádel</h1>
+			<h1 class="d-sm-none">Hola <strong><?=$user->name?></strong><br>Inscribite en Pádel</h1>
 			<p>Comienzo: 6 de Octubre 2026</p>
 			<div class="form">
 				<form class="form-inline">
+					<div class="form-group xs-fullwidth">
+						<div class="input-group">
+							<div class="input-group-prepend"><span class="input-group-text"><i class="icon fas fa-star"></i></span></div>
+							<select name="category" id="category" class="mr3 form-control niceselect">
+								<option disabled selected value="">Elegir categoría</option>
+								<?php foreach($categories as $category){ ?>
+								<option value="<?=$category->id?>" data-gender="<?=$category->gender?>"><?=($category->gender === 'X' ? '♂♀ ' : '')?><?=$category->name?></option>
+								<?php } ?>
+							</select>
+						</div>
+					</div>
 					<div class="form-group xs-fullwidth" id="partner-search-group">
 						<div class="input-group">
 							<div class="input-group-prepend"><span class="input-group-text"><i class="icon fas fa-users"></i></span></div>
 							<input type="search" name="partner" autocomplete="off" placeholder="Elegí tu pareja" class="typeahead form-control" id="partner-input">
 							<div class="input-group-append"><span class="input-group-text"><i class="fas fa-search"></i></span></div>
 						</div>
-						<small id="partner-info" style="display:none;color:#666;margin-top:5px;">Buscando parejas disponibles...</small>
+						<small id="mixed-partner-info" style="display:none;color:#666;margin-top:5px;">Buscando parejas disponibles...</small>
 					</div>
 					<div class="mobile-suggestions simplebar"></div>
 					<div class="form-group xs-fullwidth acepto-reglamento-group">
 						<div class="form-check">
 							<input type="checkbox" class="form-check-input" id="acepto_reglamento">
-							<label class="form-check-label" for="acepto_reglamento">Acepto el reglamento de pádel</label>
+							<label class="form-check-label" for="acepto_reglamento">Acepto el <a href="#" data-toggle="modal" data-target="#modalReglamento"> reglamento de pádel</a></label>
 						</div>
 					</div>
 					<div class="form-group xs-fullwidth" style="margin-top:5px">
@@ -47,189 +57,96 @@
 	</div>
 </div>
 
+
+<!-- MODAL REGLAMENTO -->
+<div class="modal fade" id="modalReglamento" tabindex="-1" role="dialog" aria-labelledby="modalReglamentoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalReglamentoLabel">Reglamento Pádel – BALTC</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="reglamento">
+                    <h5>1. Organización</h5>
+                    <p>El torneo de pádel es organizado por el Buenos Aires Lawn Tennis Club (BALTC). La Subcomisión de Tenis tendrá a su cargo la supervisión general y la resolución de cualquier situación no prevista en el presente reglamento.</p>
+
+                    <h5>2. Inscripción</h5>
+                    <p>Los participantes podrán inscribirse en pádel indicando a su pareja del mismo género.</p>
+                    <p>El arancel será determinado por la organización y se debitará junto con la liquidación de la cuota mensual.</p>
+
+                    <h5>3. Categorías</h5>
+                    <p>El torneo contará con categorías de Caballeros y Damas, sujeto a la cantidad de participantes.</p>
+
+                    <h5>4. Participantes</h5>
+                    <p>Podrán participar todos los socios activos del club que se encuentren al día con sus obligaciones sociales.</p>
+                    <p>Los menores podrán participar siempre que tengan más de 12 años y cuenten con el nivel requerido de juego.</p>
+
+                    <h5>5. Formato de juego</h5>
+                    <p>Los partidos se disputarán al mejor de tres (3) sets con tie-break en cada set.</p>
+
+                    <h5>6. Programación de partidos</h5>
+                    <p>Los días y horarios de juego serán coordinados directamente entre los jugadores.</p>
+                    <p>Los partidos deberán jugarse dentro de los plazos establecidos por la organización.</p>
+
+                    <h5>7. Uso de canchas</h5>
+                    <p>Los participantes podrán jugar cualquier día y horario que quieran, respetando el reglamento interno del club.</p>
+                    <p>Se recomienda reservar cancha previamente, sobre todo en horarios de mayor concurrencia.</p>
+
+                    <h5>8. Pelotas</h5>
+                    <p>Los jugadores deberán proveer sus propias pelotas de pádel.</p>
+
+                    <h5>9. Resultados</h5>
+                    <p>Los resultados deberán ser cargados por el ganador en el sistema una vez finalizado el encuentro.</p>
+
+                    <h5>10. Código de conducta</h5>
+                    <p>Se espera de todos los participantes un comportamiento deportivo y respetuoso.</p>
+                    <p>Cualquier conducta antideportiva podrá ser sancionada con la descalificación del torneo.</p>
+
+                    <h5>11. Contacto</h5>
+                    <p>Ante cualquier inconveniente, comunicarse con la Secretaría del club.</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="$('#acepto_reglamento').prop('checked', true)">Acepto el reglamento</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <style>
-#padel-reservar {
-	min-height: calc(100vh - 110px);
-	display: table-cell;
-	vertical-align: middle;
-	height: 100%;
-	padding: 30px 0;
+#modalReglamento {
+    display: none;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    z-index: 1050 !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    outline: 0 !important;
 }
-.reserve-page {
-	background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-	color: #fff;
+#modalReglamento .modal-body {
+    max-height: 60vh;
+    overflow-y: auto;
+}
+#modalReglamento .modal-content {
+    max-height: 90vh;
+    overflow: hidden;
 }
 </style>
 
 <script type="text/javascript">
-var padelurl = '<?=base_url('padel')?>';
+var reservaurl = '<?=base_url('padel')?>';
 var token = '<?=$token?>';
 var baseurl = '<?=base_url()?>';
 var userGender = '<?=$user->gender?>';
 
 $(function() {
-	padel.run();
+	reserva.run();
 });
-</script>
-
-<script type="text/javascript">
-var padel = {
-	run: function() {
-		this.reserva.triggers();
-	},
-	reserva: {
-		vars: {
-			names: [],
-			data: []
-		},
-		triggers: function() {
-			var that = this;
-
-			// Obtener parejas del mismo género
-			that.getPartners(function(res) {
-				if(res.action) {
-					that.vars.data = res.data.map(function(a) {
-						return {id: a.id, name: a.name.toLowerCase()};
-					});
-
-					that.vars.names = res.data.map(function(a) {
-						return a.name.toLowerCase();
-					});
-
-					that.initTypeahead();
-				}
-			});
-
-			jQuery.validator.addMethod("validName", function(value, element) {
-				return that.vars.names.indexOf(value) >= 0;
-			});
-
-			$('#padel-reservar form').validate({
-				ignore: [],
-				errorElement: "div",
-				errorClass: 'is-invalid',
-				validClass: 'is-valid',
-				onkeyup: false,
-				onclick: false,
-				onfocusout: false,
-				rules: {
-					partner: {
-						required: true,
-						validName: true
-					}
-				},
-				messages: {
-					partner: {
-						required: 'Debes ingresar tu pareja',
-						validName: 'La pareja ingresada no existe'
-					}
-				},
-				errorPlacement: function(error, element) {
-					error.addClass("invalid-feedback");
-					error.insertAfter(element);
-				},
-				submitHandler: function(form) {
-					var formdata = that.serializedToObj($('.form form').serializeArray());
-					formdata.partner = that.getPartnerId(formdata.partner);
-
-					if(typeof formdata.partner == 'undefined' || formdata.partner == '') {
-						showNotification('error', 'Debes ingresar tu compañero.');
-						return false;
-					}
-
-					if(!$('#acepto_reglamento').is(':checked')) {
-						showNotification('error', 'Debés aceptar el reglamento.');
-						return false;
-					}
-
-					$(form).find('button[type="submit"]').prop('disabled', true).addClass('loading');
-
-					setTimeout(function() {
-						$.ajax({
-							url: padelurl + '/add',
-							type: "POST",
-							data: formdata,
-							headers: {'X-Auth-Token': token},
-							success: function(res) {
-								if(res.action) {
-									window.location.href = padelurl + '/inscripto';
-								} else {
-									if(typeof res.msg !== 'undefined') {
-										showNotification('error', res.msg);
-									} else {
-										showNotification('error', 'Error al grabar la inscripción');
-									}
-									$(form).find('button[type="submit"]').prop('disabled', false).removeClass('loading');
-								}
-							}
-						});
-					}, 1000);
-				}
-			});
-
-			$('.typeahead').bind('typeahead:render', function(ev, suggestion) {
-				new SimpleBar($('.simplebar')[0]);
-			});
-		},
-
-		getPartnerId: function(name) {
-			var that = this;
-			return padel.reserva.vars.data[padel.reserva.vars.names.indexOf(name)].id;
-		},
-
-		serializedToObj: function(array) {
-			var data = {};
-			$(array).each(function(index, obj) {
-				data[obj.name] = obj.value;
-			});
-			return data;
-		},
-
-		substringMatcher: function(strs) {
-			return function findMatches(q, cb) {
-				var matches, substringRegex;
-				matches = [];
-				substrRegex = new RegExp(q, 'i');
-				$.each(strs, function(i, str) {
-					if (substrRegex.test(str)) {
-						matches.push(str);
-					}
-				});
-				cb(matches);
-			};
-		},
-
-		getPartners: function(callback) {
-			var that = this;
-			$.ajax({
-				url: baseurl + '/padel/partners/getMismoGenero',
-				type: "GET",
-				data: {},
-				headers: {'X-Auth-Token': token},
-				success: function(res) {
-					if (typeof callback == 'function') {
-						callback(res);
-					}
-				}
-			});
-		},
-
-		initTypeahead: function() {
-			var that = this;
-			$('.typeahead').typeahead('destroy');
-
-			$('.typeahead').typeahead({
-				hint: true,
-				highlight: true,
-				minLength: 1,
-				menu: isMobile().any() ? $('.mobile-suggestions') : '',
-				classNames: {menu: 'tt-menu simplebar'}
-			}, {
-				name: 'states',
-				source: that.substringMatcher(that.vars.names),
-				limit: 10000
-			});
-		}
-	}
-};
 </script>
