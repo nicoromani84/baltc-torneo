@@ -98,5 +98,12 @@ $route['mipartido'] = 'mipartido/index';
 $route['mipartido/cargarResultado'] = 'mipartido/cargarResultado';
 $route['mipartido/guardarFechaAcordada'] = 'mipartido/guardarFechaAcordada';
 
+// Pádel
+$route['padel'] = 'padel/index';
+$route['padel/inscripto'] = 'padel/inscripto';
+$route['padel/add'] = 'padel/add';
+$route['padel/dashboard'] = 'padel/dashboard';
+$route['padel/partners/getMismoGenero'] = 'padel/getMismoGenero';
+
 $route['404_override'] = '';
 $route['translate_uri_dashes'] = FALSE;
