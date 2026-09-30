@@ -5,7 +5,8 @@ $route['default_controller'] = 'login';
 $route['logout'] = 'login/logout';
 $route['admin/logout'] = 'admin/logout';
 
-// Menu principal
+// Menu principal - En /padel redirige a inscripción de pádel
+// Nota: Esta ruta se sobrescribe en /padel para apuntar a padel/index
 $route['menu'] = 'menu/index';
 
 // Secciones del torneo
