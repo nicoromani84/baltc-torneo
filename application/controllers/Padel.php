@@ -26,7 +26,7 @@ class Padel extends CI_Controller {
 		$userRegistered = $this->db->where('user_id', $user_id)->get('padel_reservations')->num_rows() > 0;
 
 		if ($userRegistered) {
-			redirect(base_url('padel/inscripto'));
+			redirect(base_url('inscripto'));
 		}
 
 		$d['titulo'] 	= 'Pádel';
@@ -61,7 +61,7 @@ class Padel extends CI_Controller {
 			$d['inscripcion'] = $inscripcion;
 		} else {
 			// Si no está inscripto, redirigir a inscripción
-			redirect(base_url('padel'));
+			redirect(base_url());
 		}
 
 		$this->load->view('web/header', $d);
