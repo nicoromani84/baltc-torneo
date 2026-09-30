@@ -21,8 +21,9 @@ class Padel extends CI_Controller {
 
 		date_default_timezone_set('America/Argentina/Buenos_Aires');
 
-		// Verificar si ya está inscripto en pádel
-		$userRegistered = $this->db->where('user_id', $this->session->userdata('id'))->get('padel_reservations')->num_rows() > 0;
+		// Verificar si ya está inscripto en pádel (SOLO padel_reservations, NO reservations)
+		$user_id = $this->session->userdata('id');
+		$userRegistered = $this->db->where('user_id', $user_id)->get('padel_reservations')->num_rows() > 0;
 
 		if ($userRegistered) {
 			redirect(base_url('padel/inscripto'));
