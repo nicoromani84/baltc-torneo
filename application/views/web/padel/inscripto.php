@@ -30,10 +30,10 @@
 						<i class="fas fa-star"></i>
 						<span>Categoría <strong><?=isset($categoria) ? $categoria : 'N/A'?></strong></span>
 					</div>
-					<?php if(isset($partner)): ?>
+					<?php if(isset($partner_name)): ?>
 					<div class="inscripto-item">
 						<i class="fas fa-user-friends"></i>
-						<span>Compañero <strong style="text-transform:capitalize;"><?=$partner?></strong></span>
+						<span>Compañero <strong style="text-transform:capitalize;"><?=$partner_name?></strong></span>
 					</div>
 					<?php endif; ?>
 					<div class="inscripto-item">

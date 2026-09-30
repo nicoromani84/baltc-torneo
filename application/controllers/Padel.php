@@ -15,6 +15,14 @@ class Padel extends CI_Controller {
 		}
 
 		date_default_timezone_set('America/Argentina/Buenos_Aires');
+
+		// Verificar si ya está inscripto en pádel
+		$userRegistered = $this->db->where('user_id', $this->session->userdata('id'))->get('padel_reservations')->num_rows() > 0;
+
+		if ($userRegistered) {
+			redirect(base_url('padel/inscripto'));
+		}
+
 		$d['titulo'] 	= 'Pádel';
 		$d['token']		= $this->protect->eToken();
 		$d['categories'] = array((object)array('id' => 1, 'name' => 'Caballeros', 'gender' => 'M'), (object)array('id' => 2, 'name' => 'Damas', 'gender' => 'F'));
@@ -23,6 +31,35 @@ class Padel extends CI_Controller {
 
 		$this->load->view('web/header',$d);
 		$this->load->view('web/padel/reserva');
+		$this->load->view('web/footer');
+	}
+
+	public function inscripto() {
+		$this->protect->setRequest('GET');
+		if ( !$this->User->isLogged() ) {
+			redirect(base_url());
+		}
+
+		date_default_timezone_set('America/Argentina/Buenos_Aires');
+
+		// Obtener inscripción actual
+		$d['titulo'] = 'Ya estás inscripto en Pádel';
+		$d['user'] = $this->session;
+
+		$inscripcion = $this->db->where('user_id', $this->session->userdata('id'))->get('padel_reservations')->row();
+
+		if ($inscripcion) {
+			$partner = $this->User->getById($inscripcion->partner_id);
+			$d['partner_name'] = $partner ? $partner->name : 'Partner';
+			$d['categoria'] = ($inscripcion->gender === 'M') ? 'Caballeros' : 'Damas';
+			$d['inscripcion'] = $inscripcion;
+		} else {
+			// Si no está inscripto, redirigir a inscripción
+			redirect(base_url('padel'));
+		}
+
+		$this->load->view('web/header', $d);
+		$this->load->view('web/padel/inscripto', $d);
 		$this->load->view('web/footer');
 	}
 
