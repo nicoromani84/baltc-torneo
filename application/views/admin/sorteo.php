@@ -6,7 +6,7 @@
 	<!-- PASO 1: SELECTOR -->
 	<div class="sorteo-card mb-4">
 		<div class="sorteo-card-header">
-			<span class="sorteo-step">1</span> Seleccionar torneo, categoría y género
+			<span class="sorteo-step">1</span> Seleccionar categoría
 		</div>
 		<div class="sorteo-card-body">
 			<div class="form-row align-items-end">
@@ -16,7 +16,7 @@
 						<option value="doubles" selected>Dobles</option>
 					</select>
 				</div>
-				<div class="form-group col-md-3 mb-0">
+				<div class="form-group col-md-5 mb-0">
 					<label>Categoría</label>
 					<select id="sorteo-category" class="form-control">
 						<option value="">Elegir...</option>
@@ -25,15 +25,7 @@
 						<?php endforeach; ?>
 					</select>
 				</div>
-				<div class="form-group col-md-3 mb-0">
-					<label>Género</label>
-					<select id="sorteo-gender" class="form-control">
-						<option value="">Elegir...</option>
-						<option value="M">Caballeros</option>
-						<option value="F">Damas</option>
-					</select>
-				</div>
-				<div class="form-group col-md-3 mb-0">
+				<div class="form-group col-md-5 mb-0">
 					<button class="btn btn-primary" id="btn-cargar">
 						<i class="fas fa-users"></i> Cargar jugadores
 					</button>
