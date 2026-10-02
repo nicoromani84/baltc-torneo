@@ -220,7 +220,11 @@ $(function(){
 	$('#btn-cargar').on('click', function(){
 		categoryId = $('#sorteo-category').val();
 		gender = $('#sorteo-gender').val();
-		if(!categoryId || !gender) { alert('Seleccioná categoría y género.'); return; }
+		if(!categoryId) { alert('Seleccioná categoría.'); return; }
+		// Para dobles, el género es opcional (pueden ser mixtas)
+		if(tournament_type !== 'doubles' && !gender) { alert('Seleccioná género.'); return; }
+		// Si es dobles sin género seleccionado, usar 'X' para mixtas
+		if(tournament_type === 'doubles' && !gender) gender = 'X';
 		$.ajax({
 			url: baseurl + 'admin/getInscriptosByCategory',
 			type: 'POST',
