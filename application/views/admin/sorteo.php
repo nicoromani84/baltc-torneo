@@ -293,7 +293,7 @@ $(function(){
 			if(posMap[s] !== undefined) slots[posMap[s]] = jugadores[s];
 		}
 		var nByes = size - n;
-		var noSembrados = jugadores.slice(sembradosConPos);
+		var noSembrados = jugadores.slice(numSembrados);
 		var slotsConBye = {};
 		var byesUsados = 0;
 		for(var s = 0; s < sembradosConPos && byesUsados < nByes; s++) {
