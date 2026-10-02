@@ -17,7 +17,7 @@
 	<div id="draws-page" class="container">
 		<div class="container">
 			<h1>Draws</h1>
-			<p class="draws-subtitle">Seleccioná categoría y género para ver los cuadros</p>
+			<p class="draws-subtitle" id="draws-subtitle">Seleccioná categoría para ver los cuadros</p>
 
 			<!-- TABS TORNEOS - SOLO DOBLES -->
 			<div class="draws-tournament-tabs">
@@ -31,12 +31,12 @@
 					<select id="draws-category" class="draws-select">
 						<option value="">Categoría...</option>
 						<?php foreach($categories as $c): ?>
-						<option value="<?=$c->id?>" <?=($mi_category && $c->id==$mi_category)?'selected':''?>><?=$c->name?></option>
+						<option value="<?=$c->id?>" data-gender="<?=$c->gender?>" <?=($mi_category && $c->id==$mi_category)?'selected':''?>><?=$c->name?></option>
 						<?php endforeach; ?>
 					</select>
 					<i class="fas fa-chevron-down draws-select-arrow"></i>
 				</div>
-				<div class="draws-select-wrap">
+				<div class="draws-select-wrap" id="draws-gender-wrap" style="display:none;">
 					<select id="draws-gender" class="draws-select">
 						<option value="">Género...</option>
 						<option value="M" <?=($mi_gender=='M')?'selected':''?>>Caballeros</option>
@@ -402,7 +402,9 @@ $(function(){
 	}
 
 	function cargarDraw(cat, gen) {
-		if(!cat || !gen) return;
+		if(!cat) return;
+		// Si no hay género, usar 'X' (mixta)
+		if(!gen) gen = 'X';
 		$.ajax({
 			url: baseurl + 'draws/getData',
 			type: 'POST',
@@ -419,7 +421,7 @@ $(function(){
 				todosPartidos = res.partidos;
 				sembradosActivos = res.sembrados || {};
 				var catNombre = $('#draws-category option:selected').text();
-				var genNombre = gen == 'M' ? 'Caballeros' : 'Damas';
+				var genNombre = gen == 'M' ? 'Caballeros' : (gen == 'F' ? 'Damas' : 'Mixto');
 				$('#draw-titulo').html('Categoría ' + catNombre + ' — ' + genNombre + '<span id="mi-cat-badge" style="display:none" class="mi-cat-badge">⭐ Mi categoría</span>');
 				if(miCat && miGen && cat == miCat && gen == miGen) {
 					$('#mi-cat-badge').show();
@@ -626,10 +628,38 @@ $(function(){
 		cargarDrawsDisponibles();
 	}
 
-	$('#draws-category, #draws-gender').on('change', function(){
+	// Mostrar/ocultar género según el torneo
+	$('#draws-category').on('change', function(){
+		var cat = $('#draws-category').val();
+		var catGender = $('#draws-category option:selected').data('gender');
+
+		// Si es mixta (X), no mostrar select de género
+		if(catGender === 'X') {
+			$('#draws-gender-wrap').hide();
+			$('#draws-gender').val('');
+			if(cat) cargarDraw(cat, 'X');
+		} else if(currentTournament === 'singles') {
+			$('#draws-gender-wrap').show();
+		}
+	});
+
+	$('#draws-gender').on('change', function(){
 		var cat = $('#draws-category').val();
 		var gen = $('#draws-gender').val();
 		if(cat && gen) cargarDraw(cat, gen);
+	});
+
+	// Actualizar visibility cuando cambia torneo
+	$('.draws-tab').on('click', function(){
+		currentTournament = $(this).data('tournament');
+		var cat = $('#draws-category').val();
+		var catGender = $('#draws-category option:selected').data('gender');
+
+		if(currentTournament === 'doubles' && catGender === 'X') {
+			$('#draws-gender-wrap').hide();
+		} else if(currentTournament === 'singles') {
+			$('#draws-gender-wrap').show();
+		}
 	});
 });
 </script>
