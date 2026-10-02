@@ -1062,11 +1062,6 @@ class Admin extends CI_Controller {
 
 		$ok = $this->Partido_model->addBatch($partidos);
 
-		// Avanzar BYEs automáticamente: si dos partidos adyacentes ambos tienen ganador, crear siguiente ronda
-		if($ok) {
-			$this->_avanzarByesSorteo($partidos, $category, $gender, $rondasNombres, $rondaInicio, $size);
-		}
-
 		$this->protect->ajaxDie(array('action' => $ok));
 	}
 
