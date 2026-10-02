@@ -964,6 +964,8 @@ class Admin extends CI_Controller {
 		$gender   = $this->input->post('gender', true);
 		$tournament_type = $this->input->post('tournament_type', true);
 		if(!$tournament_type) $tournament_type = 'singles';
+		// Si es dobles sin género, usar 'X' (mixta)
+		if($tournament_type === 'doubles' && !$gender) $gender = 'X';
 		$jugadores = json_decode($this->input->post('jugadores'), true);
 
 		if(empty($jugadores)) {
