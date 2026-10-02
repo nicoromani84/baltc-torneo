@@ -1091,9 +1091,11 @@ class Admin extends CI_Controller {
 		}
 
 		$nuevos = array();
-		for($i = 0; $i < $totalSlots; $i += 2) {
-			$p1 = isset($porPos[$i])   ? $porPos[$i]   : null;
-			$p2 = isset($porPos[$i+1]) ? $porPos[$i+1] : null;
+		$posiciones = array_keys($porPos);
+		sort($posiciones);
+		for($i = 0; $i < count($posiciones); $i += 2) {
+			$p1 = isset($posiciones[$i])   ? $porPos[$posiciones[$i]]   : null;
+			$p2 = isset($posiciones[$i+1]) ? $porPos[$posiciones[$i+1]] : null;
 			if(!$p1 || !$p2) continue;
 
 			// Para BYEs (score='BYE'), el "ganador" es jugador1_id. Para partidos normales es ganador_id.
