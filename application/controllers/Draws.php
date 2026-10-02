@@ -45,11 +45,11 @@ class Draws extends CI_Controller {
 		$this->protect->setRequest('POST');
 		if(!$this->User->isLogged()) $this->protect->ajaxDie(array('action'=>false));
 
-		$sql = "SELECT DISTINCT c.id as category, g.gender
+		// Para categorías mixtas (X), solo usar X; para otras, usar su gender específico
+		$sql = "SELECT DISTINCT c.id as category, c.gender
 				FROM category c
-				CROSS JOIN (SELECT 'M' as gender UNION SELECT 'F') g
 				WHERE c.active = 1 AND c.name NOT LIKE '%2nd chance%'
-				ORDER BY c.id ASC, g.gender ASC";
+				ORDER BY c.id ASC";
 		$q = $this->db->query($sql);
 		$this->protect->ajaxDie(array('action'=>true, 'draws'=> $q->num_rows() > 0 ? $q->result() : array()));
 	}
