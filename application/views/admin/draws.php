@@ -22,7 +22,7 @@
 						<?php endforeach; ?>
 					</select>
 				</div>
-				<div class="form-group col-md-3 mb-0">
+				<div class="form-group col-md-3 mb-0" id="draws-gender-row">
 					<label>Género</label>
 					<select id="draws-gender" class="form-control">
 						<option value="">Elegir...</option>
@@ -208,7 +208,14 @@ $(function(){
 		var gen = $(this).data('gen');
 		var tiene = $(this).data('tiene');
 		$('#draws-category').val(cat);
-		$('#draws-gender').val(gen);
+		// Para mixtas (X), no mostrar select de género
+		if(gen === 'X') {
+			$('#draws-gender-row').hide();
+			$('#draws-gender').val('');
+		} else {
+			$('#draws-gender-row').show();
+			$('#draws-gender').val(gen);
+		}
 		if(!tiene) {
 			$('#draw-container').hide();
 			$('#draw-titulo-activo').hide();
