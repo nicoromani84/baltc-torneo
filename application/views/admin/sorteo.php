@@ -289,11 +289,15 @@ $(function(){
 		for(var s = 0; s < numSembrados; s++) {
 			if(posMap[s] !== undefined) sembradosConPos++;
 		}
-		for(var s = 0; s < sembradosConPos && s < jugadores.length; s++) {
+		for(var s = 0; s < numSembrados; s++) {
 			if(posMap[s] !== undefined) slots[posMap[s]] = jugadores[s];
 		}
 		var nByes = size - n;
-		var noSembrados = jugadores.slice(numSembrados);
+		var noSembrados = [];
+		for(var s = 0; s < numSembrados; s++) {
+			if(posMap[s] === undefined) noSembrados.push(jugadores[s]);
+		}
+		noSembrados = noSembrados.concat(jugadores.slice(numSembrados));
 		var slotsConBye = {};
 		var byesUsados = 0;
 		for(var s = 0; s < sembradosConPos && byesUsados < nByes; s++) {
