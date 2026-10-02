@@ -208,6 +208,7 @@ $(function(){
 		var gen = $(this).data('gen');
 		var tiene = $(this).data('tiene');
 		$('#draws-category').val(cat);
+		currentGender = gen; // Guardar el género globalmente
 		// Para mixtas (X), no mostrar select de género
 		if(gen === 'X') {
 			$('#draws-gender-row').hide();
@@ -238,6 +239,7 @@ $(function(){
 
 	// Cargar pestañas: todas las categorías, con indicador si tienen draw o no
 	var categorias = <?=json_encode($categories)?>;
+	var currentGender = ''; // Guardar el género seleccionado
 	function cargarTabs() {
 		$.ajax({
 			url: baseurl + 'admin/getDrawsDisponibles',
@@ -286,7 +288,7 @@ $(function(){
 
 	$('#btn-ver-draw').on('click', function(){
 		var cat = $('#draws-category').val();
-		var gen = $('#draws-gender').val();
+		var gen = currentGender || $('#draws-gender').val(); // Usar currentGender si está guardado
 		if(!cat || !gen) { alert('Seleccioná categoría y género.'); return; }
 
 		$.ajax({
