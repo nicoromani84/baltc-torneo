@@ -355,6 +355,7 @@
 }
 </style>
 <script>
+// Cache buster: <?php echo time(); ?>
 $(function(){
 	var baseurl = '<?=base_url()?>';
 	var token = '<?=$token?>';
