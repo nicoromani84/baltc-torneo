@@ -1091,11 +1091,12 @@ class Admin extends CI_Controller {
 		}
 
 		$nuevos = array();
-		$posiciones = array_keys($porPos);
-		sort($posiciones);
-		for($i = 0; $i < count($posiciones); $i += 2) {
-			$p1 = isset($posiciones[$i])   ? $porPos[$posiciones[$i]]   : null;
-			$p2 = isset($posiciones[$i+1]) ? $porPos[$posiciones[$i+1]] : null;
+		// Iterar sobre posiciones numéricas del bracket (0, 1, 2, 3, ...)
+		// no sobre índices del array de posiciones
+		$maxPos = empty($porPos) ? -1 : max(array_keys($porPos));
+		for($i = 0; $i <= $maxPos; $i += 2) {
+			$p1 = isset($porPos[$i])   ? $porPos[$i]   : null;
+			$p2 = isset($porPos[$i+1]) ? $porPos[$i+1] : null;
 			if(!$p1 || !$p2) continue;
 
 			// Para BYEs (score='BYE'), el "ganador" es jugador1_id. Para partidos normales es ganador_id.
