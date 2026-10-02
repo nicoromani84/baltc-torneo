@@ -243,9 +243,11 @@ $(function(){
 				var $cont = $('#draws-tabs-container');
 				$cont.html('');
 				categorias.forEach(function(c) {
-					['M','F'].forEach(function(gen) {
-						var icono = gen == 'M' ? 'fa-male' : 'fa-female';
-						var label = gen == 'M' ? 'Cab.' : 'Dam.';
+					// Para categorías mixtas (X), solo crear un tab; para otras, crear M y F
+					var genders = (c.gender === 'X') ? ['X'] : ['M','F'];
+					genders.forEach(function(gen) {
+						var icono = gen == 'M' ? 'fa-male' : (gen == 'F' ? 'fa-female' : 'fa-venus-mars');
+						var label = gen == 'M' ? 'Cab.' : (gen == 'F' ? 'Dam.' : 'Mixto');
 						var tiene = disponibles[c.id+'_'+gen];
 						var cls = tiene ? 'draws-tab' : 'draws-tab draws-tab-pending';
 						var title = tiene ? '' : ' title="Sin sortear"';
