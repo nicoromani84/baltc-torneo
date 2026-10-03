@@ -45,10 +45,12 @@ class Draws extends CI_Controller {
 		$this->protect->setRequest('POST');
 		if(!$this->User->isLogged()) $this->protect->ajaxDie(array('action'=>false));
 
-		// Para categorías mixtas (X), solo usar X; para otras, usar su gender específico
+		// Mostrar solo categorías que tienen partidos sorteados (tienen matches)
 		$sql = "SELECT DISTINCT c.id as category, c.gender
 				FROM category c
+				INNER JOIN matches m ON m.category = c.id
 				WHERE c.active = 1 AND c.name NOT LIKE '%2nd chance%'
+				AND m.ronda = '1ra Ronda'
 				ORDER BY c.id ASC";
 		$q = $this->db->query($sql);
 		$this->protect->ajaxDie(array('action'=>true, 'draws'=> $q->num_rows() > 0 ? $q->result() : array()));
