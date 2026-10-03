@@ -442,7 +442,7 @@ var admin = {
 					// Actualizar headers según tipo de torneo
 					var thead = $('#jugadoresTable thead tr');
 					if(that.tournament_type === 'doubles' && res.parejas) {
-						thead.html('<th>Pareja</th><th>Categoría</th><th>Género</th><th width="80"></th>');
+						thead.html('<th>Pareja</th><th>Categoría</th><th width="80"></th>');
 					} else {
 						thead.html('<th>Nombre</th><th>DNI</th><th>Email</th><th>Género</th><th>Categoría</th><th width="80"></th>');
 					}
