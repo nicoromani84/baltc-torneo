@@ -468,7 +468,7 @@ var admin = {
 						// Modo dobles: mostrar parejas como tabla
 						$.each(res.parejas, function(i, pareja) {
 							that.jugadoresCache[pareja.reservation_id] = pareja;
-							tbody += '<tr class="pareja-row" data-nombre="' + pareja.pareja.toLowerCase() + '" data-category="' + pareja.category_id + '" data-gender="' + pareja.gender + '">';
+							tbody += '<tr class="pareja-row" data-nombre="' + pareja.pareja.toLowerCase() + '" data-category="' + pareja.category_id + '" data-gender="' + pareja.gender + '" data-timestamp="' + (pareja.timestamp || '0') + '">';
 							tbody += '<td style="text-transform:capitalize;">' + pareja.pareja.toLowerCase() + '</td>';
 							var badgeClass = 'badge-info';
 							if(pareja.category_id == 8) badgeClass = 'badge-success';
@@ -512,8 +512,24 @@ var admin = {
 						pageLength: 25,
 						columnDefs: [
 							{ orderable: true, targets: columnTargets }
-						]
+						],
+						rowCallback: function(row) {
+							var timestamp = $(row).data('timestamp');
+							if(timestamp && that.tournament_type === 'doubles') {
+								$(row).data('timestamp', timestamp);
+							}
+						}
 					});
+
+					// Ordenar por timestamp descendente (más recientes primero)
+					if(that.tournament_type === 'doubles' && res.parejas) {
+						$('#jugadoresTable').DataTable().rows().nodes().to$().sort(function(a, b) {
+							var tsA = parseInt($(a).data('timestamp')) || 0;
+							var tsB = parseInt($(b).data('timestamp')) || 0;
+							return tsB - tsA;
+						}).appendTo($('#jugadoresTable tbody'));
+						$('#jugadoresTable').DataTable().draw(false);
+					}
 
 					if(typeof cb == 'function')
 						cb(res);
