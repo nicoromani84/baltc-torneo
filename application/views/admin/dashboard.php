@@ -501,8 +501,8 @@ $(function() {
                             data: {
                                 gender: gender,
                                 category: category,
-                                player1: player1,
-                                player2: player2
+                                player1: player1Id,
+                                player2: player2Id
                             },
                             headers: {'X-Auth-Token': token, 'X-Requested-With': 'XMLHttpRequest'},
                             success: function(res) {
