@@ -508,28 +508,12 @@ var admin = {
 					}
 					$('#jugadoresTable').DataTable({
 						dom: 'ltp',
-						order: [[0, 'desc']],
+						order: [],
 						pageLength: 25,
 						columnDefs: [
 							{ orderable: true, targets: columnTargets }
-						],
-						rowCallback: function(row) {
-							var timestamp = $(row).data('timestamp');
-							if(timestamp && that.tournament_type === 'doubles') {
-								$(row).data('timestamp', timestamp);
-							}
-						}
+						]
 					});
-
-					// Ordenar por timestamp descendente (más recientes primero)
-					if(that.tournament_type === 'doubles' && res.parejas) {
-						$('#jugadoresTable').DataTable().rows().nodes().to$().sort(function(a, b) {
-							var tsA = parseInt($(a).data('timestamp')) || 0;
-							var tsB = parseInt($(b).data('timestamp')) || 0;
-							return tsB - tsA;
-						}).appendTo($('#jugadoresTable tbody'));
-						$('#jugadoresTable').DataTable().draw(false);
-					}
 
 					if(typeof cb == 'function')
 						cb(res);
