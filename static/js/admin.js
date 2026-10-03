@@ -471,7 +471,6 @@ var admin = {
 							tbody += '<tr class="pareja-row" data-nombre="' + pareja.pareja.toLowerCase() + '" data-category="' + pareja.category_id + '" data-gender="' + pareja.gender + '">';
 							tbody += '<td style="text-transform:capitalize;">' + pareja.pareja.toLowerCase() + '</td>';
 							tbody += '<td><span class="badge badge-info">' + pareja.categoria + '</span></td>';
-							tbody += '<td>' + (pareja.gender == 'M' ? '<span class="badge badge-primary">M</span>' : '<span class="badge badge-danger">F</span>') + '</td>';
 							tbody += '<td nowrap>';
 							tbody += '<button class="btn btn-xs btn-warning btn-editar-categoria" data-id="' + pareja.reservation_id + '" data-category="' + pareja.category_id + '" data-name="' + pareja.pareja.toLowerCase() + '"><i class="fas fa-edit"></i></button>';
 							tbody += '<button class="btn btn-xs btn-danger btn-borrar-jugador" data-id="0" data-reserva="' + pareja.reservation_id + '" data-name="' + pareja.pareja.toLowerCase() + '" data-is-pareja="1"><i class="fas fa-trash"></i></button>';
