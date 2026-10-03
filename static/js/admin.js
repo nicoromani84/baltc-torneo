@@ -508,7 +508,7 @@ var admin = {
 					}
 					$('#jugadoresTable').DataTable({
 						dom: 'ltp',
-						order: [[1, 'asc']],
+						order: [[0, 'desc']],
 						pageLength: 25,
 						columnDefs: [
 							{ orderable: true, targets: columnTargets }
