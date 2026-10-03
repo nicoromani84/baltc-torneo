@@ -502,12 +502,16 @@ var admin = {
 
 					that.table.find('tbody').html(tbody);
 
+					var columnTargets = [0, 1, 2];
+					if(that.tournament_type !== 'doubles' || !res.parejas) {
+						columnTargets = [0, 1, 2, 3, 4, 5];
+					}
 					$('#jugadoresTable').DataTable({
 						dom: 'ltp',
 						order: [[1, 'asc']],
 						pageLength: 25,
 						columnDefs: [
-							{ orderable: true, targets: [0, 1, 2, 3] }
+							{ orderable: true, targets: columnTargets }
 						]
 					});
 
