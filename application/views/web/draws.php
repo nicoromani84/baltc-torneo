@@ -20,7 +20,7 @@
 			<p class="draws-subtitle" id="draws-subtitle">Seleccioná categoría para ver los cuadros</p>
 
 			<!-- TABS TORNEOS - SOLO DOBLES -->
-			<div class="draws-tournament-tabs">
+			<div class="draws-tournament-tabs" style="display:none;">
 				<button class="draws-tab active" data-tournament="singles">Singles</button>
 				<button class="draws-tab" data-tournament="doubles">Dobles</button>
 			</div>
