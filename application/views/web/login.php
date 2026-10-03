@@ -21,7 +21,7 @@
 							<p>Escribí tu DNI o N de Pasaporte</p>
 							 <form method="post" id="login" class="white">
 								<div class="form-group">
-									<input id="login-dni" type="number" name="dni" required class="input-material" autocomplete="off" autofocus>
+									<input id="login-dni" type="number" inputmode="numeric" pattern="[0-9]*" name="dni" required class="input-material" autocomplete="off" autofocus>
 									<label for="login-dni" class="label-material active">DNI</label>
 								</div>
 								<button type="submit" class="btn btn-primary">Login</a>
