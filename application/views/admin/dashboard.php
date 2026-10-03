@@ -446,8 +446,6 @@ $(function() {
                     var partnersData = res.partners; // Guardar los datos para usar en el evento
 
                     var html = '';
-                    html += '<div class="form-group"><label>Género</label>';
-                    html += '<select class="newPairingGender form-control"><option value="">Seleccionar...</option><option value="M">Caballeros</option><option value="F">Damas</option></select></div>';
                     html += '<div class="form-group"><label>Categoría</label>';
                     html += '<select class="newPairingCategory form-control"><option value="">Seleccionar...</option>';
                     res.categories.forEach(function(cat) {
@@ -455,10 +453,16 @@ $(function() {
                     });
                     html += '</select></div>';
                     html += '<div class="form-group"><label>Jugador 1</label>';
-                    html += '<select class="newPairingPlayer1 form-control"><option value="">Seleccionar género primero...</option>';
+                    html += '<select class="newPairingPlayer1 form-control"><option value="">Seleccionar...</option>';
+                    partnersData.forEach(function(p) {
+                        html += '<option value="' + p.id + '">' + p.name + ' (' + (p.gender === 'M' ? 'M' : 'F') + ')</option>';
+                    });
                     html += '</select></div>';
                     html += '<div class="form-group"><label>Jugador 2</label>';
-                    html += '<select class="newPairingPlayer2 form-control"><option value="">Seleccionar género primero...</option>';
+                    html += '<select class="newPairingPlayer2 form-control"><option value="">Seleccionar...</option>';
+                    partnersData.forEach(function(p) {
+                        html += '<option value="' + p.id + '">' + p.name + ' (' + (p.gender === 'M' ? 'M' : 'F') + ')</option>';
+                    });
                     html += '</select></div>';
 
                     var modal = $('<div class="modal fade" id="modalAgregarPareja" tabindex="-1" role="dialog"><div class="modal-dialog" role="document"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">Agregar Pareja</h5><button type="button" class="close" data-dismiss="modal"><span>&times;</span></button></div><div class="modal-body">' + html + '</div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button><button type="button" class="btn btn-primary" id="btnGuardarPareja">Guardar</button></div></div></div></div>');
@@ -466,47 +470,29 @@ $(function() {
                     $('body').append(modal);
                     modal.modal('show');
 
-                    // Filtrar jugadores cuando cambia el género
-                    modal.find('.newPairingGender').on('change', function() {
-                        var selectedGender = $(this).val();
-                        var partner1 = modal.find('.newPairingPlayer1');
-                        var partner2 = modal.find('.newPairingPlayer2');
-
-                        partner1.find('option').not(':first').remove();
-                        partner2.find('option').not(':first').remove();
-
-                        if (selectedGender) {
-                            partnersData.forEach(function(p) {
-                                if (p.gender === selectedGender) {
-                                    partner1.append('<option value="' + p.id + '">' + p.name + '</option>');
-                                    partner2.append('<option value="' + p.id + '">' + p.name + '</option>');
-                                }
-                            });
-                        }
-                    });
-
                     // Guardar pareja
                     modal.find('#btnGuardarPareja').on('click', function(e) {
                         e.preventDefault();
                         e.stopPropagation();
-                        console.log('Click en Guardar detectado');
 
-                        var gender = modal.find('.newPairingGender').val();
                         var category = modal.find('.newPairingCategory').val();
-                        var player1 = modal.find('.newPairingPlayer1').val();
-                        var player2 = modal.find('.newPairingPlayer2').val();
+                        var player1Id = modal.find('.newPairingPlayer1').val();
+                        var player2Id = modal.find('.newPairingPlayer2').val();
 
-                        console.log('Gender:', gender, 'Category:', category, 'Player1:', player1, 'Player2:', player2);
-
-                        if (!gender || !category || !player1 || !player2) {
+                        if (!category || !player1Id || !player2Id) {
                             alert('Completa todos los campos');
                             return;
                         }
 
-                        if (player1 === player2) {
+                        if (player1Id === player2Id) {
                             alert('Los jugadores deben ser diferentes');
                             return;
                         }
+
+                        // Determinar género basado en los jugadores
+                        var player1Gender = partnersData.find(p => p.id == player1Id).gender;
+                        var player2Gender = partnersData.find(p => p.id == player2Id).gender;
+                        var gender = player1Gender === player2Gender ? player1Gender : 'X';
 
                         console.log('Enviando AJAX a:', adminurl + '/addPairing');
                         $.ajax({
