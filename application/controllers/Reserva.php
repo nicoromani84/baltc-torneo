@@ -55,7 +55,8 @@ class Reserva extends CI_Controller {
 
 		// Categorías Mixtas son 8, 9, 10 - requieren género opuesto
 		$isMixedCategory = in_array(intval($post['category']), [8, 9, 10]);
-		$opposite_gender = ($this->session->gender === 'M') ? 'F' : 'M';
+		$userGender = $this->session->userdata('gender');
+		$opposite_gender = ($userGender === 'M') ? 'F' : 'M';
 
 		if($isMixedCategory) {
 			// Para Mixtas, el partner debe ser del género opuesto
@@ -66,7 +67,7 @@ class Reserva extends CI_Controller {
 			}
 		} else {
 			// Para otras categorías, el partner debe ser del mismo género
-			if($partner->gender != $this->session->gender) {
+			if($partner->gender != $userGender) {
 				$response['action'] = false;
 				$response['msg'] = 'El compañero seleccionado no existe o no es del mismo género.';
 				$this->protect->ajaxDie($response);
