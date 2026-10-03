@@ -1966,7 +1966,6 @@ public function enviarNotificacion() {
 		$sql = "SELECT
 					c.name AS categoria,
 					GROUP_CONCAT(p.name ORDER BY p.name SEPARATOR ' - ') AS pareja,
-					p.gender,
 					r.id
 				FROM reservations r
 				JOIN reservations_partners rp ON r.id = rp.reservation_id
@@ -1985,15 +1984,12 @@ public function enviarNotificacion() {
 		$html .= '<tr>
 					<th>Pareja</th>
 					<th>Categoría</th>
-					<th>Género</th>
 				  </tr>';
 
 		foreach ($rows as $row) {
-			$genero = ($row->gender === 'M') ? 'Caballeros' : 'Damas';
 			$html .= '<tr>';
 			$html .= '<td>' . htmlspecialchars($row->pareja, ENT_QUOTES, 'UTF-8') . '</td>';
 			$html .= '<td>' . htmlspecialchars($row->categoria, ENT_QUOTES, 'UTF-8') . '</td>';
-			$html .= '<td>' . $genero . '</td>';
 			$html .= '</tr>';
 		}
 
