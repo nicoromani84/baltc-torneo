@@ -1,747 +1,330 @@
 <?php defined('BASEPATH') OR exit('No direct script access allowed'); ?>
 
-<div class="draws-admin">
+<div class="draws-container">
+	<h2><i class="fas fa-sitemap"></i> Draws</h2>
 
-	<div class="partidos-header">
-		<h2><i class="fas fa-sitemap"></i> Draw del Torneo</h2>
-		<button class="btn btn-danger" id="btn-pdf" style="display:none">
-			<i class="fas fa-file-pdf"></i> Bajar PDF
-		</button>
+	<div id="draws-tabs" class="draws-tabs"></div>
+
+	<div id="draws-content" style="display:none;">
+		<div id="draw-title" class="draw-title"></div>
+		<div id="draw-bracket" class="draw-bracket"></div>
 	</div>
 
-	<!-- SELECTOR CATEGORIA -->
-	<div class="card mb-4">
-		<div class="card-body">
-			<div class="form-row align-items-end">
-				<div class="form-group col-md-4 mb-0">
-					<label>Categoría</label>
-					<select id="draws-category" class="form-control">
-						<option value="">Elegir...</option>
-						<?php foreach($categories as $c): ?>
-						<option value="<?=$c->id?>"><?=$c->name?></option>
-						<?php endforeach; ?>
-					</select>
-				</div>
-				<div class="form-group col-md-3 mb-0" id="draws-gender-row">
-					<label>Género</label>
-					<select id="draws-gender" class="form-control">
-						<option value="">Elegir...</option>
-						<option value="M">Caballeros</option>
-						<option value="F">Damas</option>
-					</select>
-				</div>
-				<div class="form-group col-md-3 mb-0">
-					<button class="btn btn-primary" id="btn-ver-draw">
-						<i class="fas fa-eye"></i> Ver Draw
-					</button>
-				</div>
-				<div class="form-group col-md-2 mb-0">
-					<button class="btn btn-info" id="btn-crear-grupos">
-						<i class="fas fa-users"></i> Grupos
-					</button>
-				</div>
-			</div>
-		</div>
+	<div id="draws-empty" style="display:none;" class="alert alert-info">
+		<i class="fas fa-sitemap"></i> No hay draws disponibles
 	</div>
-
-	<!-- PESTAÑAS RÁPIDAS - solo categorías con draw sorteado -->
-	<div class="draws-tabs mb-3" id="draws-tabs-container">
-		<span class="text-muted small">Cargando...</span>
-	</div>
-
-	<div id="draw-titulo-activo" class="draws-titulo-activo" style="display:none"></div>
-
-	<div id="draw-container" style="display:none">
-		<div id="draw-bracket" class="draw-bracket-wrap"></div>
-	</div>
-
-	<div id="draw-vacio" style="display:none" class="text-center text-muted" style="padding:40px">
-		<i class="fas fa-sitemap fa-3x" style="margin-bottom:15px; display:block; color:#dee2e6"></i>
-		<p>No hay partidos para esta categoría todavía.</p>
-	</div>
-
 </div>
 
 <style>
-.draws-admin { padding: 20px; }
-.draws-tabs { display:flex; flex-wrap:wrap; gap:6px; }
+.draws-container {
+	padding: 20px;
+}
+
+.draws-tabs {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin-bottom: 20px;
+}
+
 .draws-tab {
-	background: #f8f9fa;
-	border: 1px solid #dee2e6;
+	background: rgba(255,255,255,0.1);
+	border: 1px solid rgba(165,208,81,0.3);
+	color: rgba(255,255,255,0.8);
+	padding: 8px 16px;
 	border-radius: 6px;
-	padding: 6px 14px;
-	font-size: 13px;
-	font-weight: 600;
-	color: #495057;
 	cursor: pointer;
 	transition: all 0.2s;
+	font-size: 13px;
 }
-.draws-tab:hover { background: #e9ecef; border-color: #adb5bd; }
+
+.draws-tab:hover {
+	background: rgba(165,208,81,0.2);
+	border-color: rgba(165,208,81,0.6);
+}
+
 .draws-tab.active {
 	background: #a5d051;
 	border-color: #a5d051;
 	color: #1a1a2e;
 }
-.draws-tab .fa-male { color: #1a6fad; }
-.draws-tab .fa-female { color: #ad1a6f; }
-.draws-tab.active .fa-male,
-.draws-tab.active .fa-female { color: #1a1a2e; }
-.draws-tab-pending {
-	background: #fff;
-	border: 1px dashed #adb5bd;
-	color: #adb5bd;
-	opacity: 0.75;
-}
-.draws-tab-pending:hover { opacity: 1; border-color: #f0ad4e; color: #856404; background: #fff8e1; }
-.draws-tab-pending.active { background: #fff8e1; border-color: #f0ad4e; color: #856404; opacity:1; }
-.draws-titulo-activo {
-	font-weight: 700;
-	font-size: 15px;
-	color: #495057;
-	margin-bottom: 12px;
-	padding: 8px 12px;
-	background: #f8f9fa;
-	border-left: 4px solid #a5d051;
-	border-radius: 4px;
-}
-.partidos-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
-.partidos-header h2 { margin:0; font-size:22px; }
 
-.draw-bracket-wrap { overflow-x: auto; padding-bottom: 20px; }
-.draw-bracket { display: flex; gap: 0; min-width: max-content; }
+.draw-title {
+	font-size: 18px;
+	font-weight: bold;
+	color: #a5d051;
+	margin-bottom: 20px;
+	padding-bottom: 10px;
+	border-bottom: 2px solid rgba(165,208,81,0.3);
+}
 
-.draw-ronda {
+.draw-bracket {
+	overflow-x: auto;
+}
+
+.bracket-row {
+	display: flex;
+	gap: 20px;
+	min-width: max-content;
+	padding-bottom: 20px;
+}
+
+.bracket-column {
+	flex: 0 0 200px;
 	display: flex;
 	flex-direction: column;
-	min-width: 200px;
-}
-.draw-ronda-titulo {
-	text-align: center;
-	font-size: 11px;
-	font-weight: 700;
-	text-transform: uppercase;
-	letter-spacing: 0.5px;
-	color: #6c757d;
-	padding: 8px;
-	background: #f8f9fa;
-	border: 1px solid #dee2e6;
-	border-bottom: none;
-	margin: 0 4px;
-}
-.draw-matches {
-	display: flex;
-	flex-direction: column;
-	justify-content: space-around;
-	flex: 1;
-	padding: 8px 4px;
 	gap: 8px;
 }
 
-.draw-match {
-	background: #fff;
-	border: 1px solid #dee2e6;
-	border-radius: 6px;
+.column-title {
+	text-align: center;
+	font-size: 11px;
+	font-weight: bold;
+	text-transform: uppercase;
+	color: #a5d051;
+	padding: 8px;
+	background: rgba(165,208,81,0.1);
+	border: 1px solid rgba(165,208,81,0.3);
+	border-radius: 4px;
+}
+
+.match {
+	background: rgba(0,0,0,0.3);
+	border: 1.5px solid rgba(165,208,81,0.4);
+	border-radius: 4px;
 	overflow: hidden;
-	position: relative;
-	box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+	backdrop-filter: blur(10px);
 }
-.draw-match.pendiente { border-color: #dee2e6; }
-.draw-match.jugado { border-color: #a5d051; }
 
-.draw-player {
-	display: flex;
-	align-items: center;
-	padding: 7px 10px;
+.match-player {
+	padding: 8px 10px;
+	border-bottom: 1px solid rgba(165,208,81,0.2);
 	font-size: 12px;
-	border-bottom: 1px solid #f0f0f0;
-	gap: 6px;
-	min-height: 34px;
+	color: rgba(255,255,255,0.9);
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
 }
-.draw-player:last-child { border-bottom: none; }
-.draw-player.ganador { font-weight: 700; color: #2d6a00; background: #f0fae0; }
-.draw-player.perdedor { color: #adb5bd; text-decoration: line-through; }
-.draw-player.tbd { color: #ced4da; font-style: italic; }
-.draw-player-name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-transform: capitalize; }
-.draw-player-check { color: #a5d051; font-size: 11px; }
 
-.draw-score {
+.match-player:last-child {
+	border-bottom: none;
+}
+
+.match-player.winner {
+	background: rgba(165,208,81,0.15);
+	color: #a5d051;
+	font-weight: bold;
+}
+
+.match-player.loser {
+	color: rgba(255,255,255,0.4);
+	text-decoration: line-through;
+}
+
+.match-player-name {
+	flex: 1;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	text-transform: capitalize;
+}
+
+.match-seed {
+	color: #a5d051;
+	font-weight: bold;
+	font-size: 10px;
+	margin-right: 4px;
+}
+
+.match-score {
 	text-align: center;
 	font-size: 10px;
-	color: #6c757d;
-	padding: 2px 8px;
-	background: #f8f9fa;
-	border-top: 1px solid #f0f0f0;
-	font-weight: 600;
+	color: rgba(255,255,255,0.5);
+	padding: 4px 8px;
+	background: rgba(0,0,0,0.2);
+	border-top: 1px solid rgba(165,208,81,0.2);
 }
 
-.draw-connector {
-	display: flex;
-	flex-direction: column;
-	justify-content: space-around;
-	width: 20px;
-	padding: 8px 0;
-}
-.draw-connector-line {
-	flex: 1;
-	border-right: 2px solid #dee2e6;
-	margin: 2px 0;
-}
-@media (max-width: 768px) {
-	#btn-pdf { display: none !important; }
+.tbd {
+	color: rgba(255,255,255,0.3);
+	font-style: italic;
 }
 </style>
 
 <script>
-console.log('admin/draws.php script loaded');
-$(function(){
-	console.log('jQuery ready - baseurl:', '<?=base_url()?>');
-	var baseurl = '<?=base_url()?>';
-	var token = '<?=$token?>';
-	var RONDAS = ['1ra Ronda','2da Ronda','Cuartos de Final','Semifinal','Final'];
-	var currentPartidos = [], currentSembrados = {};
+$(function() {
+	var baseUrl = '<?php echo base_url(); ?>';
+	var draws = [];
+	var currentData = null;
 
-	// Click en pestañas
-	$(document).on('click', '.draws-tab', function(){
-		$('.draws-tab').removeClass('active');
-		$(this).addClass('active');
-		var cat = $(this).data('cat');
-		var gen = $(this).data('gen');
-		var tiene = $(this).data('tiene');
-		$('#draws-category').val(cat);
-		currentGender = gen; // Guardar el género globalmente
-		// Para mixtas (X), no mostrar select de género
-		if(gen === 'X') {
-			$('#draws-gender-row').hide();
-			$('#draws-gender').val('');
-		} else {
-			$('#draws-gender-row').show();
-			$('#draws-gender').val(gen);
-		}
-		if(!tiene) {
-			$('#draw-container').hide();
-			$('#draw-titulo-activo').hide();
-			$('#btn-pdf').hide();
-			$('#draw-vacio').html(
-				'<i class="fas fa-sitemap fa-3x" style="margin-bottom:15px;display:block;color:#dee2e6"></i>'
-				+ '<p>Esta categoría aún no fue sorteada.</p>'
-				+ '<div class="mt-3">'
-				+ '<a href="'+baseurl+'admin/sorteo?cat='+cat+'&gen='+gen+'" class="btn btn-warning mt-2">'
-				+ '<i class="fas fa-random"></i> Sortear automático</a>'
-				+ ' '
-				+ '<a href="'+baseurl+'admin/crearGruposManual?cat='+cat+'&gen='+gen+'" class="btn btn-info mt-2">'
-				+ '<i class="fas fa-users"></i> Crear grupos manualmente</a>'
-				+ '</div>'
-			).show();
-			return;
-		}
-		$('#btn-ver-draw').trigger('click');
-	});
-
-	// Cargar pestañas: todas las categorías, con indicador si tienen draw o no
-	var currentGender = ''; // Guardar el género seleccionado
-	function cargarTabs() {
+	// Load available draws
+	function loadDraws() {
 		$.ajax({
-			url: baseurl + 'draws/getDrawsDisponibles',
+			url: baseUrl + 'draws/getDrawsDisponibles',
 			type: 'POST',
+			dataType: 'json',
 			success: function(res) {
-				console.log('getDrawsDisponibles OK:', res);
-				var $cont = $('#draws-tabs-container');
-				$cont.html('');
-
-				if(!res.draws || res.draws.length === 0) {
-					$cont.html('<span class="text-muted small">No hay draws disponibles</span>');
+				console.log('Draws loaded:', res);
+				if (!res.draws || res.draws.length === 0) {
+					$('#draws-empty').show();
 					return;
 				}
 
-				// Group by category
-				var byCategory = {};
-				res.draws.forEach(function(d) {
-					if(!byCategory[d.category]) {
-						byCategory[d.category] = { id: d.category, name: d.categoria, genders: [] };
-					}
-					byCategory[d.category].genders.push(d.gender);
-				});
+				draws = res.draws;
+				renderTabs();
 
-				// Create tabs
-				for(var catId in byCategory) {
-					var cat = byCategory[catId];
-					cat.genders.forEach(function(gen) {
-						var icono = gen == 'M' ? 'fa-male' : (gen == 'F' ? 'fa-female' : 'fa-venus-mars');
-						var label = gen == 'M' ? 'Cab.' : (gen == 'F' ? 'Dam.' : 'Mixto');
-						$cont.append('<button class="draws-tab" data-cat="'+cat.id+'" data-gen="'+gen+'" data-tiene="1">'
-							+ '<i class="fas '+icono+'"></i> '+cat.name+' '+label
-							+ '</button>');
-					});
+				// Auto-select first
+				if (draws.length > 0) {
+					selectDraw(draws[0].category, draws[0].gender);
 				}
-
-				// Auto-cargar el primero
-				setTimeout(function(){
-					var $primero = $('.draws-tab').first();
-					if($primero.length) $primero.trigger('click');
-				}, 100);
 			},
 			error: function(xhr, status, err) {
-				console.error('ERROR en getDrawsDisponibles:', status, err, xhr.responseText);
-				$('#draws-tabs-container').html('<span class="text-danger small">Error cargando draws</span>');
+				console.error('Error loading draws:', err, xhr.responseText);
+				$('#draws-empty').html('<i class="fas fa-exclamation-circle"></i> Error al cargar draws').show();
 			}
 		});
 	}
-	cargarTabs();
 
-	$('#btn-crear-grupos').on('click', function(){
-		var cat = $('#draws-category').val();
-		var gen = $('#draws-gender').val();
-		if(!cat || !gen) { alert('Seleccioná categoría y género.'); return; }
-		location.href = baseurl + 'admin/crearGruposManual?cat=' + cat + '&gen=' + gen;
-	});
+	function renderTabs() {
+		var $tabs = $('#draws-tabs');
+		$tabs.html('');
 
-	$('#btn-ver-draw').on('click', function(){
-		var cat = $('#draws-category').val();
-		var gen = currentGender || $('#draws-gender').val(); // Usar currentGender si está guardado
-		if(!cat || !gen) { alert('Seleccioná categoría y género.'); return; }
+		draws.forEach(function(d) {
+			var icon = d.gender === 'M' ? 'fa-male' : (d.gender === 'F' ? 'fa-female' : 'fa-venus-mars');
+			var label = d.gender === 'M' ? 'Caballeros' : (d.gender === 'F' ? 'Damas' : 'Mixto');
+
+			$tabs.append(
+				'<button class="draws-tab" data-cat="' + d.category + '" data-gen="' + d.gender + '">' +
+				'<i class="fas ' + icon + '"></i> ' + d.categoria + ' ' + label +
+				'</button>'
+			);
+		});
+
+		$(document).on('click', '.draws-tab', function() {
+			var cat = $(this).data('cat');
+			var gen = $(this).data('gen');
+			selectDraw(cat, gen);
+		});
+	}
+
+	function selectDraw(cat, gen) {
+		$('.draws-tab').removeClass('active');
+		$('.draws-tab[data-cat="' + cat + '"][data-gen="' + gen + '"]').addClass('active');
 
 		$.ajax({
-			url: baseurl + 'draws/getData',
+			url: baseUrl + 'draws/getData',
 			type: 'POST',
-			data: { category: cat, gender: gen },
+			dataType: 'json',
+			data: {
+				category: cat,
+				gender: gen
+			},
 			success: function(res) {
-				if(!res.action || !res.partidos.length) {
-					$('#draw-container').hide();
-					$('#draw-vacio').show();
+				console.log('Draw data loaded:', res);
+				if (!res.action || !res.partidos || res.partidos.length === 0) {
+					$('#draws-content').hide();
+					$('#draws-empty').html('<i class="fas fa-exclamation-circle"></i> No hay partidos en este draw').show();
 					return;
 				}
-				$('#draw-vacio').hide();
-				// Resaltar pestaña activa
-				var cat = $('#draws-category').val();
-				var gen = $('#draws-gender').val();
-				$('.draws-tab').removeClass('active');
-				$('.draws-tab[data-cat="'+cat+'"][data-gen="'+gen+'"]').addClass('active');
-				// Mostrar título
-				var catNombre = $('#draws-category option:selected').text();
-				var genNombre = gen == 'M' ? 'Caballeros' : 'Damas';
-				$('#draw-titulo-activo').text('Draw ' + catNombre + ' — ' + genNombre).show();
-				$('#btn-pdf').show();
-				currentPartidos = res.partidos;
-				currentSembrados = res.sembrados || {};
-				if(res.is_groups) {
-					renderGroups(res.groups);
-				} else {
-					renderDraw(res.partidos, res.sembrados || {});
-				}
-				$('#draw-container').show();
+
+				$('#draws-empty').hide();
+				currentData = res;
+				renderBracket(res.partidos, res.sembrados || {});
+				$('#draws-content').show();
+
+				// Update title
+				var catName = draws.find(d => d.category == cat).categoria;
+				var genName = gen === 'M' ? 'Caballeros' : (gen === 'F' ? 'Damas' : 'Mixto');
+				$('#draw-title').text(catName + ' — ' + genName);
+			},
+			error: function(xhr, status, err) {
+				console.error('Error loading draw data:', err, xhr.responseText);
+				$('#draws-empty').html('<i class="fas fa-exclamation-circle"></i> Error al cargar datos').show();
 			}
 		});
-	});
-
-	function renderGroups(groups) {
-		var html = '';
-		for(var grupoNombre in groups) {
-			var standings = groups[grupoNombre];
-			html += '<div style="margin-bottom: 30px;">';
-			html += '<h5 style="margin-bottom: 15px;">' + grupoNombre + '</h5>';
-			html += '<table class="table table-sm table-bordered" style="max-width: 600px;">';
-			html += '<thead class="table-light"><tr><th>Pos</th><th>Jugador</th><th>PJ</th><th>PG</th><th>PP</th><th>DS</th><th>DG</th><th>Pts</th></tr></thead>';
-			html += '<tbody>';
-			for(var i = 0; i < standings.length; i++) {
-				var s = standings[i];
-				html += '<tr>';
-				html += '<td style="font-weight: bold;">' + (i+1) + '</td>';
-				html += '<td>' + s.nombre.toLowerCase() + '</td>';
-				html += '<td>' + s.pj + '</td>';
-				html += '<td>' + s.pg + '</td>';
-				html += '<td>' + s.pp + '</td>';
-				html += '<td>' + (s.dg >= 0 ? '+' : '') + s.dg + '</td>';
-				html += '<td>' + (s.dgg >= 0 ? '+' : '') + s.dgg + '</td>';
-				html += '<td style="font-weight: bold; background: #f0fae0;">' + s.pts + '</td>';
-				html += '</tr>';
-			}
-			html += '</tbody></table>';
-			html += '</div>';
-		}
-		$('#draw-bracket').html(html);
 	}
 
-	function renderDraw(partidos, sembrados) {
-		sembrados = sembrados || {};
+	function renderBracket(partidos, sembrados) {
+		const RONDAS = ['1ra Ronda', '2da Ronda', 'Cuartos de Final', 'Semifinal', 'Final'];
 
-		// Detectar la primera ronda real del draw (no asumir '1ra Ronda')
+		// Detectar primera ronda
 		var rondaInicioIdx = 0;
-		for(var i = 0; i < RONDAS.length; i++) {
-			if(partidos.some(function(p){ return p.ronda === RONDAS[i]; })) {
+		for (var i = 0; i < RONDAS.length; i++) {
+			if (partidos.some(p => p.ronda === RONDAS[i])) {
 				rondaInicioIdx = i;
 				break;
 			}
 		}
-		var primeraRonda = partidos.filter(function(p){ return p.ronda === RONDAS[rondaInicioIdx]; });
+
+		var primeraRonda = partidos.filter(p => p.ronda === RONDAS[rondaInicioIdx]);
 		var totalPrimera = primeraRonda.length;
-		// Cuántas rondas hay desde la primera real hasta el final
 		var rondasCount = RONDAS.length - rondaInicioIdx;
 
-		// Crear slots para cada ronda
+		// Crear slots por ronda
 		var byRonda = {};
-		for(var r = 0; r < rondasCount; r++) {
+		for (var r = 0; r < rondasCount; r++) {
 			var rondaNombre = RONDAS[rondaInicioIdx + r];
-			if(!rondaNombre) break;
+			if (!rondaNombre) break;
 			var slotCount = Math.max(1, totalPrimera / Math.pow(2, r));
 			byRonda[rondaNombre] = new Array(Math.ceil(slotCount)).fill(null);
 		}
 
-		// Ubicar partidos en su posición correcta
-		partidos.forEach(function(p) {
-			if(byRonda[p.ronda] !== undefined) {
+		// Ubicar partidos
+		partidos.forEach(p => {
+			if (byRonda[p.ronda] !== undefined) {
 				var pos = p.bracket_pos !== null && p.bracket_pos !== undefined ? parseInt(p.bracket_pos) : 0;
-				if(pos < byRonda[p.ronda].length) {
+				if (pos < byRonda[p.ronda].length) {
 					byRonda[p.ronda][pos] = p;
 				}
 			}
 		});
 
-		// Solo incluir rondas que tienen slots definidos
 		var rondasOrden = Object.keys(byRonda);
-
-		var html = '<div class="draw-bracket">';
+		var html = '<div class="bracket-row">';
 
 		rondasOrden.forEach(function(ronda, idx) {
-			html += '<div class="draw-ronda">';
-			html += '<div class="draw-ronda-titulo">' + ronda + '</div>';
-			html += '<div class="draw-matches">';
+			html += '<div class="bracket-column">';
+			html += '<div class="column-title">' + ronda + '</div>';
 
 			byRonda[ronda].forEach(function(p) {
-				if(!p) {
-					// TBD match
-					html += '<div class="draw-match pendiente">';
-					html += '<div class="draw-player tbd"><span class="draw-player-name">Por definir</span></div>';
-					html += '<div class="draw-player tbd"><span class="draw-player-name">Por definir</span></div>';
+				if (!p) {
+					html += '<div class="match">';
+					html += '<div class="match-player tbd">Por definir</div>';
+					html += '<div class="match-player tbd">Por definir</div>';
 					html += '</div>';
 					return;
 				}
 
-				var esBYE = p.score === 'BYE';
-				var jugado = p.ganador_id != null;
-				html += '<div class="draw-match ' + (jugado ? 'jugado' : 'pendiente') + '">';
+				html += '<div class="match">';
 
 				// Jugador 1
-				var esBYE1 = !p.jugador1_id || p.jugador1_id == 0;
-				var c1 = (!esBYE1 && jugado) ? (p.ganador_id == p.jugador1_id ? 'ganador' : 'perdedor') : '';
-				var seed1 = !esBYE1 && sembrados[p.jugador1_id] ? sembrados[p.jugador1_id] : 0;
-				html += '<div class="draw-player ' + c1 + (esBYE1 ? ' tbd' : '') + '">';
-				if(seed1) html += '<span style="color:#a5d051;font-weight:800;font-size:10px;margin-right:3px">['+seed1+']</span>';
-				html += '<span class="draw-player-name">' + (p.jugador1 ? p.jugador1.toLowerCase() : 'BYE') + '</span>';
-				if(!esBYE1 && p.ganador_id == p.jugador1_id) html += '<span class="draw-player-check"><i class="fas fa-check"></i></span>';
-				html += '</div>';
+				var j1Seed = sembrados[p.jugador1_id] ? '<span class="match-seed">[' + sembrados[p.jugador1_id] + ']</span>' : '';
+				var j1Class = p.ganador_id === p.jugador1_id ? 'winner' : (p.ganador_id ? 'loser' : '');
+				var j1Name = p.jugador1 ? p.jugador1.toLowerCase() : 'BYE';
+				html += '<div class="match-player ' + j1Class + '">' + j1Seed + '<span class="match-player-name">' + j1Name + '</span></div>';
 
 				// Jugador 2
-				var esBYE2 = !p.jugador2_id || p.jugador2_id == 0;
-				var c2 = (!esBYE2 && jugado) ? (p.ganador_id == p.jugador2_id ? 'ganador' : 'perdedor') : '';
-				var seed2 = !esBYE2 && sembrados[p.jugador2_id] ? sembrados[p.jugador2_id] : 0;
-				html += '<div class="draw-player ' + c2 + (esBYE2 ? ' tbd' : '') + '">';
-				if(seed2) html += '<span style="color:#a5d051;font-weight:800;font-size:10px;margin-right:3px">['+seed2+']</span>';
-				html += '<span class="draw-player-name">' + (p.jugador2 ? p.jugador2.toLowerCase() : 'BYE') + '</span>';
-				if(!esBYE2 && p.ganador_id == p.jugador2_id) html += '<span class="draw-player-check"><i class="fas fa-check"></i></span>';
-				html += '</div>';
+				var j2Seed = sembrados[p.jugador2_id] ? '<span class="match-seed">[' + sembrados[p.jugador2_id] + ']</span>' : '';
+				var j2Class = p.ganador_id === p.jugador2_id ? 'winner' : (p.ganador_id ? 'loser' : '');
+				var j2Name = p.jugador2 ? p.jugador2.toLowerCase() : 'BYE';
+				html += '<div class="match-player ' + j2Class + '">' + j2Seed + '<span class="match-player-name">' + j2Name + '</span></div>';
 
-				if(p.score && p.score !== 'BYE') html += '<div class="draw-score">' + p.score + '</div>';
+				// Score
+				if (p.score && p.score !== 'BYE') {
+					html += '<div class="match-score">' + p.score + '</div>';
+				}
 
 				html += '</div>';
 			});
 
-			html += '</div></div>';
-
-			// Conector entre rondas
-			if(idx < rondasOrden.length - 1) {
-				html += '<div class="draw-connector">';
-				var count = byRonda[ronda].length;
-				for(var i = 0; i < count; i++) {
-					html += '<div class="draw-connector-line"></div>';
-				}
-				html += '</div>';
-			}
+			html += '</div>';
 		});
 
 		html += '</div>';
 		$('#draw-bracket').html(html);
-
-		// Inicializar clicks para intercambiar parejas
-		setTimeout(function() { initSwapMatches(partidos); }, 100);
 	}
 
-	// Genera HTML del bracket clásico (izquierda→derecha) con inline styles para PDF
-	function renderBracketForPDF(partidos, sembrados) {
-		sembrados = sembrados || {};
-
-		// Primera letra de cada palabra en mayúscula
-		function tc(str) {
-			if(!str) return 'BYE';
-			return str.toLowerCase().replace(/\b\w/g, function(l){ return l.toUpperCase(); });
-		}
-
-		var rondaInicioIdx = 0;
-		for(var i = 0; i < RONDAS.length; i++) {
-			if(partidos.some(function(p){ return p.ronda === RONDAS[i]; })) { rondaInicioIdx = i; break; }
-		}
-		var primeraRonda = RONDAS[rondaInicioIdx];
-		var totalPrimera = partidos.filter(function(p){ return p.ronda === primeraRonda; }).length;
-		var rondasCount = RONDAS.length - rondaInicioIdx;
-
-		var byRonda = {};
-		for(var r = 0; r < rondasCount; r++) {
-			var rn = RONDAS[rondaInicioIdx + r];
-			byRonda[rn] = new Array(Math.ceil(Math.max(1, totalPrimera / Math.pow(2, r)))).fill(null);
-		}
-		partidos.forEach(function(p) {
-			if(byRonda[p.ronda] !== undefined) {
-				var pos = (p.bracket_pos !== null && p.bracket_pos !== undefined) ? parseInt(p.bracket_pos) : 0;
-				if(pos < byRonda[p.ronda].length) byRonda[p.ronda][pos] = p;
-			}
-		});
-
-		var rondasOrden = Object.keys(byRonda);
-		var numRondas = rondasOrden.length;
-		var containerW = 720;
-		var connW = 14;
-		// Primera columna 1.8x más ancha que las siguientes
-		var totalConns = connW * (numRondas - 1);
-		var unitW = Math.floor((containerW - totalConns) / (numRondas + 0.8));
-		var firstColW = Math.floor(unitW * 1.8);
-
-		function colWidth(idx) { return idx === 0 ? firstColW : unitW; }
-		function colFs(idx)    { return idx === 0 ? 11 : 10; }
-
-		var html = '<div style="display:flex;align-items:stretch;background:#fff;font-family:Arial,Helvetica,sans-serif;width:' + containerW + 'px;box-sizing:border-box;">';
-
-		rondasOrden.forEach(function(ronda, idx) {
-			var slots = byRonda[ronda];
-			var cw = colWidth(idx);
-			var fs = colFs(idx);
-			html += '<div style="width:' + cw + 'px;flex-shrink:0;display:flex;flex-direction:column;">';
-			html += '<div style="text-align:center;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;color:#6c757d;padding:5px 4px;background:#f1f3f5;border:1px solid #dee2e6;border-bottom:none;margin:0 3px;">' + ronda + '</div>';
-			html += '<div style="display:flex;flex-direction:column;justify-content:space-around;flex:1;padding:5px 3px;gap:5px;">';
-
-			slots.forEach(function(p) {
-				if(!p) {
-					html += '<div style="border:1px solid #dee2e6;border-radius:4px;overflow:hidden;">';
-					html += '<div style="padding:4px 7px;font-size:' + fs + 'px;color:#ced4da;font-style:italic;min-height:26px;display:flex;align-items:center;">Por definir</div>';
-					html += '<div style="padding:4px 7px;font-size:' + fs + 'px;color:#ced4da;font-style:italic;border-top:1px solid #f0f0f0;min-height:26px;display:flex;align-items:center;">Por definir</div>';
-					html += '</div>';
-					return;
-				}
-				var jugado = p.ganador_id != null;
-				html += '<div style="border:1px solid ' + (jugado ? '#a5d051' : '#dee2e6') + ';border-radius:4px;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,0.05);">';
-				[[p.jugador1_id, p.jugador1, p.ganador_id == p.jugador1_id],
-				 [p.jugador2_id, p.jugador2, p.ganador_id == p.jugador2_id]].forEach(function(pl, pi) {
-					var pid = pl[0], pname = pl[1], isWin = jugado && pl[2];
-					var bg = isWin ? '#f0fae0' : '#fff';
-					var col = !jugado ? '#333' : (isWin ? '#2d6a00' : '#adb5bd');
-					var dec = jugado && !isWin ? 'line-through' : 'none';
-					var fw = isWin ? '700' : 'normal';
-					var seed = sembrados[pid] ? '<span style="color:#a5d051;font-weight:800;font-size:8px;margin-right:2px">[' + sembrados[pid] + ']</span>' : '';
-					var name = tc(pname);
-					var bt = pi === 1 ? 'border-top:1px solid #f0f0f0;' : '';
-					html += '<div style="padding:4px 7px;font-size:' + fs + 'px;background:' + bg + ';color:' + col + ';text-decoration:' + dec + ';font-weight:' + fw + ';min-height:26px;display:flex;align-items:center;' + bt + 'white-space:nowrap;overflow:hidden;">';
-					html += seed + '<span style="overflow:hidden;text-overflow:ellipsis;text-decoration:' + dec + ';">' + name + '</span></div>';
-				});
-				if(p.score && p.score !== 'BYE') {
-					html += '<div style="text-align:center;font-size:8px;color:#6c757d;background:#f8f9fa;padding:2px 5px;border-top:1px solid #f0f0f0;font-weight:600;">' + p.score + '</div>';
-				}
-				html += '</div>';
-			});
-
-			html += '</div></div>';
-
-			// Conector entre rondas
-			if(idx < rondasOrden.length - 1) {
-				var cnt = slots.length;
-				html += '<div style="width:' + connW + 'px;flex-shrink:0;display:flex;flex-direction:column;justify-content:space-around;padding:5px 0;">';
-				for(var ci = 0; ci < cnt; ci++) {
-					html += '<div style="flex:1;border-right:1px solid #dee2e6;margin:1px 0;"></div>';
-				}
-				html += '</div>';
-			}
-		});
-
-		html += '</div>';
-		return html;
-	}
-
-	// PDF DOWNLOAD — A4 portrait, alta calidad, bracket clásico izquierda→derecha
-	$('#btn-pdf').on('click', function(){
-		var cat = $('#draws-category').val();
-		var gen = $('#draws-gender').val();
-		var catNombre = $('#draws-category option:selected').text();
-		var genNombre = gen == 'M' ? 'Caballeros' : 'Damas';
-
-		if(!currentPartidos || !currentPartidos.length) { alert('No hay draw cargado.'); return; }
-
-		var $tmp = $('<div>').css({ position: 'fixed', left: '-9999px', top: 0, zIndex: -1, background: '#fff' }).appendTo('body');
-		$tmp.html(renderBracketForPDF(currentPartidos, currentSembrados));
-
-		html2canvas($tmp[0].firstElementChild, {
-			scale: 3,
-			backgroundColor: '#ffffff',
-			useCORS: true,
-			logging: false
-		}).then(function(canvas) {
-			$tmp.remove();
-			var imgData = canvas.toDataURL('image/png');
-			var pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-			var pageW = pdf.internal.pageSize.getWidth();
-			var pageH = pdf.internal.pageSize.getHeight();
-
-			var logoImg = new Image();
-			logoImg.crossOrigin = 'anonymous';
-			logoImg.src = 'https://www.baltc.net/torneo/static/img/logo.png';
-
-			var finalizarPDF = function(conLogo) {
-				var headerH = 32;
-				if(conLogo) {
-					var la = logoImg.naturalWidth / logoImg.naturalHeight;
-					var lh = 20, lw = lh * la;
-					pdf.addImage(logoImg, 'PNG', 6, 5, lw, lh);
-					pdf.setTextColor(26, 26, 46);
-					pdf.setFontSize(13);
-					pdf.setFont('helvetica', 'bold');
-					pdf.text('TORNEO INTERNO DE SINGLES — BALTC', lw + 10, 13);
-					pdf.setFontSize(9);
-					pdf.setFont('helvetica', 'normal');
-					pdf.setTextColor(80, 80, 80);
-					pdf.text('Categoría ' + catNombre + ' — ' + genNombre, lw + 10, 22);
-				} else {
-					pdf.setFontSize(13);
-					pdf.setFont('helvetica', 'bold');
-					pdf.setTextColor(26, 26, 46);
-					pdf.text('TORNEO INTERNO BALTC — ' + catNombre + ' ' + genNombre, pageW/2, 16, { align: 'center' });
-				}
-				pdf.setDrawColor(165, 208, 81);
-				pdf.setLineWidth(1.2);
-				pdf.line(0, headerH, pageW, headerH);
-
-				var availW = pageW - 16;
-				var availH = pageH - headerH - 14;
-				var ratio = canvas.width / canvas.height;
-				var imgW = availW, imgH = imgW / ratio;
-				if(imgH > availH) { imgH = availH; imgW = imgH * ratio; }
-				pdf.addImage(imgData, 'PNG', (pageW - imgW) / 2, headerH + 4, imgW, imgH);
-
-				pdf.setFontSize(7);
-				pdf.setTextColor(150);
-				pdf.text('Buenos Aires Lawn Tennis Club — baltc.net/torneo', pageW/2, pageH - 4, { align: 'center' });
-				pdf.save('Draw_' + catNombre + '_' + genNombre + '_BALTC.pdf');
-			};
-
-			logoImg.onload = function() { finalizarPDF(true); };
-			logoImg.onerror = function() { finalizarPDF(false); };
-		});
-	});
+	// Initial load
+	loadDraws();
 });
-</script>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script>
-// Make jsPDF available
-window.jsPDF = window.jspdf.jsPDF;
-
-// ========== INTERCAMBIAR PAREJAS CON CLICKS ==========
-var selectedMatch = null;
-
-function initSwapMatches(partidos) {
-	document.querySelectorAll('.draw-match').forEach(function(match, idx) {
-		if(partidos && partidos[idx]) {
-			match.dataset.matchId = partidos[idx].id;
-			match.dataset.bracketPos = partidos[idx].bracket_pos;
-			match.dataset.ronda = partidos[idx].ronda;
-			match.dataset.category = partidos[idx].category;
-			match.dataset.gender = partidos[idx].gender;
-
-			match.style.cursor = 'pointer';
-			match.addEventListener('click', function(e) {
-				e.stopPropagation();
-				selectMatch(this, partidos);
-			});
-		}
-	});
-
-	// Deseleccionar al hacer click fuera
-	document.addEventListener('click', function() {
-		if(selectedMatch) {
-			selectedMatch.classList.remove('selected-match');
-			selectedMatch = null;
-		}
-	});
-}
-
-function selectMatch(match, partidos) {
-	if(!selectedMatch) {
-		// Primer click - seleccionar
-		selectedMatch = match;
-		match.classList.add('selected-match');
-		return;
-	}
-
-	if(selectedMatch === match) {
-		// Click en el mismo - deseleccionar
-		match.classList.remove('selected-match');
-		selectedMatch = null;
-		return;
-	}
-
-	// Segundo click - intercambiar
-	swapMatches(selectedMatch, match);
-	selectedMatch.classList.remove('selected-match');
-	selectedMatch = null;
-}
-
-function swapMatches(match1, match2) {
-	var id1 = parseInt(match1.dataset.matchId);
-	var id2 = parseInt(match2.dataset.matchId);
-	var pos1 = parseInt(match1.dataset.bracketPos);
-	var pos2 = parseInt(match2.dataset.bracketPos);
-	var ronda = match1.dataset.ronda;
-	var category = match1.dataset.category;
-	var gender = match1.dataset.gender;
-
-	$.ajax({
-		url: baseurl + 'admin/swapMatchPositions',
-		type: 'POST',
-		data: {
-			match1_id: id1,
-			match2_id: id2,
-			pos1: pos1,
-			pos2: pos2,
-			ronda: ronda,
-			category: category,
-			gender: gender
-		},
-		headers: { 'X-Auth-Token': token },
-		success: function(res) {
-			if(res.action) {
-				loadDrawData();
-			} else {
-				alert('Error: ' + (res.msg || 'Error desconocido'));
-			}
-		},
-		error: function() {
-			alert('Error de conexión');
-		}
-	});
-}
-
-// Estilos para intercambio
-var style = document.createElement('style');
-style.textContent = `
-	.draw-match {
-		cursor: pointer;
-		transition: all 0.2s;
-	}
-	.draw-match:hover {
-		box-shadow: 0 0 6px rgba(165, 208, 81, 0.4);
-		transform: scale(1.02);
-	}
-	.selected-match {
-		box-shadow: 0 0 12px rgba(165, 208, 81, 0.8) !important;
-		border: 2px solid rgba(165, 208, 81, 0.8) !important;
-		background: rgba(165, 208, 81, 0.05);
-	}
-`;
-document.head.appendChild(style);
 </script>
