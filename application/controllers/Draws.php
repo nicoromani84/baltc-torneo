@@ -32,15 +32,14 @@ class Draws extends CI_Controller {
 		$this->protect->setRequest('POST');
 		if(!$this->User->isLogged()) $this->protect->ajaxDie(array('action'=>false));
 
-		// Debug: check all matches
-		$allMatches = $this->db->select('id, category, gender')->get('matches')->result();
-		$categories = $this->db->get('category')->result();
+		$matchCount = $this->db->count_all('matches');
+		$catCount = $this->db->count_all('category');
 
 		$this->protect->ajaxDie(array(
 			'action'=>true,
 			'draws'=> array(),
-			'all_matches' => $allMatches,
-			'all_categories' => $categories
+			'debug_matches' => $matchCount,
+			'debug_cats' => $catCount
 		));
 	}
 
