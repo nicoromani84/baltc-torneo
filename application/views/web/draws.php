@@ -357,8 +357,8 @@
 <script>
 // Cache buster: <?php echo time(); ?>
 $(function(){
-	var baseurl = '<?=base_url()?>';
-	var token = '<?=$token?>';
+	var baseurl = '<?=htmlspecialchars(base_url(), ENT_QUOTES)?>';
+	var token = '<?=htmlspecialchars($token, ENT_QUOTES)?>';
 	var RONDAS = ['1ra Ronda','2da Ronda','Cuartos de Final','Semifinal','Final'];
 	var rondaInicioIdx = 0;
 	var rondaActivaIdx = 0;
