@@ -629,32 +629,9 @@ $(function(){
 		cargarDrawsDisponibles();
 	}
 
-	// Mostrar/ocultar género según el torneo
 	$('#draws-category').on('change', function(){
-		var cat = $('#draws-category').val();
-		if(cat) {
-			// Siempre cargar con 'X' (mixta) para dobles
-			cargarDraw(cat, 'X');
-		}
-	});
-
-	$('#draws-gender').on('change', function(){
-		var cat = $('#draws-category').val();
-		var gen = $('#draws-gender').val();
-		if(cat && gen) cargarDraw(cat, gen);
-	});
-
-	// Actualizar visibility cuando cambia torneo
-	$('.draws-tab').on('click', function(){
-		currentTournament = $(this).data('tournament');
-		var cat = $('#draws-category').val();
-		var catGender = $('#draws-category option:selected').data('gender');
-
-		if(currentTournament === 'doubles' && catGender === 'X') {
-			$('#draws-gender-wrap').hide();
-		} else if(currentTournament === 'singles') {
-			$('#draws-gender-wrap').show();
-		}
+		var cat = $(this).val();
+		if(cat) cargarDraw(cat, 'X');
 	});
 });
 </script>
