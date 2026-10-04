@@ -33,6 +33,9 @@ class Draws extends CI_Controller {
 		$this->protect->setRequest('POST');
 		if(!$this->User->isLogged()) $this->protect->ajaxDie(array('action'=>false));
 
+		// Debug: check if matches table has data
+		$matchCount = $this->db->count_all('matches');
+
 		// Mostrar solo categorías que tienen partidos sorteados (tienen matches)
 		$sql = "SELECT DISTINCT m.category as category, m.gender
 				FROM matches m
@@ -40,7 +43,16 @@ class Draws extends CI_Controller {
 				WHERE c.active = 1 AND c.name NOT LIKE '%2nd chance%'
 				ORDER BY m.category ASC";
 		$q = $this->db->query($sql);
-		$this->protect->ajaxDie(array('action'=>true, 'draws'=> $q->num_rows() > 0 ? $q->result() : array()));
+
+		$this->protect->ajaxDie(array(
+			'action'=>true,
+			'draws'=> $q->num_rows() > 0 ? $q->result() : array(),
+			'debug' => array(
+				'matches_count' => $matchCount,
+				'draws_count' => $q->num_rows(),
+				'sql' => $this->db->last_query()
+			)
+		));
 	}
 
 	public function getData() {
