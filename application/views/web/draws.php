@@ -195,32 +195,35 @@ $(function() {
 	});
 
 	function renderBracket(partidos, sembrados) {
-		const RONDAS = ['1ra Ronda', '2da Ronda', 'Cuartos de Final', 'Semifinal', 'Final'];
+		var RONDAS = ['1ra Ronda','2da Ronda','Cuartos de Final','Semifinal','Final'];
+		sembrados = sembrados || {};
 
+		// Detectar la primera ronda real del draw
 		var rondaInicioIdx = 0;
-		for (var i = 0; i < RONDAS.length; i++) {
-			if (partidos.some(p => p.ronda === RONDAS[i])) {
+		for(var i = 0; i < RONDAS.length; i++) {
+			if(partidos.some(function(p){ return p.ronda === RONDAS[i]; })) {
 				rondaInicioIdx = i;
 				break;
 			}
 		}
-
-		var primeraRonda = partidos.filter(p => p.ronda === RONDAS[rondaInicioIdx]);
+		var primeraRonda = partidos.filter(function(p){ return p.ronda === RONDAS[rondaInicioIdx]; });
 		var totalPrimera = primeraRonda.length;
 		var rondasCount = RONDAS.length - rondaInicioIdx;
 
+		// Crear slots para cada ronda
 		var byRonda = {};
-		for (var r = 0; r < rondasCount; r++) {
+		for(var r = 0; r < rondasCount; r++) {
 			var rondaNombre = RONDAS[rondaInicioIdx + r];
-			if (!rondaNombre) break;
+			if(!rondaNombre) break;
 			var slotCount = Math.max(1, totalPrimera / Math.pow(2, r));
 			byRonda[rondaNombre] = new Array(Math.ceil(slotCount)).fill(null);
 		}
 
-		partidos.forEach(p => {
-			if (byRonda[p.ronda] !== undefined) {
+		// Ubicar partidos en su posición correcta
+		partidos.forEach(function(p) {
+			if(byRonda[p.ronda] !== undefined) {
 				var pos = p.bracket_pos !== null && p.bracket_pos !== undefined ? parseInt(p.bracket_pos) : 0;
-				if (pos < byRonda[p.ronda].length) {
+				if(pos < byRonda[p.ronda].length) {
 					byRonda[p.ronda][pos] = p;
 				}
 			}
@@ -234,7 +237,7 @@ $(function() {
 			html += '<div class="column-title">' + ronda + '</div>';
 
 			byRonda[ronda].forEach(function(p) {
-				if (!p) {
+				if(!p) {
 					html += '<div class="match">';
 					html += '<div class="match-player tbd">Por definir</div>';
 					html += '<div class="match-player tbd">Por definir</div>';
@@ -242,21 +245,30 @@ $(function() {
 					return;
 				}
 
-				html += '<div class="match">';
+				var jugado = p.ganador_id != null;
+				html += '<div class="match ' + (jugado ? 'jugado' : 'pendiente') + '">';
 
-				var j1Seed = sembrados[p.jugador1_id] ? '<span class="match-seed">[' + sembrados[p.jugador1_id] + ']</span>' : '';
-				var j1Class = p.ganador_id === p.jugador1_id ? 'winner' : (p.ganador_id ? 'loser' : '');
-				var j1Name = p.jugador1 ? p.jugador1.toLowerCase() : 'BYE';
-				html += '<div class="match-player ' + j1Class + '">' + j1Seed + '<span class="match-player-name">' + j1Name + '</span></div>';
+				// Jugador 1
+				var esBYE1 = !p.jugador1_id || p.jugador1_id == 0;
+				var c1 = (!esBYE1 && jugado) ? (p.ganador_id == p.jugador1_id ? 'winner' : 'loser') : '';
+				var seed1 = !esBYE1 && sembrados[p.jugador1_id] ? sembrados[p.jugador1_id] : 0;
+				html += '<div class="match-player ' + c1 + (esBYE1 ? ' tbd' : '') + '">';
+				if(seed1) html += '<span class="match-seed">['+seed1+']</span>';
+				html += '<span class="match-player-name">' + (p.jugador1 ? p.jugador1.toLowerCase() : 'BYE') + '</span>';
+				if(!esBYE1 && p.ganador_id == p.jugador1_id) html += '<span style="color:#a5d051;font-weight:bold;margin-left:4px">✓</span>';
+				html += '</div>';
 
-				var j2Seed = sembrados[p.jugador2_id] ? '<span class="match-seed">[' + sembrados[p.jugador2_id] + ']</span>' : '';
-				var j2Class = p.ganador_id === p.jugador2_id ? 'winner' : (p.ganador_id ? 'loser' : '');
-				var j2Name = p.jugador2 ? p.jugador2.toLowerCase() : 'BYE';
-				html += '<div class="match-player ' + j2Class + '">' + j2Seed + '<span class="match-player-name">' + j2Name + '</span></div>';
+				// Jugador 2
+				var esBYE2 = !p.jugador2_id || p.jugador2_id == 0;
+				var c2 = (!esBYE2 && jugado) ? (p.ganador_id == p.jugador2_id ? 'winner' : 'loser') : '';
+				var seed2 = !esBYE2 && sembrados[p.jugador2_id] ? sembrados[p.jugador2_id] : 0;
+				html += '<div class="match-player ' + c2 + (esBYE2 ? ' tbd' : '') + '">';
+				if(seed2) html += '<span class="match-seed">['+seed2+']</span>';
+				html += '<span class="match-player-name">' + (p.jugador2 ? p.jugador2.toLowerCase() : 'BYE') + '</span>';
+				if(!esBYE2 && p.ganador_id == p.jugador2_id) html += '<span style="color:#a5d051;font-weight:bold;margin-left:4px">✓</span>';
+				html += '</div>';
 
-				if (p.score && p.score !== 'BYE') {
-					html += '<div class="match-score">' + p.score + '</div>';
-				}
+				if(p.score && p.score !== 'BYE') html += '<div class="match-score">' + p.score + '</div>';
 
 				html += '</div>';
 			});
