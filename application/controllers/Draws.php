@@ -13,7 +13,14 @@ class Draws extends CI_Controller {
 	public function index() {
 		$public = $this->input->get('public');
 		if($public === 'html') {
-			$this->load->view('web/draws_public');
+			$d['titulo'] = 'Draws';
+			$d['categories'] = $this->Reservation->getCategories();
+			$d['mi_category'] = '';
+			$d['mi_gender'] = '';
+			$d['mi_partner_id'] = '';
+			$this->load->view('web/header', $d);
+			$this->load->view('web/draws_public', $d);
+			$this->load->view('web/footer', $d);
 			return;
 		}
 		if($public) {
