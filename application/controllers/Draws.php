@@ -18,13 +18,7 @@ class Draws extends CI_Controller {
 		$d['user']       = $this->session;
 		$d['classname']  = 'reserva';
 
-		$allCats = $this->Reservation->getCategories();
-		foreach($allCats as $c) {
-			$m = $this->db->select('gender')->where('category', $c->id)->limit(1)->get('matches');
-			$c->gender = ($m->num_rows() > 0) ? $m->row()->gender : 'X';
-		}
-
-		$d['categories'] = $allCats;
+		$d['categories'] = $this->Reservation->getCategories();
 		$d['mi_category'] = $this->Reservation->getCategoryByPlayer($this->session->userdata('id'), 'doubles');
 		$d['mi_gender']   = $this->session->userdata('gender');
 		$d['mi_partner_id'] = $this->session->userdata('id');
