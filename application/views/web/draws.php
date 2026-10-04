@@ -198,6 +198,9 @@ $(function() {
 		var RONDAS = ['1ra Ronda','2da Ronda','Cuartos de Final','Semifinal','Final'];
 		sembrados = sembrados || {};
 
+		console.log('Partidos recibidos:', partidos);
+		console.log('Primer partido:', partidos[0]);
+
 		// Detectar la primera ronda real del draw
 		var rondaInicioIdx = 0;
 		for(var i = 0; i < RONDAS.length; i++) {
@@ -209,6 +212,8 @@ $(function() {
 		var primeraRonda = partidos.filter(function(p){ return p.ronda === RONDAS[rondaInicioIdx]; });
 		var totalPrimera = primeraRonda.length;
 		var rondasCount = RONDAS.length - rondaInicioIdx;
+
+		console.log('Primera ronda:', RONDAS[rondaInicioIdx], 'Total:', totalPrimera, 'Rondas count:', rondasCount);
 
 		// Crear slots para cada ronda
 		var byRonda = {};
