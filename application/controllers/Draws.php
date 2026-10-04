@@ -47,11 +47,8 @@ class Draws extends CI_Controller {
 		$this->protect->ajaxDie(array(
 			'action'=>true,
 			'draws'=> $q->num_rows() > 0 ? $q->result() : array(),
-			'debug' => array(
-				'matches_count' => $matchCount,
-				'draws_count' => $q->num_rows(),
-				'sql' => $this->db->last_query()
-			)
+			'matches_count' => $matchCount,
+			'draws_count' => $q->num_rows()
 		));
 	}
 
