@@ -87,10 +87,16 @@ class Draws extends CI_Controller {
 	}
 
 	public function getData() {
-		$this->protect->setAjax();
-		$this->protect->setRequest('POST');
+		// Allow both authenticated and public access
 		$category = intval($this->input->post('category'));
 		$gender   = $this->input->post('gender', true);
+
+		if(!$category || !$gender) {
+			header('Content-Type: application/json');
+			echo json_encode(['action' => false, 'partidos' => [], 'sembrados' => []]);
+			exit();
+		}
+
 		$partidos = $this->Partido_model->getByCategoryAndGender($category, $gender);
 		$q = $this->db->where('category', $category)->where('gender', $gender)->order_by('numero ASC')->get('sembrados');
 		$sembrados = array();
@@ -136,12 +142,14 @@ class Draws extends CI_Controller {
 			$is_groups = false; // Cambiar a modo bracket si hay brackets
 		}
 
-		$this->protect->ajaxDie(array(
+		header('Content-Type: application/json');
+		echo json_encode(array(
 			'action' => !empty($partidos),
 			'partidos' => $partidos ?: array(),
 			'sembrados' => $sembrados,
 			'is_groups' => $is_groups,
 			'groups' => $groups_data
 		));
+		exit();
 	}
 }
