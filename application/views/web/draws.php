@@ -252,14 +252,14 @@ $(function() {
 			byRonda[ronda] = compacted;
 		}
 
-		var rondasOrden = Object.keys(byRonda);
+		// Mostrar solo la primera ronda por ahora
+		var rondaInicial = RONDAS[rondaInicioIdx];
 		var html = '<div class="bracket-row">';
 
-		rondasOrden.forEach(function(ronda) {
-			html += '<div class="bracket-column">';
-			html += '<div class="column-title">' + ronda + '</div>';
+		html += '<div class="bracket-column">';
+		html += '<div class="column-title">' + rondaInicial + '</div>';
 
-			byRonda[ronda].forEach(function(p) {
+		byRonda[rondaInicial].forEach(function(p) {
 				if(!p) {
 					html += '<div class="match">';
 					html += '<div class="match-player tbd">Por definir</div>';
@@ -299,6 +299,7 @@ $(function() {
 			html += '</div>';
 		});
 
+		html += '</div>';
 		html += '</div>';
 		$('#draw-bracket').html(html);
 	}
