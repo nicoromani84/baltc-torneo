@@ -297,9 +297,6 @@ $(function() {
 			});
 
 			html += '</div>';
-		});
-
-		html += '</div>';
 		html += '</div>';
 		$('#draw-bracket').html(html);
 	}
