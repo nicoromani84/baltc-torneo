@@ -576,9 +576,9 @@ $(function(){
 		if(rondaActivaIdx < RONDAS.length - 1) { rondaActivaIdx++; renderBracket(); }
 	});
 
-	var miCat = '<?=$mi_category?>';
-	var miGen = '<?=$mi_gender?>';
-	var miPartnerId = '<?=$mi_partner_id?>';
+	var miCat = '<?=htmlspecialchars($mi_category, ENT_QUOTES)?>';
+	var miGen = '<?=htmlspecialchars($mi_gender, ENT_QUOTES)?>';
+	var miPartnerId = '<?=htmlspecialchars($mi_partner_id, ENT_QUOTES)?>';
 	var disponibles = {};
 	var currentTournament = 'doubles';
 
