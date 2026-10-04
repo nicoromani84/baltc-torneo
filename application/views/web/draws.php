@@ -31,7 +31,7 @@
 					<select id="draws-category" class="draws-select">
 						<option value="">Categoría...</option>
 						<?php foreach($categories as $c): ?>
-						<option value="<?=$c->id?>" <?=($mi_category && $c->id==$mi_category)?'selected':''?>><?=$c->name?></option>
+						<option value="<?=$c->id?>" data-gender="<?=$c->gender?>" <?=($mi_category && $c->id==$mi_category)?'selected':''?>><?=$c->name?></option>
 						<?php endforeach; ?>
 					</select>
 					<i class="fas fa-chevron-down draws-select-arrow"></i>
@@ -357,8 +357,8 @@
 <script>
 // Cache buster: <?php echo time(); ?>
 $(function(){
-	var baseurl = '<?=htmlspecialchars(base_url(), ENT_QUOTES)?>';
-	var token = '<?=htmlspecialchars($token, ENT_QUOTES)?>';
+	var baseurl = '<?=base_url()?>';
+	var token = '<?=$token?>';
 	var RONDAS = ['1ra Ronda','2da Ronda','Cuartos de Final','Semifinal','Final'];
 	var rondaInicioIdx = 0;
 	var rondaActivaIdx = 0;
@@ -576,9 +576,9 @@ $(function(){
 		if(rondaActivaIdx < RONDAS.length - 1) { rondaActivaIdx++; renderBracket(); }
 	});
 
-	var miCat = '<?=htmlspecialchars($mi_category, ENT_QUOTES)?>';
-	var miGen = '<?=htmlspecialchars($mi_gender, ENT_QUOTES)?>';
-	var miPartnerId = '<?=htmlspecialchars($mi_partner_id, ENT_QUOTES)?>';
+	var miCat = '<?=$mi_category?>';
+	var miGen = '<?=$mi_gender?>';
+	var miPartnerId = '<?=$mi_partner_id?>';
 	var disponibles = {};
 	var currentTournament = 'doubles';
 
@@ -629,9 +629,38 @@ $(function(){
 		cargarDrawsDisponibles();
 	}
 
+	// Mostrar/ocultar género según el torneo
 	$('#draws-category').on('change', function(){
-		var cat = $(this).val();
-		if(cat) cargarDraw(cat, 'X');
+		var cat = $('#draws-category').val();
+		var catGender = $('#draws-category option:selected').data('gender');
+
+		// Si es mixta (X), no mostrar select de género
+		if(catGender === 'X') {
+			$('#draws-gender-wrap').hide();
+			$('#draws-gender').val('');
+			if(cat) cargarDraw(cat, 'X');
+		} else if(currentTournament === 'singles') {
+			$('#draws-gender-wrap').show();
+		}
+	});
+
+	$('#draws-gender').on('change', function(){
+		var cat = $('#draws-category').val();
+		var gen = $('#draws-gender').val();
+		if(cat && gen) cargarDraw(cat, gen);
+	});
+
+	// Actualizar visibility cuando cambia torneo
+	$('.draws-tab').on('click', function(){
+		currentTournament = $(this).data('tournament');
+		var cat = $('#draws-category').val();
+		var catGender = $('#draws-category option:selected').data('gender');
+
+		if(currentTournament === 'doubles' && catGender === 'X') {
+			$('#draws-gender-wrap').hide();
+		} else if(currentTournament === 'singles') {
+			$('#draws-gender-wrap').show();
+		}
 	});
 });
 </script>
