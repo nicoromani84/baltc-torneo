@@ -1,258 +1,591 @@
 <?php defined('BASEPATH') OR exit('No direct script access allowed'); ?>
-<!DOCTYPE html>
-<html lang="es">
-<head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Draws - BALTC Torneo</title>
-	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-	<style>
-		* { margin: 0; padding: 0; box-sizing: border-box; }
-		body {
-			background: linear-gradient(135deg, #0f3460 0%, #16213e 100%);
-			color: #fff;
-			min-height: 100vh;
-			padding: 20px 0;
-			font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-		}
-		header {
-			background: rgba(0,0,0,0.8);
-			padding: 25px 0;
-			margin-bottom: 40px;
-			border-bottom: 3px solid #a5d051;
-		}
-		.logo { text-align: center; }
-		.logo img { max-width: 140px; height: auto; }
-		h1 {
-			text-align: center;
-			color: #a5d051;
-			margin: 20px 0 10px 0;
-			font-size: 2.8em;
-			text-shadow: 2px 2px 8px rgba(0,0,0,0.9);
-			font-weight: bold;
-			letter-spacing: 3px;
-		}
-		.subtitle {
-			text-align: center;
-			color: rgba(255,255,255,0.6);
-			font-size: 1.1em;
-			margin-bottom: 30px;
-		}
-		.draw-section {
-			background: rgba(0,0,0,0.7);
-			border: 2px solid #a5d051;
-			border-radius: 12px;
-			padding: 30px;
-			margin-bottom: 40px;
-			box-shadow: 0 8px 32px rgba(165, 208, 81, 0.15);
-		}
-		.draw-header {
-			background: linear-gradient(135deg, #a5d051 0%, #7cb342 100%);
-			color: #000;
-			padding: 18px 24px;
-			margin: -30px -30px 25px -30px;
-			font-size: 1.5em;
-			font-weight: bold;
-			border-radius: 10px 10px 0 0;
-			display: flex;
-			align-items: center;
-			gap: 15px;
-			box-shadow: 0 4px 15px rgba(165, 208, 81, 0.3);
-		}
-		.draw-gender {
-			background: rgba(0,0,0,0.2);
-			padding: 6px 14px;
-			border-radius: 6px;
-			font-size: 0.9em;
-			font-weight: 600;
-		}
-		.bracket-container {
-			overflow-x: auto;
-			margin: 20px -30px -30px -30px;
-			padding: 30px;
-			background: rgba(0,0,0,0.5);
-			border-radius: 0 0 10px 10px;
-		}
-		.bracket-svg {
-			min-width: 100%;
-			height: auto;
-		}
-		.match-box {
-			background: linear-gradient(135deg, rgba(165,208,81,0.1) 0%, rgba(165,208,81,0.05) 100%);
-			border: 1px solid rgba(165,208,81,0.4);
-			border-radius: 6px;
-			font-size: 13px;
-			font-weight: 500;
-			text-align: center;
-		}
-		.match-box.winner {
-			border-color: #a5d051;
-			background: rgba(165,208,81,0.15);
-		}
-		.player-entry {
-			padding: 8px 12px;
-			border-bottom: 1px solid rgba(165,208,81,0.2);
-			overflow: hidden;
-			text-overflow: ellipsis;
-			white-space: nowrap;
-		}
-		.player-entry:last-child {
-			border-bottom: none;
-		}
-		.player-entry.bye {
-			color: rgba(255,255,255,0.4);
-			font-style: italic;
-		}
-		.player-entry.winner {
-			color: #a5d051;
-			font-weight: bold;
-		}
-		.empty-message {
-			text-align: center;
-			padding: 50px 20px;
-			color: rgba(255,255,255,0.7);
-		}
-		footer {
-			text-align: center;
-			padding: 30px 20px;
-			color: rgba(255,255,255,0.5);
-			border-top: 1px solid rgba(165,208,81,0.2);
-			margin-top: 50px;
-			font-size: 0.9em;
-		}
-		.loading {
-			text-align: center;
-			padding: 40px;
-			color: #a5d051;
-		}
-		.container { max-width: 1400px; }
-	</style>
-</head>
-<body>
-	<header>
-		<div class="logo">
-			<img src="<?=asset_url('img/logo.png')?>" alt="BALTC">
-			<h1><i class="fas fa-sitemap"></i> DRAWS</h1>
-			<p class="subtitle">Cuadros de Sorteo</p>
-		</div>
-	</header>
-
+<header>
 	<div class="container">
-		<div id="draws-container">
-			<div class="empty-message"><i class="fas fa-spinner fa-spin"></i> Cargando draws...</div>
+		<div class="logo">
+			<img src="<?=asset_url('img')?>/logo.png" alt="Logo">
+		</div>
+		<ul class="buttons">
+			<li>
+				<a href="<?=base_url('menu')?>">
+					<span class="icon-logout"><i class="fas fa-arrow-left"></i></span>
+				</a>
+			</li>
+		</ul>
+	</div>
+</header>
+<div class="page reserve-page">
+	<div id="draws-page" class="container">
+		<div class="container">
+			<h1>Draws</h1>
+			<p class="draws-subtitle">Seleccioná categoría y género para ver los cuadros</p>
+
+			<!-- TABS TORNEOS - SOLO DOBLES -->
+			<div class="draws-tournament-tabs">
+				<button class="draws-tab active" data-tournament="singles">Singles</button>
+				<button class="draws-tab" data-tournament="doubles">Dobles</button>
+			</div>
+
+			<!-- SELECTOR -->
+			<div class="draws-selector">
+				<div class="draws-select-wrap">
+					<select id="draws-category" class="draws-select">
+						<option value="">Categoría...</option>
+						<?php foreach($categories as $c): ?>
+						<option value="<?=$c->id?>" <?=($mi_category && $c->id==$mi_category)?'selected':''?>><?=$c->name?></option>
+						<?php endforeach; ?>
+					</select>
+					<i class="fas fa-chevron-down draws-select-arrow"></i>
+				</div>
+				<div class="draws-select-wrap">
+					<select id="draws-gender" class="draws-select">
+						<option value="">Género...</option>
+						<option value="M" <?=($mi_gender=='M')?'selected':''?>>Caballeros</option>
+						<option value="F" <?=($mi_gender=='F')?'selected':''?>>Damas</option>
+					</select>
+					<i class="fas fa-chevron-down draws-select-arrow"></i>
+				</div>
+			</div>
+			<div id="draw-resultado" style="display:none">
+				<div id="draw-titulo" class="draws-titulo">
+					<span id="mi-cat-badge" style="display:none" class="mi-cat-badge">⭐ Mi categoría</span>
+				</div>
+				<div id="draw-nav" class="draws-nav" style="display:none">
+					<button class="btn btn-sm btn-outline draws-nav-btn" id="btn-prev-ronda"><i class="fas fa-chevron-left"></i></button>
+					<span id="draws-ronda-label" class="draws-nav-label"></span>
+					<button class="btn btn-sm btn-outline draws-nav-btn" id="btn-next-ronda"><i class="fas fa-chevron-right"></i></button>
+				</div>
+				<div id="draw-bracket" class="draws-bracket-wrap"></div>
+			</div>
+			<div id="draw-vacio" style="display:none" class="resultado-vacio">
+				<i class="fas fa-sitemap"></i>
+				<p>No hay draw disponible para esta selección.</p>
+			</div>
 		</div>
 	</div>
+</div>
+<style>
+#draws-page {
+	min-height: calc(100vh - 110px);
+	display: table-cell;
+	vertical-align: top;
+	height: 100%;
+	padding-top: 30px;
+	padding-bottom: 30px;
+}
+#draws-page h1 {
+	text-align: center;
+	color: #fff;
+	text-transform: uppercase;
+	font-weight: 700;
+	font-size: 38px;
+	text-shadow: 4px 4px 12px rgba(0,0,0,0.9);
+	margin: 0;
+}
+#draws-page > .container > p {
+	color: #fff;
+	text-align: center;
+	font-size: 18px;
+	text-shadow: 2px 2px 6px rgba(0,0,0,0.8);
+	margin: 5px 0 20px 0;
+}
+.draws-hint strong { color: rgba(255,255,255,0.7); }
+.mi-cat-badge {
+	display: inline-block;
+	font-size: 11px;
+	background: rgba(165,208,81,0.2);
+	color: #a5d051;
+	border: 1px solid rgba(165,208,81,0.4);
+	padding: 2px 10px;
+	border-radius: 10px;
+	font-weight: 700;
+	margin-left: 8px;
+	vertical-align: middle;
+	letter-spacing: 0.3px;
+}
+.draws-subtitle {
+	text-align: center;
+	color: rgba(255,255,255,0.55);
+	font-size: 14px;
+	margin: 5px 0 20px 0;
+	text-shadow: 1px 1px 4px rgba(0,0,0,0.8);
+}
+.draws-tournament-tabs {
+	display: flex;
+	justify-content: center;
+	gap: 10px;
+	margin-bottom: 20px;
+}
+.draws-tab {
+	background: rgba(0,0,0,0.5);
+	border: 1px solid rgba(165,208,81,0.4);
+	color: rgba(255,255,255,0.7);
+	border-radius: 6px;
+	padding: 10px 20px;
+	font-size: 14px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: all 0.3s ease;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+.draws-tab:hover {
+	background: rgba(165,208,81,0.1);
+	border-color: #a5d051;
+	color: #a5d051;
+}
+.draws-tab.active {
+	background: rgba(165,208,81,0.2);
+	border-color: #a5d051;
+	color: #a5d051;
+}
+.draws-selector {
+	display: flex;
+	gap: 10px;
+	justify-content: center;
+	flex-wrap: wrap;
+	margin-bottom: 20px;
+}
+.draws-select-wrap {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	flex: 1;
+	min-width: 140px;
+}
+.draws-select-arrow {
+	position: absolute;
+	right: 10px;
+	top: 50%;
+	transform: translateY(-50%);
+	color: #a5d051;
+	font-size: 10px;
+	pointer-events: none;
+}
+.draws-select {
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	appearance: none;
+	background: rgba(0,0,0,0.5);
+	border: 1px solid rgba(165,208,81,0.4);
+	color: #fff;
+	border-radius: 6px;
+	padding: 8px 32px 8px 14px;
+	font-size: 14px;
+	min-width: 140px;
+	width: 100%;
+}
+.draws-select option { background: #222; color: #fff; }
+.draws-titulo {
+	text-align: center;
+	color: #a5d051;
+	font-weight: 700;
+	font-size: 16px;
+	text-transform: uppercase;
+	letter-spacing: 1px;
+	margin-bottom: 15px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-wrap: wrap;
+	gap: 6px;
+}
+/* NAV RONDAS */
+.draws-nav {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 15px;
+	margin-bottom: 15px;
+}
+.draws-nav-btn {
+	background: rgba(255,255,255,0.1);
+	border: 1px solid rgba(255,255,255,0.2);
+	color: #fff;
+	border-radius: 6px;
+	padding: 5px 12px;
+}
+.draws-nav-btn:hover { background: rgba(165,208,81,0.2); border-color: #a5d051; }
+.draws-nav-btn:disabled { opacity: 0.3; cursor: default; }
+.draws-nav-label {
+	color: #fff;
+	font-weight: 700;
+	font-size: 14px;
+	min-width: 160px;
+	text-align: center;
+}
+/* BRACKET */
+.draws-bracket-wrap { overflow-x: auto; padding-bottom: 10px; }
+.draws-bracket { display: flex; gap: 0; min-width: max-content; }
+.draws-ronda { display: flex; flex-direction: column; min-width: 160px; max-width: 200px; }
+.draws-ronda-titulo {
+	text-align: center;
+	font-size: 11px;
+	font-weight: 800;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	color: rgba(255,255,255,0.7);
+	padding: 8px 6px;
+	background: rgba(0,0,0,0.6);
+	border: 1px solid rgba(255,255,255,0.2);
+	margin: 0 4px;
+	border-radius: 4px;
+}
+.draws-ronda.activa .draws-ronda-titulo {
+	color: #a5d051;
+	background: rgba(165,208,81,0.1);
+	border-color: rgba(165,208,81,0.3);
+}
+.draws-matches {
+	display: flex;
+	flex-direction: column;
+	justify-content: space-around;
+	flex: 1;
+	padding: 8px 4px;
+	gap: 8px;
+}
+.draws-match {
+	background: rgba(0,0,0,0.75);
+	border: 1.5px solid rgba(165,208,81,0.5);
+	border-radius: 8px;
+	overflow: hidden;
+	box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+}
+.draws-match.jugado { border-color: rgba(165,208,81,0.4); }
+.draws-player {
+	display: flex;
+	align-items: center;
+	padding: 9px 10px;
+	font-size: 13px;
+	border-bottom: 1px solid rgba(255,255,255,0.07);
+	gap: 6px;
+	min-height: 36px;
+	color: rgba(255,255,255,0.85);
+	text-transform: capitalize;
+	font-weight: 600;
+}
+.draws-player:last-child { border-bottom: none; }
+.draws-player.ganador { color: #a5d051; font-weight: 800; }
+.draws-player.perdedor { color: rgba(255,255,255,0.3); text-decoration: line-through; font-weight: 400; }
+.draws-player.tbd { color: rgba(255,255,255,0.3); font-style: italic; font-weight: 400; }
+.draws-player-name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-style: italic; }
+.draws-check { font-size: 11px; color: #a5d051; }
+.draws-score {
+	text-align: center;
+	font-size: 11px;
+	color: #a5d051;
+	padding: 3px 8px;
+	background: rgba(165,208,81,0.1);
+	font-weight: 700;
+}
+.draws-connector {
+	display: flex;
+	flex-direction: column;
+	justify-content: space-around;
+	width: 16px;
+	padding: 8px 0;
+}
+.draws-connector-line {
+	flex: 1;
+	border-right: 1px solid rgba(165,208,81,0.3);
+	margin: 2px 0;
+}
+.draws-player.yo-player {
+	background: rgba(165,208,81,0.12);
+	border-left: 2px solid #a5d051;
+	color: #fff !important;
+	font-weight: 800 !important;
+}
+.resultado-vacio { text-align:center; padding:40px 0; color:rgba(255,255,255,0.5); }
+.resultado-vacio i { font-size:50px; color:#a5d051; margin-bottom:15px; display:block; }
+.resultado-vacio p { font-size:18px; }
+@media (max-width: 767px) {
+	#draws-page { padding-top: 16px; padding-bottom: 16px; }
+	#draws-page h1 { font-size: 22px; }
+	#draws-page > .container { padding-left: 12px; padding-right: 12px; }
+	.draws-subtitle { font-size: 13px; }
+	.draws-selector { gap: 8px; }
+	.draws-select { font-size: 13px; padding: 7px 28px 7px 10px; }
 
-	<footer>
-		<p>&copy; 2026 Buenos Aires Lawn Tennis Club - baltc.net/torneo</p>
-	</footer>
+	/* Bracket en mobile: scroll horizontal contenido */
+	.draws-bracket-wrap {
+		overflow-x: auto;
+		-webkit-overflow-scrolling: touch;
+		padding-bottom: 16px;
+		margin-left: -12px;
+		margin-right: -12px;
+		padding-left: 12px;
+		padding-right: 12px;
+	}
+	.draws-bracket {
+		display: flex;
+		flex-wrap: nowrap;
+		gap: 0;
+		min-width: max-content;
+	}
+	.draws-ronda {
+		min-width: 150px;
+		max-width: 170px;
+	}
+	.draws-ronda-titulo {
+		font-size: 10px;
+		padding: 6px 4px;
+	}
+	.draws-player {
+		font-size: 11px;
+		padding: 7px 8px;
+		min-height: 32px;
+	}
+	.draws-player-name {
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		max-width: 110px;
+	}
+	.draws-matches { gap: 6px; padding: 6px 2px; }
+	.draws-match { border-radius: 6px; }
+	.draws-connector { width: 10px; }
 
-	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-	<script>
-		$(function(){
-			var baseurl = '<?=base_url()?>';
+	/* Nav rondas */
+	.draws-nav { gap: 10px; margin-bottom: 10px; }
+	.draws-nav-label { font-size: 12px; min-width: 130px; }
+	.draws-nav-btn { padding: 4px 10px; font-size: 12px; }
 
-			$.ajax({
-				url: baseurl + 'draws?public=1',
-				dataType: 'json',
-				success: function(data) {
-					if(!data.draws || data.draws.length === 0) {
-						$('#draws-container').html('<div class="draw-section"><div class="empty-message"><i class="fas fa-inbox"></i><p style="margin-top: 15px;">No hay draws sorteados</p></div></div>');
-						return;
-					}
+	/* Título */
+	.draws-titulo { font-size: 13px; letter-spacing: 0.5px; }
+}
+</style>
+<script>
+$(function(){
+	var baseurl = '<?=base_url()?>';
+	var token = '<?=$token?>';
+	var RONDAS = ['1ra Ronda','2da Ronda','Cuartos de Final','Semifinal','Final'];
+	var todosPartidos = [];
+	var sembradosActivos = {};
+	var rondaActivaIdx = 0;
+	var rondaInicioIdx = 0;
 
-					var html = '';
-					$.each(data.draws, function(i, draw) {
-						var genderLabel = draw.gender === 'X' ? 'Mixto' : (draw.gender === 'M' ? 'Caballeros' : 'Damas');
-						html += '<div class="draw-section">';
-						html += '<div class="draw-header">';
-						html += '<i class="fas fa-sitemap"></i> Categoría ' + draw.category;
-						html += '<span class="draw-gender">' + genderLabel + '</span>';
-						html += '</div>';
-						html += '<div id="draw-' + draw.category + '-' + draw.gender + '" class="loading">';
-						html += '<i class="fas fa-spinner fa-spin"></i> Renderizando bracket...';
-						html += '</div>';
-						html += '</div>';
+	function getRondaInicio() {
+		for(var i = 0; i < RONDAS.length; i++) {
+			if(todosPartidos.some(function(p){ return p.ronda === RONDAS[i]; })) return i;
+		}
+		return 0;
+	}
 
-						loadBracket(draw.category, draw.gender, '#draw-' + draw.category + '-' + draw.gender);
-					});
-					$('#draws-container').html(html);
-				},
-				error: function() {
-					$('#draws-container').html('<div class="draw-section"><div class="empty-message"><i class="fas fa-exclamation-circle"></i><p>Error al cargar los draws</p></div></div>');
+	function cargarDraw(cat, gen) {
+		if(!cat || !gen) return;
+		$.ajax({
+			url: baseurl + 'draws/getData',
+			type: 'POST',
+			data: { category: cat, gender: gen },
+			headers: { 'X-Auth-Token': token },
+			success: function(res) {
+				$('#draw-bracket').html('');
+				if(!res.action || !res.partidos.length) {
+					$('#draw-resultado').hide();
+					$('#draw-vacio').show();
+					return;
 				}
-			});
-
-			function loadBracket(cat, gen, selector) {
-				$.ajax({
-					url: baseurl + 'draws/getData',
-					type: 'POST',
-					data: { category: cat, gender: gen },
-					dataType: 'json',
-					success: function(res) {
-						if(!res.partidos || res.partidos.length === 0) {
-							$(selector).html('<div class="bracket-container"><div style="text-align:center; padding:30px; color:rgba(255,255,255,0.5);">Sin datos disponibles</div></div>');
-							return;
+				$('#draw-vacio').hide();
+				todosPartidos = res.partidos;
+				sembradosActivos = res.sembrados || {};
+				var catNombre = $('#draws-category option:selected').text();
+				var genNombre = gen == 'M' ? 'Caballeros' : 'Damas';
+				$('#draw-titulo').html('Categoría ' + catNombre + ' — ' + genNombre + '<span id="mi-cat-badge" style="display:none" class="mi-cat-badge">⭐ Mi categoría</span>');
+				if(miCat && miGen && cat == miCat && gen == miGen) {
+					$('#mi-cat-badge').show();
+				}
+				if(res.is_groups) {
+					renderGroups(res.groups);
+				} else {
+					rondaInicioIdx = getRondaInicio();
+					rondaActivaIdx = rondaInicioIdx;
+					for(var i = rondaInicioIdx; i < RONDAS.length; i++) {
+						var rp = todosPartidos.filter(function(p){ return p.ronda === RONDAS[i]; });
+						if(rp.length > 0) {
+							var pend = rp.filter(function(p){ return !p.ganador_id; });
+							if(pend.length > 0) { rondaActivaIdx = i; break; }
+							rondaActivaIdx = i;
 						}
-
-						renderBracketPro(res.partidos, selector);
-					},
-					error: function() {
-						$(selector).html('<div class="bracket-container"><div style="text-align:center; padding:30px; color:rgba(255,255,255,0.5);">Error al cargar bracket</div></div>');
 					}
-				});
-			}
-
-			function renderBracketPro(partidos, selector) {
-				var rondas = {};
-				$.each(partidos, function(i, p) {
-					if(!rondas[p.ronda]) rondas[p.ronda] = [];
-					rondas[p.ronda].push(p);
-				});
-
-				var rondaOrder = ['1ra Ronda', '2da Ronda', 'Cuartos de Final', 'Semifinal', 'Final'];
-				var rondasPres = $.grep(rondaOrder, function(r) { return rondas[r]; });
-
-				var matchHeight = 70;
-				var matchWidth = 200;
-				var colWidth = matchWidth + 100;
-				var totalHeight = 800;
-				var totalWidth = colWidth * rondasPres.length;
-
-				var svg = '<svg class="bracket-svg" width="' + totalWidth + '" height="' + totalHeight + '" style="min-height: 800px;">';
-
-				var positions = {};
-
-				$.each(rondasPres, function(rondaIdx, ronda) {
-					var x = rondaIdx * colWidth + 30;
-					var matches = rondas[ronda];
-					var spaceBetween = totalHeight / (matches.length + 1);
-
-					$.each(matches, function(matchIdx, match) {
-						var y = (matchIdx + 1) * spaceBetween - matchHeight / 2;
-						var matchKey = ronda + '_' + matchIdx;
-						positions[match.id] = { x: x + matchWidth, y: y + matchHeight / 2, ronda: ronda };
-
-						var fillColor = match.ganador_id ? 'rgba(165,208,81,0.2)' : 'rgba(165,208,81,0.08)';
-						svg += '<rect x="' + x + '" y="' + y + '" width="' + matchWidth + '" height="' + matchHeight + '" fill="' + fillColor + '" stroke="rgba(165,208,81,0.5)" stroke-width="1" rx="6"/>';
-
-						var playerHeight = matchHeight / 2;
-						var j1 = match.jugador1 ? match.jugador1.substring(0, 20) : 'BYE';
-						var j2 = match.jugador2 ? match.jugador2.substring(0, 20) : 'BYE';
-						var score1 = match.score && match.score.split('-')[0] ? match.score.split('-')[0] : '';
-						var score2 = match.score && match.score.split('-')[1] ? match.score.split('-')[1] : '';
-
-						svg += '<text x="' + (x + 8) + '" y="' + (y + playerHeight - 3) + '" font-size="12" fill="' + (match.ganador_id == match.jugador1_id ? '#a5d051' : '#fff') + '" font-weight="' + (match.ganador_id == match.jugador1_id ? 'bold' : 'normal') + '">' + j1 + (score1 ? ' ' + score1 : '') + '</text>';
-						svg += '<text x="' + (x + 8) + '" y="' + (y + playerHeight * 2 - 3) + '" font-size="12" fill="' + (match.ganador_id == match.jugador2_id ? '#a5d051' : '#fff') + '" font-weight="' + (match.ganador_id == match.jugador2_id ? 'bold' : 'normal') + '">' + j2 + (score2 ? ' ' + score2 : '') + '</text>';
-					});
-				});
-
-				svg += '</svg>';
-
-				$(selector).html('<div class="bracket-container">' + svg + '</div>');
+					renderBracket();
+				}
+				$('#draw-resultado').show();
 			}
 		});
-	</script>
-</body>
-</html>
+	}
+
+	function formatPlayerNamesShort(fullNames) {
+		if(!fullNames) return 'BYE';
+		var names = fullNames.split(' / ');
+		return names.map(function(n) {
+			var apellido = n.split(',')[0].trim();
+			return apellido.charAt(0).toUpperCase() + apellido.slice(1).toLowerCase();
+		}).join('-');
+	}
+
+	function renderGroups(groups) {
+		$('#draw-nav').hide();
+		var html = '';
+		for(var grupoNombre in groups) {
+			var standings = groups[grupoNombre];
+			html += '<div style="margin-bottom: 30px;">';
+			html += '<h5 style="margin-bottom: 15px;">' + grupoNombre + '</h5>';
+			html += '<table class="table table-sm table-bordered" style="max-width: 500px;">';
+			html += '<thead class="table-light"><tr><th>Pos</th><th>Jugador</th><th>PJ</th><th>PG</th><th>PP</th><th>DG</th><th>Pts</th></tr></thead>';
+			html += '<tbody>';
+			for(var i = 0; i < standings.length; i++) {
+				var s = standings[i];
+				html += '<tr>';
+				html += '<td style="font-weight: bold;">' + (i+1) + '</td>';
+				html += '<td>' + s.nombre.toLowerCase() + '</td>';
+				html += '<td>' + s.pj + '</td>';
+				html += '<td>' + s.pg + '</td>';
+				html += '<td>' + s.pp + '</td>';
+				html += '<td>' + s.dg + '</td>';
+				html += '<td style="font-weight: bold; background: #f0fae0;">' + s.pts + '</td>';
+				html += '</tr>';
+			}
+			html += '</tbody></table>';
+			html += '</div>';
+		}
+		$('#draw-bracket').html(html);
+	}
+
+	function renderBracket() {
+		var rondasMostrar = [RONDAS[rondaActivaIdx]];
+		if(RONDAS[rondaActivaIdx + 1]) rondasMostrar.push(RONDAS[rondaActivaIdx + 1]);
+
+		$('#btn-prev-ronda').prop('disabled', rondaActivaIdx <= rondaInicioIdx);
+		$('#btn-next-ronda').prop('disabled', rondaActivaIdx >= RONDAS.length - 1);
+		$('#draws-ronda-label').text(RONDAS[rondaActivaIdx] + (RONDAS[rondaActivaIdx+1] ? ' + ' + RONDAS[rondaActivaIdx+1] : ''));
+		$('#draw-nav').show();
+
+		var primera = todosPartidos.filter(function(p){ return p.ronda === RONDAS[rondaInicioIdx]; });
+		var totalPrimera = primera.length;
+
+		var html = '<div class="draws-bracket">';
+		rondasMostrar.forEach(function(ronda, idx) {
+			var esActiva = idx === 0;
+			var rondaIdx = RONDAS.indexOf(ronda);
+			var rondaIdxRelativo = rondaIdx - rondaInicioIdx;
+			var slotCount = Math.max(1, totalPrimera / Math.pow(2, rondaIdxRelativo));
+			var slots = new Array(Math.ceil(slotCount)).fill(null);
+			todosPartidos.forEach(function(p) {
+				if(p.ronda === ronda) {
+					var pos = p.bracket_pos !== null && p.bracket_pos !== undefined ? parseInt(p.bracket_pos) : 0;
+					if(pos < slots.length) slots[pos] = p;
+				}
+			});
+			html += '<div class="draws-ronda' + (esActiva ? ' activa' : '') + '">';
+			html += '<div class="draws-ronda-titulo">' + ronda + (esActiva ? ' <span style="font-size:9px;background:rgba(165,208,81,0.2);color:#a5d051;padding:1px 6px;border-radius:8px;margin-left:4px">EN JUEGO</span>' : '') + '</div>';
+			html += '<div class="draws-matches">';
+			slots.forEach(function(p) {
+				if(!p) {
+					html += '<div class="draws-match">';
+					html += '<div class="draws-player tbd"><span class="draws-player-name">por definir</span></div>';
+					html += '<div class="draws-player tbd"><span class="draws-player-name">por definir</span></div>';
+					html += '</div>';
+					return;
+				}
+				var esBYE = p.score === 'BYE';
+				var jugado = p.ganador_id != null;
+				html += '<div class="draws-match' + (jugado ? ' jugado' : '') + '">';
+				var esBYE1 = !p.jugador1_id || p.jugador1_id == 0;
+				var c1 = (!esBYE1 && jugado) ? (p.ganador_id == p.jugador1_id ? 'ganador' : 'perdedor') : '';
+				var seed1 = !esBYE1 && sembradosActivos[p.jugador1_id] ? sembradosActivos[p.jugador1_id] : 0;
+				var esYo1 = !esBYE1 && miPartnerId && p.jugador1_id == miPartnerId;
+				html += '<div class="draws-player ' + c1 + (esBYE1 ? ' tbd' : '') + (esYo1 ? ' yo-player' : '') + '">';
+				if(seed1) html += '<span style="color:#a5d051;font-weight:800;font-size:10px;margin-right:3px">['+seed1+']</span>';
+				html += '<span class="draws-player-name">' + formatPlayerNamesShort(p.jugador1) + '</span>';
+				if(!esBYE1 && p.ganador_id == p.jugador1_id) html += '<span class="draws-check"><i class="fas fa-check"></i></span>';
+				html += '</div>';
+				var esBYE2 = !p.jugador2_id || p.jugador2_id == 0;
+				var c2 = (!esBYE2 && jugado) ? (p.ganador_id == p.jugador2_id ? 'ganador' : 'perdedor') : '';
+				var seed2 = !esBYE2 && sembradosActivos[p.jugador2_id] ? sembradosActivos[p.jugador2_id] : 0;
+				var esYo2 = !esBYE2 && miPartnerId && p.jugador2_id == miPartnerId;
+				html += '<div class="draws-player ' + c2 + (esBYE2 ? ' tbd' : '') + (esYo2 ? ' yo-player' : '') + '">';
+				if(seed2) html += '<span style="color:#a5d051;font-weight:800;font-size:10px;margin-right:3px">['+seed2+']</span>';
+				html += '<span class="draws-player-name">' + formatPlayerNamesShort(p.jugador2) + '</span>';
+				if(!esBYE2 && p.ganador_id == p.jugador2_id) html += '<span class="draws-check"><i class="fas fa-check"></i></span>';
+				html += '</div>';
+				if(p.score && p.score !== 'BYE') html += '<div class="draws-score">' + p.score + '</div>';
+				html += '</div>';
+			});
+			html += '</div></div>';
+			if(idx < rondasMostrar.length - 1) {
+				html += '<div class="draws-connector">';
+				for(var i = 0; i < slots.length; i++) html += '<div class="draws-connector-line"></div>';
+				html += '</div>';
+			}
+		});
+		html += '</div>';
+		$('#draw-bracket').html(html);
+	}
+
+	$('#btn-prev-ronda').on('click', function(){
+		if(rondaActivaIdx > rondaInicioIdx) { rondaActivaIdx--; renderBracket(); }
+	});
+	$('#btn-next-ronda').on('click', function(){
+		if(rondaActivaIdx < RONDAS.length - 1) { rondaActivaIdx++; renderBracket(); }
+	});
+
+	var miCat = '<?=$mi_category?>';
+	var miGen = '<?=$mi_gender?>';
+	var miPartnerId = '<?=$mi_partner_id?>';
+	var disponibles = {};
+	var currentTournament = 'doubles';
+
+	// Mostrar solo tab de dobles
+	$('.draws-tab[data-tournament="singles"]').hide();
+	$('.draws-tab[data-tournament="doubles"]').addClass('active');
+
+	function cargarDrawsDisponibles() {
+		$.ajax({
+			url: baseurl + 'draws/getDrawsDisponibles',
+			type: 'POST',
+			data: { tournament_type: currentTournament },
+			headers: { 'X-Auth-Token': token },
+			success: function(res) {
+				if(res.draws) {
+					res.draws.forEach(function(d){ disponibles[d.category+'_'+d.gender] = true; });
+				}
+				var initialGen = (miGen && miGen !== '') ? miGen : 'M';
+				$('#draws-gender').val(initialGen);
+				var toLoad = null;
+				// Prioridad 1: Siempre mostrar la categoría del usuario si existe
+				if(miCat !== '' && miGen !== '') {
+					toLoad = { cat: miCat, gen: miGen };
+				} else if(res.draws && res.draws.length) {
+					// Prioridad 2: Si no tiene categoría, mostrar la primera disponible
+					var fallback = (miGen && miGen !== '') ? res.draws.find(function(d){ return d.gender === miGen; }) : null;
+					if(!fallback) fallback = res.draws[0];
+					if(fallback) {
+						toLoad = { cat: fallback.category, gen: fallback.gender };
+						$('#draws-gender').val(toLoad.gen);
+					}
+				}
+				if(toLoad) {
+					$('#draws-category').val(toLoad.cat);
+					cargarDraw(toLoad.cat, toLoad.gen);
+				}
+			}
+		});
+	}
+
+	// Auto-cargar mi categoría si existe
+	if(miCat !== '') {
+		var genToUse = (miGen !== '' && miGen !== null) ? miGen : 'M';
+		$('#draws-category').val(miCat);
+		$('#draws-gender').val(genToUse);
+		cargarDraw(miCat, genToUse);
+	} else {
+		cargarDrawsDisponibles();
+	}
+
+	$('#draws-category, #draws-gender').on('change', function(){
+		var cat = $('#draws-category').val();
+		var gen = $('#draws-gender').val();
+		if(cat && gen) cargarDraw(cat, gen);
+	});
+});
+</script>
