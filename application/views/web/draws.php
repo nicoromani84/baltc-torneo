@@ -198,8 +198,11 @@ $(function() {
 		var RONDAS = ['1ra Ronda','2da Ronda','Cuartos de Final','Semifinal','Final'];
 		sembrados = sembrados || {};
 
-		console.log('Partidos recibidos:', partidos);
-		console.log('Primer partido:', partidos[0]);
+		console.log('=== BRACKET DEBUG ===');
+		console.log('Total partidos:', partidos.length);
+		partidos.forEach(function(p, idx) {
+			console.log('P'+idx, '- Ronda:', p.ronda, '| Pos:', p.bracket_pos, '| J1:', p.jugador1, '| J2:', p.jugador2);
+		});
 
 		// Detectar la primera ronda real del draw
 		var rondaInicioIdx = 0;
