@@ -13,9 +13,10 @@ class Draws extends CI_Controller {
 	public function index() {
 		$public = $this->input->get('public');
 		if($public) {
-			$q = $this->db->query("SELECT COUNT(*) as cnt FROM matches");
-			$result = $q->row();
-			echo json_encode(['matches_count' => $result->cnt]);
+			$q = $this->db->query("SELECT DISTINCT m.category, m.gender, c.name FROM matches m JOIN category c ON c.id = m.category WHERE c.active = 1 ORDER BY m.category, m.gender");
+			$draws = $q->num_rows() > 0 ? $q->result() : array();
+			header('Content-Type: application/json');
+			echo json_encode(['draws' => $draws, 'count' => count($draws)]);
 			exit();
 		}
 
