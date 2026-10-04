@@ -17,14 +17,9 @@ class Draws extends CI_Controller {
 		$d['token']      = $this->protect->eToken();
 		$d['user']       = $this->session;
 		$d['classname']  = 'reserva';
-		// Mostrar solo categorías que tienen partidos sorteados (draws)
-		$sql = "SELECT DISTINCT c.id, c.name, m.gender
-				FROM category c
-				INNER JOIN matches m ON m.category = c.id
-				WHERE c.active = 1 AND c.name NOT LIKE '%2nd chance%'
-				ORDER BY c.id ASC";
-		$q = $this->db->query($sql);
-		$d['categories'] = $q->num_rows() > 0 ? $q->result() : array();
+		// Obtener categorías que tienen partidos sorteados via AJAX en getData()
+		$allCats = $this->Reservation->getCategories();
+		$d['categories'] = $allCats;
 		$d['mi_category'] = $this->Reservation->getCategoryByPlayer($this->session->userdata('id'), 'doubles');
 		$d['mi_gender']   = $this->session->userdata('gender');
 		$d['mi_partner_id'] = $this->session->userdata('id');
