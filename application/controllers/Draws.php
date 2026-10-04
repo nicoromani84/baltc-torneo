@@ -11,6 +11,15 @@ class Draws extends CI_Controller {
 	}
 
 	public function index() {
+		$public = $this->input->get('public');
+		if($public) {
+			$sql = "SELECT DISTINCT m.category, m.gender, c.name as categoria FROM matches m JOIN category c ON c.id = m.category WHERE c.active = 1 ORDER BY m.category ASC, m.gender ASC";
+			$q = $this->db->query($sql);
+			header('Content-Type: application/json');
+			echo json_encode(['draws' => $q->num_rows() > 0 ? $q->result() : array()]);
+			return;
+		}
+
 		$this->protect->setRequest('GET');
 		if(!$this->User->isLogged()) redirect(base_url());
 		$d['titulo']     = 'Draws';
