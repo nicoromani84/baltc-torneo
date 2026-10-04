@@ -47,23 +47,56 @@ class Draws extends CI_Controller {
 		$this->load->view('web/footer');
 	}
 
+	public function test() {
+		// Debug endpoint
+		header('Content-Type: application/json');
+
+		$matchCount = $this->db->count_all('matches');
+		$catCount = $this->db->count_all('category');
+		$q = $this->db->get('matches');
+
+		echo json_encode(array(
+			'test' => 'ok',
+			'match_count' => $matchCount,
+			'category_count' => $catCount,
+			'db_connected' => $matchCount >= 0,
+			'first_match' => $q->row_array()
+		));
+		exit();
+	}
+
 	public function getDrawsDisponibles() {
 		// Get all available draws for tab display
-		$sql = "SELECT DISTINCT m.category, m.gender, c.name as categoria FROM matches m JOIN category c ON c.id = m.category WHERE c.active = 1 ORDER BY m.category ASC, m.gender ASC";
-		$q = $this->db->query($sql);
-		$draws = array();
-		if($q && $q->num_rows() > 0) {
-			foreach($q->result() as $row) {
-				$draws[] = array(
-					'category' => $row->category,
-					'gender' => $row->gender,
-					'categoria' => $row->categoria
-				);
-			}
-		}
-
 		header('Content-Type: application/json');
-		echo json_encode(array('success' => true, 'draws' => $draws));
+
+		try {
+			$sql = "SELECT DISTINCT m.category, m.gender, c.name as categoria
+					FROM matches m
+					JOIN category c ON c.id = m.category
+					WHERE c.active = 1
+					ORDER BY m.category ASC, m.gender ASC";
+			$q = $this->db->query($sql);
+
+			if(!$q) {
+				echo json_encode(array('success' => false, 'error' => 'Query failed', 'db_error' => $this->db->error()));
+				exit();
+			}
+
+			$draws = array();
+			if($q->num_rows() > 0) {
+				foreach($q->result() as $row) {
+					$draws[] = array(
+						'category' => intval($row->category),
+						'gender' => $row->gender,
+						'categoria' => $row->categoria
+					);
+				}
+			}
+
+			echo json_encode(array('success' => true, 'draws' => $draws, 'count' => count($draws)));
+		} catch(Exception $e) {
+			echo json_encode(array('success' => false, 'error' => $e->getMessage()));
+		}
 		exit();
 	}
 
