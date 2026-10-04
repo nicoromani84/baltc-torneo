@@ -238,7 +238,6 @@ $(function(){
 	});
 
 	// Cargar pestañas: todas las categorías, con indicador si tienen draw o no
-	var categorias = <?=json_encode($categories)?>;
 	var currentGender = ''; // Guardar el género seleccionado
 	function cargarTabs() {
 		$.ajax({
@@ -246,33 +245,44 @@ $(function(){
 			type: 'POST',
 			success: function(res) {
 				console.log('getDrawsDisponibles OK:', res);
-				var disponibles = {};
-				if(res.draws) res.draws.forEach(function(d){ disponibles[d.category+'_'+d.gender] = true; });
 				var $cont = $('#draws-tabs-container');
 				$cont.html('');
-				categorias.forEach(function(c) {
-					// Para categorías mixtas (X), solo crear un tab; para otras, crear M y F
-					var genders = (c.gender === 'X') ? ['X'] : ['M','F'];
-					genders.forEach(function(gen) {
+
+				if(!res.draws || res.draws.length === 0) {
+					$cont.html('<span class="text-muted small">No hay draws disponibles</span>');
+					return;
+				}
+
+				// Group by category
+				var byCategory = {};
+				res.draws.forEach(function(d) {
+					if(!byCategory[d.category]) {
+						byCategory[d.category] = { id: d.category, name: d.categoria, genders: [] };
+					}
+					byCategory[d.category].genders.push(d.gender);
+				});
+
+				// Create tabs
+				for(var catId in byCategory) {
+					var cat = byCategory[catId];
+					cat.genders.forEach(function(gen) {
 						var icono = gen == 'M' ? 'fa-male' : (gen == 'F' ? 'fa-female' : 'fa-venus-mars');
 						var label = gen == 'M' ? 'Cab.' : (gen == 'F' ? 'Dam.' : 'Mixto');
-						var tiene = disponibles[c.id+'_'+gen];
-						var cls = tiene ? 'draws-tab' : 'draws-tab draws-tab-pending';
-						var title = tiene ? '' : ' title="Sin sortear"';
-						$cont.append('<button class="'+cls+'" data-cat="'+c.id+'" data-gen="'+gen+'" data-tiene="'+(tiene?1:0)+'"'+title+'>'
-							+ '<i class="fas '+icono+'"></i> '+c.name+' '+label
-							+ (tiene ? '' : ' <i class="fas fa-exclamation-circle" style="font-size:10px;opacity:0.6;margin-left:3px"></i>')
+						$cont.append('<button class="draws-tab" data-cat="'+cat.id+'" data-gen="'+gen+'" data-tiene="1">'
+							+ '<i class="fas '+icono+'"></i> '+cat.name+' '+label
 							+ '</button>');
 					});
-				});
-				// Auto-cargar el primero con draw
+				}
+
+				// Auto-cargar el primero
 				setTimeout(function(){
-					var $primero = $('.draws-tab[data-tiene="1"]').first();
+					var $primero = $('.draws-tab').first();
 					if($primero.length) $primero.trigger('click');
 				}, 100);
 			},
 			error: function(xhr, status, err) {
 				console.error('ERROR en getDrawsDisponibles:', status, err, xhr.responseText);
+				$('#draws-tabs-container').html('<span class="text-danger small">Error cargando draws</span>');
 			}
 		});
 	}
