@@ -3,30 +3,42 @@
 <div class="draws-admin">
 
 	<div class="partidos-header">
-		<h2><i class="fas fa-sitemap"></i> Draws</h2>
+		<h2><i class="fas fa-sitemap"></i> Draw del Torneo</h2>
+		<button class="btn btn-danger" id="btn-pdf" style="display:none">
+			<i class="fas fa-file-pdf"></i> Bajar PDF
+		</button>
 	</div>
 
 	<!-- SELECTOR CATEGORIA -->
-	<div class="card mb-4" style="background: rgba(0,0,0,0.3); border: 1px solid rgba(165,208,81,0.3);">
+	<div class="card mb-4">
 		<div class="card-body">
 			<div class="form-row align-items-end">
-				<div class="form-group col-md-6 mb-0">
-					<label style="color: #a5d051; font-weight: bold;">Categoría</label>
-					<select id="draws-category" class="form-control" style="background: rgba(0,0,0,0.5); border: 1px solid rgba(165,208,81,0.4); color: #fff;">
-						<option value="">Seleccionar categoría...</option>
+				<div class="form-group col-md-4 mb-0">
+					<label>Categoría</label>
+					<select id="draws-category" class="form-control">
+						<option value="">Elegir...</option>
 						<?php foreach($categories as $c): ?>
 						<option value="<?=$c->id?>"><?=$c->name?></option>
 						<?php endforeach; ?>
 					</select>
 				</div>
-				<div class="form-group col-md-6 mb-0" id="draws-gender-row">
-					<label style="color: #a5d051; font-weight: bold;">Género</label>
-					<select id="draws-gender" class="form-control" style="background: rgba(0,0,0,0.5); border: 1px solid rgba(165,208,81,0.4); color: #fff;">
-						<option value="">Seleccionar...</option>
+				<div class="form-group col-md-3 mb-0" id="draws-gender-row">
+					<label>Género</label>
+					<select id="draws-gender" class="form-control">
+						<option value="">Elegir...</option>
 						<option value="M">Caballeros</option>
 						<option value="F">Damas</option>
-						<option value="X">Mixto</option>
 					</select>
+				</div>
+				<div class="form-group col-md-3 mb-0">
+					<button class="btn btn-primary" id="btn-ver-draw">
+						<i class="fas fa-eye"></i> Ver Draw
+					</button>
+				</div>
+				<div class="form-group col-md-2 mb-0">
+					<button class="btn btn-info" id="btn-crear-grupos">
+						<i class="fas fa-users"></i> Grupos
+					</button>
 				</div>
 			</div>
 		</div>
@@ -109,13 +121,12 @@
 	font-weight: 700;
 	text-transform: uppercase;
 	letter-spacing: 0.5px;
-	color: #a5d051;
-	padding: 10px 8px;
-	background: rgba(165,208,81,0.15);
-	border: 2px solid rgba(165,208,81,0.5);
+	color: #6c757d;
+	padding: 8px;
+	background: #f8f9fa;
+	border: 1px solid #dee2e6;
 	border-bottom: none;
 	margin: 0 4px;
-	border-radius: 4px 4px 0 0;
 }
 .draw-matches {
 	display: flex;
@@ -127,36 +138,29 @@
 }
 
 .draw-match {
-	background: rgba(0,0,0,0.3);
-	border: 1.5px solid rgba(165,208,81,0.4);
+	background: #fff;
+	border: 1px solid #dee2e6;
 	border-radius: 6px;
 	overflow: hidden;
 	position: relative;
-	box-shadow: 0 2px 10px rgba(0,0,0,0.4);
-	backdrop-filter: blur(10px);
-	transition: all 0.3s ease;
+	box-shadow: 0 1px 3px rgba(0,0,0,0.06);
 }
-.draw-match:hover {
-	border-color: rgba(165,208,81,0.7);
-	box-shadow: 0 4px 15px rgba(165,208,81,0.2);
-}
-.draw-match.pendiente { border-color: rgba(165,208,81,0.4); }
-.draw-match.jugado { border-color: rgba(165,208,81,0.7); background: rgba(165,208,81,0.1); }
+.draw-match.pendiente { border-color: #dee2e6; }
+.draw-match.jugado { border-color: #a5d051; }
 
 .draw-player {
 	display: flex;
 	align-items: center;
-	padding: 8px 10px;
+	padding: 7px 10px;
 	font-size: 12px;
-	border-bottom: 1px solid rgba(165,208,81,0.2);
+	border-bottom: 1px solid #f0f0f0;
 	gap: 6px;
-	min-height: 36px;
-	color: rgba(255,255,255,0.9);
+	min-height: 34px;
 }
 .draw-player:last-child { border-bottom: none; }
-.draw-player.ganador { font-weight: 700; color: #a5d051; background: rgba(165,208,81,0.15); }
-.draw-player.perdedor { color: rgba(255,255,255,0.4); text-decoration: line-through; }
-.draw-player.tbd { color: rgba(255,255,255,0.4); font-style: italic; }
+.draw-player.ganador { font-weight: 700; color: #2d6a00; background: #f0fae0; }
+.draw-player.perdedor { color: #adb5bd; text-decoration: line-through; }
+.draw-player.tbd { color: #ced4da; font-style: italic; }
 .draw-player-name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-transform: capitalize; }
 .draw-player-check { color: #a5d051; font-size: 11px; }
 
