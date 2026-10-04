@@ -18,7 +18,7 @@ class Draws extends CI_Controller {
 		$d['user']       = $this->session;
 		$d['classname']  = 'reserva';
 		// Mostrar solo categorías que tienen partidos sorteados (draws)
-		$sql = "SELECT DISTINCT c.id, c.name, c.gender, c.active
+		$sql = "SELECT DISTINCT c.id, c.name, m.gender
 				FROM category c
 				INNER JOIN matches m ON m.category = c.id
 				WHERE c.active = 1 AND c.name NOT LIKE '%2nd chance%'
