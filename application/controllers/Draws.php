@@ -91,8 +91,7 @@ class Draws extends CI_Controller {
 			'partidos' => $partidos ?: array(),
 			'sembrados' => $sembrados,
 			'is_groups' => $is_groups,
-			'groups' => $groups_data,
-			'debug' => array('category' => $category, 'gender' => $gender, 'partidos_count' => count($partidos))
+			'groups' => $groups_data
 		));
 	}
 }
