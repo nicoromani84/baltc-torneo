@@ -15,6 +15,8 @@ $route['programacion'] = 'menu/programacion';
 $route['draws'] = 'draws/index';
 $route['draws/getData'] = 'draws/getData';
 $route['draws/getDrawsDisponibles'] = 'draws/getDrawsDisponibles';
+$route['drawspublic'] = 'drawspublic/index';
+$route['drawspublic/getData'] = 'drawspublic/getData';
 
 $route['admin/partidos'] = 'admin/partidos';
 $route['admin/addPartido'] = 'admin/addPartido';
