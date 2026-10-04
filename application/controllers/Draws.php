@@ -17,21 +17,14 @@ class Draws extends CI_Controller {
 		$d['token']      = $this->protect->eToken();
 		$d['user']       = $this->session;
 		$d['classname']  = 'reserva';
-		// Obtener solo categorías de dobles (con inscripciones) sin "2nd chance"
-		$allCats = $this->Reservation->getCategories();
-		$this->db->where('tournament_type', 'doubles');
-		$doublesQ = $this->db->get('reservations');
-		$doblesCats = array();
-		foreach($doublesQ->result() as $r) {
-			$doblesCats[$r->category] = true;
-		}
-		$filteredCats = array();
-		foreach($allCats as $c) {
-			if(isset($doblesCats[$c->id]) && strpos($c->name, '2nd chance') === false) {
-				$filteredCats[] = $c;
-			}
-		}
-		$d['categories'] = $filteredCats;
+		// Mostrar solo categorías que tienen partidos sorteados (draws)
+		$sql = "SELECT DISTINCT c.id, c.name, c.gender, c.active
+				FROM category c
+				INNER JOIN matches m ON m.category = c.id
+				WHERE c.active = 1 AND c.name NOT LIKE '%2nd chance%'
+				ORDER BY c.id ASC";
+		$q = $this->db->query($sql);
+		$d['categories'] = $q->num_rows() > 0 ? $q->result() : array();
 		$d['mi_category'] = $this->Reservation->getCategoryByPlayer($this->session->userdata('id'), 'doubles');
 		$d['mi_gender']   = $this->session->userdata('gender');
 		$d['mi_partner_id'] = $this->session->userdata('id');
