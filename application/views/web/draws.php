@@ -31,7 +31,7 @@
 					<select id="draws-category" class="draws-select">
 						<option value="">Categoría...</option>
 						<?php foreach($categories as $c): ?>
-						<option value="<?=$c->id?>" data-gender="<?=$c->gender?>" <?=($mi_category && $c->id==$mi_category)?'selected':''?>><?=$c->name?></option>
+						<option value="<?=$c->id?>" <?=($mi_category && $c->id==$mi_category)?'selected':''?>><?=$c->name?></option>
 						<?php endforeach; ?>
 					</select>
 					<i class="fas fa-chevron-down draws-select-arrow"></i>
@@ -632,15 +632,9 @@ $(function(){
 	// Mostrar/ocultar género según el torneo
 	$('#draws-category').on('change', function(){
 		var cat = $('#draws-category').val();
-		var catGender = $('#draws-category option:selected').data('gender');
-
-		// Si es mixta (X), no mostrar select de género
-		if(catGender === 'X') {
-			$('#draws-gender-wrap').hide();
-			$('#draws-gender').val('');
-			if(cat) cargarDraw(cat, 'X');
-		} else if(currentTournament === 'singles') {
-			$('#draws-gender-wrap').show();
+		if(cat) {
+			// Siempre cargar con 'X' (mixta) para dobles
+			cargarDraw(cat, 'X');
 		}
 	});
 
