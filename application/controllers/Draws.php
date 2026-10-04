@@ -17,7 +17,7 @@ class Draws extends CI_Controller {
 			$q = $this->db->query($sql);
 			header('Content-Type: application/json');
 			echo json_encode(['draws' => $q->num_rows() > 0 ? $q->result() : array()]);
-			return;
+			exit();
 		}
 
 		$this->protect->setRequest('GET');
