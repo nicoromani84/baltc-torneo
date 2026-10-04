@@ -242,9 +242,8 @@ $(function(){
 	var currentGender = ''; // Guardar el género seleccionado
 	function cargarTabs() {
 		$.ajax({
-			url: baseurl + 'admin/getDrawsDisponibles',
+			url: baseurl + 'draws/getDrawsDisponibles',
 			type: 'POST',
-			headers: { 'X-Auth-Token': token },
 			success: function(res) {
 				console.log('getDrawsDisponibles OK:', res);
 				var disponibles = {};
@@ -292,10 +291,9 @@ $(function(){
 		if(!cat || !gen) { alert('Seleccioná categoría y género.'); return; }
 
 		$.ajax({
-			url: baseurl + 'admin/getDrawData',
+			url: baseurl + 'draws/getData',
 			type: 'POST',
 			data: { category: cat, gender: gen },
-			headers: { 'X-Auth-Token': token },
 			success: function(res) {
 				if(!res.action || !res.partidos.length) {
 					$('#draw-container').hide();
