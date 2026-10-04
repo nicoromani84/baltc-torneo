@@ -49,11 +49,21 @@ class Draws extends CI_Controller {
 
 	public function getDrawsDisponibles() {
 		// Get all available draws for tab display
-		$q = $this->db->query("SELECT DISTINCT m.category, m.gender, c.name as categoria FROM matches m JOIN category c ON c.id = m.category WHERE c.active = 1 ORDER BY m.category, m.gender");
-		$draws = $q->num_rows() > 0 ? $q->result() : array();
+		$sql = "SELECT DISTINCT m.category, m.gender, c.name as categoria FROM matches m JOIN category c ON c.id = m.category WHERE c.active = 1 ORDER BY m.category ASC, m.gender ASC";
+		$q = $this->db->query($sql);
+		$draws = array();
+		if($q && $q->num_rows() > 0) {
+			foreach($q->result() as $row) {
+				$draws[] = array(
+					'category' => $row->category,
+					'gender' => $row->gender,
+					'categoria' => $row->categoria
+				);
+			}
+		}
 
 		header('Content-Type: application/json');
-		echo json_encode(array('draws' => $draws));
+		echo json_encode(array('success' => true, 'draws' => $draws));
 		exit();
 	}
 

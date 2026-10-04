@@ -165,7 +165,8 @@ $(function() {
 			dataType: 'json',
 			success: function(res) {
 				console.log('Draws loaded:', res);
-				if (!res.draws || res.draws.length === 0) {
+				if (!res.success || !res.draws || res.draws.length === 0) {
+					console.warn('No draws available', res);
 					$('#draws-empty').show();
 					return;
 				}
@@ -179,7 +180,8 @@ $(function() {
 				}
 			},
 			error: function(xhr, status, err) {
-				console.error('Error loading draws:', err, xhr.responseText);
+				console.error('Error loading draws:', err);
+				console.error('Response text:', xhr.responseText);
 				$('#draws-empty').html('<i class="fas fa-exclamation-circle"></i> Error al cargar draws').show();
 			}
 		});
