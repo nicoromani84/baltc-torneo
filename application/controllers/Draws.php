@@ -142,14 +142,16 @@ class Draws extends CI_Controller {
 			$is_groups = false; // Cambiar a modo bracket si hay brackets
 		}
 
-		header('Content-Type: application/json');
-		echo json_encode(array(
+		$response = array(
 			'action' => !empty($partidos),
-			'partidos' => $partidos ?: array(),
+			'partidos' => !empty($partidos) ? $partidos : array(),
 			'sembrados' => $sembrados,
 			'is_groups' => $is_groups,
 			'groups' => $groups_data
-		));
+		);
+
+		header('Content-Type: application/json');
+		echo json_encode($response);
 		exit();
 	}
 }
