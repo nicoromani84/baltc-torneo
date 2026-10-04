@@ -12,6 +12,10 @@ class Draws extends CI_Controller {
 
 	public function index() {
 		$public = $this->input->get('public');
+		if($public === 'html') {
+			$this->load->view('web/draws_public');
+			return;
+		}
 		if($public) {
 			$q = $this->db->query("SELECT DISTINCT category, gender FROM matches ORDER BY category, gender");
 			$draws = $q->num_rows() > 0 ? $q->result() : array();
