@@ -1,241 +1,134 @@
 <?php defined('BASEPATH') OR exit('No direct script access allowed'); ?>
-<header>
-	<div class="container">
-		<div class="logo">
-			<img src="<?=asset_url('img')?>/logo.png" alt="Logo">
-		</div>
-		<ul class="buttons">
-			<li>
-				<a href="<?=base_url('menu')?>">
-					<span class="icon-logout"><i class="fas fa-arrow-left"></i></span>
-				</a>
-			</li>
-		</ul>
+
+<div class="draws-admin">
+
+	<div class="partidos-header">
+		<h2><i class="fas fa-sitemap"></i> Draw del Torneo</h2>
+		<button class="btn btn-danger" id="btn-pdf" style="display:none">
+			<i class="fas fa-file-pdf"></i> Bajar PDF
+		</button>
 	</div>
-</header>
-<div class="page reserve-page">
-	<div id="draws-page" class="container">
-		<div class="container">
-			<h1>Draws</h1>
-			<p class="draws-subtitle" id="draws-subtitle">Seleccioná categoría para ver los cuadros</p>
 
-			<!-- TABS TORNEOS - SOLO DOBLES -->
-			<div class="draws-tournament-tabs" style="display:none;">
-				<button class="draws-tab active" data-tournament="singles">Singles</button>
-				<button class="draws-tab" data-tournament="doubles">Dobles</button>
-			</div>
-
-			<!-- SELECTOR -->
-			<div class="draws-selector">
-				<div class="draws-select-wrap">
-					<select id="draws-category" class="draws-select">
-						<option value="">Categoría...</option>
+	<!-- SELECTOR CATEGORIA -->
+	<div class="card mb-4">
+		<div class="card-body">
+			<div class="form-row align-items-end">
+				<div class="form-group col-md-4 mb-0">
+					<label>Categoría</label>
+					<select id="draws-category" class="form-control">
+						<option value="">Elegir...</option>
 						<?php foreach($categories as $c): ?>
-						<option value="<?=$c->id?>" data-gender="<?=$c->gender?>" <?=($mi_category && $c->id==$mi_category)?'selected':''?>><?=$c->name?></option>
+						<option value="<?=$c->id?>"><?=$c->name?></option>
 						<?php endforeach; ?>
 					</select>
-					<i class="fas fa-chevron-down draws-select-arrow"></i>
 				</div>
-				<div class="draws-select-wrap" id="draws-gender-wrap" style="display:none;">
-					<select id="draws-gender" class="draws-select">
-						<option value="">Género...</option>
-						<option value="M" <?=($mi_gender=='M')?'selected':''?>>Caballeros</option>
-						<option value="F" <?=($mi_gender=='F')?'selected':''?>>Damas</option>
+				<div class="form-group col-md-3 mb-0" id="draws-gender-row">
+					<label>Género</label>
+					<select id="draws-gender" class="form-control">
+						<option value="">Elegir...</option>
+						<option value="M">Caballeros</option>
+						<option value="F">Damas</option>
 					</select>
-					<i class="fas fa-chevron-down draws-select-arrow"></i>
 				</div>
-			</div>
-			<div id="draw-resultado" style="display:none">
-				<div id="draw-titulo" class="draws-titulo">
-					<span id="mi-cat-badge" style="display:none" class="mi-cat-badge">⭐ Mi categoría</span>
+				<div class="form-group col-md-3 mb-0">
+					<button class="btn btn-primary" id="btn-ver-draw">
+						<i class="fas fa-eye"></i> Ver Draw
+					</button>
 				</div>
-				<div id="draw-nav" class="draws-nav" style="display:none">
-					<button class="btn btn-sm btn-outline draws-nav-btn" id="btn-prev-ronda"><i class="fas fa-chevron-left"></i></button>
-					<span id="draws-ronda-label" class="draws-nav-label"></span>
-					<button class="btn btn-sm btn-outline draws-nav-btn" id="btn-next-ronda"><i class="fas fa-chevron-right"></i></button>
+				<div class="form-group col-md-2 mb-0">
+					<button class="btn btn-info" id="btn-crear-grupos">
+						<i class="fas fa-users"></i> Grupos
+					</button>
 				</div>
-				<div id="draw-bracket" class="draws-bracket-wrap"></div>
-			</div>
-			<div id="draw-vacio" style="display:none" class="resultado-vacio">
-				<i class="fas fa-sitemap"></i>
-				<p>No hay draw disponible para esta selección.</p>
 			</div>
 		</div>
 	</div>
+
+	<!-- PESTAÑAS RÁPIDAS - solo categorías con draw sorteado -->
+	<div class="draws-tabs mb-3" id="draws-tabs-container">
+		<span class="text-muted small">Cargando...</span>
+	</div>
+
+	<div id="draw-titulo-activo" class="draws-titulo-activo" style="display:none"></div>
+
+	<div id="draw-container" style="display:none">
+		<div id="draw-bracket" class="draw-bracket-wrap"></div>
+	</div>
+
+	<div id="draw-vacio" style="display:none" class="text-center text-muted" style="padding:40px">
+		<i class="fas fa-sitemap fa-3x" style="margin-bottom:15px; display:block; color:#dee2e6"></i>
+		<p>No hay partidos para esta categoría todavía.</p>
+	</div>
+
 </div>
+
 <style>
-#draws-page {
-	min-height: calc(100vh - 110px);
-	display: table-cell;
-	vertical-align: top;
-	height: 100%;
-	padding-top: 30px;
-	padding-bottom: 30px;
-}
-#draws-page h1 {
-	text-align: center;
-	color: #fff;
-	text-transform: uppercase;
-	font-weight: 700;
-	font-size: 38px;
-	text-shadow: 4px 4px 12px rgba(0,0,0,0.9);
-	margin: 0;
-}
-#draws-page > .container > p {
-	color: #fff;
-	text-align: center;
-	font-size: 18px;
-	text-shadow: 2px 2px 6px rgba(0,0,0,0.8);
-	margin: 5px 0 20px 0;
-}
-.draws-hint strong { color: rgba(255,255,255,0.7); }
-.mi-cat-badge {
-	display: inline-block;
-	font-size: 11px;
-	background: rgba(165,208,81,0.2);
-	color: #a5d051;
-	border: 1px solid rgba(165,208,81,0.4);
-	padding: 2px 10px;
-	border-radius: 10px;
-	font-weight: 700;
-	margin-left: 8px;
-	vertical-align: middle;
-	letter-spacing: 0.3px;
-}
-.draws-subtitle {
-	text-align: center;
-	color: rgba(255,255,255,0.55);
-	font-size: 14px;
-	margin: 5px 0 20px 0;
-	text-shadow: 1px 1px 4px rgba(0,0,0,0.8);
-}
-.draws-tournament-tabs {
-	display: flex;
-	justify-content: center;
-	gap: 10px;
-	margin-bottom: 20px;
-}
+.draws-admin { padding: 20px; }
+.draws-tabs { display:flex; flex-wrap:wrap; gap:6px; }
 .draws-tab {
-	background: rgba(0,0,0,0.5);
-	border: 1px solid rgba(165,208,81,0.4);
-	color: rgba(255,255,255,0.7);
+	background: #f8f9fa;
+	border: 1px solid #dee2e6;
 	border-radius: 6px;
-	padding: 10px 20px;
-	font-size: 14px;
+	padding: 6px 14px;
+	font-size: 13px;
 	font-weight: 600;
+	color: #495057;
 	cursor: pointer;
-	transition: all 0.3s ease;
-	text-transform: uppercase;
-	letter-spacing: 0.5px;
+	transition: all 0.2s;
 }
-.draws-tab:hover {
-	background: rgba(165,208,81,0.1);
-	border-color: #a5d051;
-	color: #a5d051;
-}
+.draws-tab:hover { background: #e9ecef; border-color: #adb5bd; }
 .draws-tab.active {
-	background: rgba(165,208,81,0.2);
+	background: #a5d051;
 	border-color: #a5d051;
-	color: #a5d051;
+	color: #1a1a2e;
 }
-.draws-selector {
-	display: flex;
-	gap: 10px;
-	justify-content: center;
-	flex-wrap: wrap;
-	margin-bottom: 20px;
+.draws-tab .fa-male { color: #1a6fad; }
+.draws-tab .fa-female { color: #ad1a6f; }
+.draws-tab.active .fa-male,
+.draws-tab.active .fa-female { color: #1a1a2e; }
+.draws-tab-pending {
+	background: #fff;
+	border: 1px dashed #adb5bd;
+	color: #adb5bd;
+	opacity: 0.75;
 }
-.draws-select-wrap {
-	position: relative;
-	display: inline-flex;
-	align-items: center;
-	flex: 1;
-	min-width: 140px;
-}
-.draws-select-arrow {
-	position: absolute;
-	right: 10px;
-	top: 50%;
-	transform: translateY(-50%);
-	color: #a5d051;
-	font-size: 10px;
-	pointer-events: none;
-}
-.draws-select {
-	-webkit-appearance: none;
-	-moz-appearance: none;
-	appearance: none;
-	background: rgba(0,0,0,0.5);
-	border: 1px solid rgba(165,208,81,0.4);
-	color: #fff;
-	border-radius: 6px;
-	padding: 8px 32px 8px 14px;
-	font-size: 14px;
-	min-width: 140px;
-	width: 100%;
-}
-.draws-select option { background: #222; color: #fff; }
-.draws-titulo {
-	text-align: center;
-	color: #a5d051;
+.draws-tab-pending:hover { opacity: 1; border-color: #f0ad4e; color: #856404; background: #fff8e1; }
+.draws-tab-pending.active { background: #fff8e1; border-color: #f0ad4e; color: #856404; opacity:1; }
+.draws-titulo-activo {
 	font-weight: 700;
-	font-size: 16px;
-	text-transform: uppercase;
-	letter-spacing: 1px;
-	margin-bottom: 15px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	flex-wrap: wrap;
-	gap: 6px;
-}
-/* NAV RONDAS */
-.draws-nav {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	gap: 15px;
-	margin-bottom: 15px;
-}
-.draws-nav-btn {
-	background: rgba(255,255,255,0.1);
-	border: 1px solid rgba(255,255,255,0.2);
-	color: #fff;
-	border-radius: 6px;
-	padding: 5px 12px;
-}
-.draws-nav-btn:hover { background: rgba(165,208,81,0.2); border-color: #a5d051; }
-.draws-nav-btn:disabled { opacity: 0.3; cursor: default; }
-.draws-nav-label {
-	color: #fff;
-	font-weight: 700;
-	font-size: 14px;
-	min-width: 160px;
-	text-align: center;
-}
-/* BRACKET */
-.draws-bracket-wrap { overflow-x: auto; padding-bottom: 10px; }
-.draws-bracket { display: flex; gap: 0; min-width: max-content; }
-.draws-ronda { display: flex; flex-direction: column; min-width: 160px; max-width: 200px; }
-.draws-ronda-titulo {
-	text-align: center;
-	font-size: 11px;
-	font-weight: 800;
-	text-transform: uppercase;
-	letter-spacing: 0.5px;
-	color: rgba(255,255,255,0.7);
-	padding: 8px 6px;
-	background: rgba(0,0,0,0.6);
-	border: 1px solid rgba(255,255,255,0.2);
-	margin: 0 4px;
+	font-size: 15px;
+	color: #495057;
+	margin-bottom: 12px;
+	padding: 8px 12px;
+	background: #f8f9fa;
+	border-left: 4px solid #a5d051;
 	border-radius: 4px;
 }
-.draws-ronda.activa .draws-ronda-titulo {
-	color: #a5d051;
-	background: rgba(165,208,81,0.1);
-	border-color: rgba(165,208,81,0.3);
+.partidos-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
+.partidos-header h2 { margin:0; font-size:22px; }
+
+.draw-bracket-wrap { overflow-x: auto; padding-bottom: 20px; }
+.draw-bracket { display: flex; gap: 0; min-width: max-content; }
+
+.draw-ronda {
+	display: flex;
+	flex-direction: column;
+	min-width: 200px;
 }
-.draws-matches {
+.draw-ronda-titulo {
+	text-align: center;
+	font-size: 11px;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	color: #6c757d;
+	padding: 8px;
+	background: #f8f9fa;
+	border: 1px solid #dee2e6;
+	border-bottom: none;
+	margin: 0 4px;
+}
+.draw-matches {
 	display: flex;
 	flex-direction: column;
 	justify-content: space-around;
@@ -243,253 +136,215 @@
 	padding: 8px 4px;
 	gap: 8px;
 }
-.draws-match {
-	background: rgba(0,0,0,0.75);
-	border: 1.5px solid rgba(165,208,81,0.5);
-	border-radius: 8px;
+
+.draw-match {
+	background: #fff;
+	border: 1px solid #dee2e6;
+	border-radius: 6px;
 	overflow: hidden;
-	box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+	position: relative;
+	box-shadow: 0 1px 3px rgba(0,0,0,0.06);
 }
-.draws-match.jugado { border-color: rgba(165,208,81,0.4); }
-.draws-player {
+.draw-match.pendiente { border-color: #dee2e6; }
+.draw-match.jugado { border-color: #a5d051; }
+
+.draw-player {
 	display: flex;
 	align-items: center;
-	padding: 9px 10px;
-	font-size: 13px;
-	border-bottom: 1px solid rgba(255,255,255,0.07);
+	padding: 7px 10px;
+	font-size: 12px;
+	border-bottom: 1px solid #f0f0f0;
 	gap: 6px;
-	min-height: 36px;
-	color: rgba(255,255,255,0.85);
-	text-transform: capitalize;
+	min-height: 34px;
+}
+.draw-player:last-child { border-bottom: none; }
+.draw-player.ganador { font-weight: 700; color: #2d6a00; background: #f0fae0; }
+.draw-player.perdedor { color: #adb5bd; text-decoration: line-through; }
+.draw-player.tbd { color: #ced4da; font-style: italic; }
+.draw-player-name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-transform: capitalize; }
+.draw-player-check { color: #a5d051; font-size: 11px; }
+
+.draw-score {
+	text-align: center;
+	font-size: 10px;
+	color: #6c757d;
+	padding: 2px 8px;
+	background: #f8f9fa;
+	border-top: 1px solid #f0f0f0;
 	font-weight: 600;
 }
-.draws-player:last-child { border-bottom: none; }
-.draws-player.ganador { color: #a5d051; font-weight: 800; }
-.draws-player.perdedor { color: rgba(255,255,255,0.3); text-decoration: line-through; font-weight: 400; }
-.draws-player.tbd { color: rgba(255,255,255,0.3); font-style: italic; font-weight: 400; }
-.draws-player-name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-style: italic; }
-.draws-check { font-size: 11px; color: #a5d051; }
-.draws-score {
-	text-align: center;
-	font-size: 11px;
-	color: #a5d051;
-	padding: 3px 8px;
-	background: rgba(165,208,81,0.1);
-	font-weight: 700;
-}
-.draws-connector {
+
+.draw-connector {
 	display: flex;
 	flex-direction: column;
 	justify-content: space-around;
-	width: 16px;
+	width: 20px;
 	padding: 8px 0;
 }
-.draws-connector-line {
+.draw-connector-line {
 	flex: 1;
-	border-right: 1px solid rgba(165,208,81,0.3);
+	border-right: 2px solid #dee2e6;
 	margin: 2px 0;
 }
-.draws-player.yo-player {
-	background: rgba(165,208,81,0.12);
-	border-left: 2px solid #a5d051;
-	color: #fff !important;
-	font-weight: 800 !important;
-}
-.resultado-vacio { text-align:center; padding:40px 0; color:rgba(255,255,255,0.5); }
-.resultado-vacio i { font-size:50px; color:#a5d051; margin-bottom:15px; display:block; }
-.resultado-vacio p { font-size:18px; }
-@media (max-width: 767px) {
-	#draws-page { padding-top: 16px; padding-bottom: 16px; }
-	#draws-page h1 { font-size: 22px; }
-	#draws-page > .container { padding-left: 12px; padding-right: 12px; }
-	.draws-subtitle { font-size: 13px; }
-	.draws-selector { gap: 8px; }
-	.draws-select { font-size: 13px; padding: 7px 28px 7px 10px; }
-
-	/* Bracket en mobile: scroll horizontal contenido */
-	.draws-bracket-wrap {
-		overflow-x: auto;
-		-webkit-overflow-scrolling: touch;
-		padding-bottom: 16px;
-		margin-left: -12px;
-		margin-right: -12px;
-		padding-left: 12px;
-		padding-right: 12px;
-	}
-	.draws-bracket {
-		display: flex;
-		flex-wrap: nowrap;
-		gap: 0;
-		min-width: max-content;
-	}
-	.draws-ronda {
-		min-width: 150px;
-		max-width: 170px;
-	}
-	.draws-ronda-titulo {
-		font-size: 10px;
-		padding: 6px 4px;
-	}
-	.draws-player {
-		font-size: 11px;
-		padding: 7px 8px;
-		min-height: 32px;
-	}
-	.draws-player-name {
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		max-width: 110px;
-	}
-	.draws-matches { gap: 6px; padding: 6px 2px; }
-	.draws-match { border-radius: 6px; }
-	.draws-connector { width: 10px; }
-
-	/* Nav rondas */
-	.draws-nav { gap: 10px; margin-bottom: 10px; }
-	.draws-nav-label { font-size: 12px; min-width: 130px; }
-	.draws-nav-btn { padding: 4px 10px; font-size: 12px; }
-
-	/* Título */
-	.draws-titulo { font-size: 13px; letter-spacing: 0.5px; }
+@media (max-width: 768px) {
+	#btn-pdf { display: none !important; }
 }
 </style>
+
 <script>
-// Cache buster: <?php echo time(); ?>
+console.log('admin/draws.php script loaded');
 $(function(){
+	console.log('jQuery ready - baseurl:', '<?=base_url()?>');
 	var baseurl = '<?=base_url()?>';
 	var token = '<?=$token?>';
 	var RONDAS = ['1ra Ronda','2da Ronda','Cuartos de Final','Semifinal','Final'];
-	var rondaInicioIdx = 0;
-	var rondaActivaIdx = 0;
-	var todosPartidos = [];
-	var sembradosActivos = {};
+	var currentPartidos = [], currentSembrados = {};
 
-	function detectarRondas(categoryId) {
-		// Obtener rondas únicas de los partidos
-		var rondasUnicas = [];
-		todosPartidos.forEach(function(p) {
-			if(rondasUnicas.indexOf(p.ronda) === -1) {
-				rondasUnicas.push(p.ronda);
-			}
-		});
-
-		// Definir orden esperado
-		var ordenEsperado = ['Grupo A', 'Grupo B', 'Grupo C', 'Grupo D', '1ra Ronda', '2da Ronda', 'Cuartos de Final', 'Semifinal', 'Final'];
-
-		// Filtrar rondas según la categoría (hardcodeado)
-		if(categoryId == 1) { // 1ra Caballeros/Damas
-			ordenEsperado = ['Semifinal']; // Solo mostrar Semifinal
-		} else if(categoryId == 7) { // 4ta Damas
-			ordenEsperado = ['Final']; // Solo mostrar Final
+	// Click en pestañas
+	$(document).on('click', '.draws-tab', function(){
+		$('.draws-tab').removeClass('active');
+		$(this).addClass('active');
+		var cat = $(this).data('cat');
+		var gen = $(this).data('gen');
+		var tiene = $(this).data('tiene');
+		$('#draws-category').val(cat);
+		currentGender = gen; // Guardar el género globalmente
+		// Para mixtas (X), no mostrar select de género
+		if(gen === 'X') {
+			$('#draws-gender-row').hide();
+			$('#draws-gender').val('');
+		} else {
+			$('#draws-gender-row').show();
+			$('#draws-gender').val(gen);
 		}
-
-		// Ordenar rondasUnicas según ordenEsperado
-		var rondasOrdenadas = [];
-		ordenEsperado.forEach(function(ronda) {
-			if(rondasUnicas.indexOf(ronda) !== -1) {
-				rondasOrdenadas.push(ronda);
-			}
-		});
-
-		return rondasOrdenadas;
-	}
-
-	function getRondaInicio(rondasActuales) {
-		for(var i = 0; i < rondasActuales.length; i++) {
-			if(todosPartidos.some(function(p){ return p.ronda === rondasActuales[i]; })) return i;
+		if(!tiene) {
+			$('#draw-container').hide();
+			$('#draw-titulo-activo').hide();
+			$('#btn-pdf').hide();
+			$('#draw-vacio').html(
+				'<i class="fas fa-sitemap fa-3x" style="margin-bottom:15px;display:block;color:#dee2e6"></i>'
+				+ '<p>Esta categoría aún no fue sorteada.</p>'
+				+ '<div class="mt-3">'
+				+ '<a href="'+baseurl+'admin/sorteo?cat='+cat+'&gen='+gen+'" class="btn btn-warning mt-2">'
+				+ '<i class="fas fa-random"></i> Sortear automático</a>'
+				+ ' '
+				+ '<a href="'+baseurl+'admin/crearGruposManual?cat='+cat+'&gen='+gen+'" class="btn btn-info mt-2">'
+				+ '<i class="fas fa-users"></i> Crear grupos manualmente</a>'
+				+ '</div>'
+			).show();
+			return;
 		}
-		return 0;
-	}
+		$('#btn-ver-draw').trigger('click');
+	});
 
-	function cargarDraw(cat, gen) {
-		if(!cat) return;
-		// Si no hay género, usar 'X' (mixta)
-		if(!gen) gen = 'X';
+	// Cargar pestañas: todas las categorías, con indicador si tienen draw o no
+	var categorias = <?=json_encode($categories)?>;
+	var currentGender = ''; // Guardar el género seleccionado
+	function cargarTabs() {
 		$.ajax({
-			url: baseurl + 'draws/getData',
+			url: baseurl + 'admin/getDrawsDisponibles',
+			type: 'POST',
+			headers: { 'X-Auth-Token': token },
+			success: function(res) {
+				console.log('getDrawsDisponibles OK:', res);
+				var disponibles = {};
+				if(res.draws) res.draws.forEach(function(d){ disponibles[d.category+'_'+d.gender] = true; });
+				var $cont = $('#draws-tabs-container');
+				$cont.html('');
+				categorias.forEach(function(c) {
+					// Para categorías mixtas (X), solo crear un tab; para otras, crear M y F
+					var genders = (c.gender === 'X') ? ['X'] : ['M','F'];
+					genders.forEach(function(gen) {
+						var icono = gen == 'M' ? 'fa-male' : (gen == 'F' ? 'fa-female' : 'fa-venus-mars');
+						var label = gen == 'M' ? 'Cab.' : (gen == 'F' ? 'Dam.' : 'Mixto');
+						var tiene = disponibles[c.id+'_'+gen];
+						var cls = tiene ? 'draws-tab' : 'draws-tab draws-tab-pending';
+						var title = tiene ? '' : ' title="Sin sortear"';
+						$cont.append('<button class="'+cls+'" data-cat="'+c.id+'" data-gen="'+gen+'" data-tiene="'+(tiene?1:0)+'"'+title+'>'
+							+ '<i class="fas '+icono+'"></i> '+c.name+' '+label
+							+ (tiene ? '' : ' <i class="fas fa-exclamation-circle" style="font-size:10px;opacity:0.6;margin-left:3px"></i>')
+							+ '</button>');
+					});
+				});
+				// Auto-cargar el primero con draw
+				setTimeout(function(){
+					var $primero = $('.draws-tab[data-tiene="1"]').first();
+					if($primero.length) $primero.trigger('click');
+				}, 100);
+			},
+			error: function(xhr, status, err) {
+				console.error('ERROR en getDrawsDisponibles:', status, err, xhr.responseText);
+			}
+		});
+	}
+	cargarTabs();
+
+	$('#btn-crear-grupos').on('click', function(){
+		var cat = $('#draws-category').val();
+		var gen = $('#draws-gender').val();
+		if(!cat || !gen) { alert('Seleccioná categoría y género.'); return; }
+		location.href = baseurl + 'admin/crearGruposManual?cat=' + cat + '&gen=' + gen;
+	});
+
+	$('#btn-ver-draw').on('click', function(){
+		var cat = $('#draws-category').val();
+		var gen = currentGender || $('#draws-gender').val(); // Usar currentGender si está guardado
+		if(!cat || !gen) { alert('Seleccioná categoría y género.'); return; }
+
+		$.ajax({
+			url: baseurl + 'admin/getDrawData',
 			type: 'POST',
 			data: { category: cat, gender: gen },
 			headers: { 'X-Auth-Token': token },
 			success: function(res) {
-				$('#draw-bracket').html('');
 				if(!res.action || !res.partidos.length) {
-					$('#draw-resultado').hide();
+					$('#draw-container').hide();
 					$('#draw-vacio').show();
 					return;
 				}
 				$('#draw-vacio').hide();
-				todosPartidos = res.partidos;
-				sembradosActivos = res.sembrados || {};
+				// Resaltar pestaña activa
+				var cat = $('#draws-category').val();
+				var gen = $('#draws-gender').val();
+				$('.draws-tab').removeClass('active');
+				$('.draws-tab[data-cat="'+cat+'"][data-gen="'+gen+'"]').addClass('active');
+				// Mostrar título
 				var catNombre = $('#draws-category option:selected').text();
-				var genNombre = gen == 'M' ? 'Caballeros' : (gen == 'F' ? 'Damas' : 'Mixto');
-				$('#draw-titulo').html('Categoría ' + catNombre + ' — ' + genNombre + '<span id="mi-cat-badge" style="display:none" class="mi-cat-badge">⭐ Mi categoría</span>');
-				if(miCat && miGen && cat == miCat && gen == miGen) {
-					$('#mi-cat-badge').show();
-				}
+				var genNombre = gen == 'M' ? 'Caballeros' : 'Damas';
+				$('#draw-titulo-activo').text('Draw ' + catNombre + ' — ' + genNombre).show();
+				$('#btn-pdf').show();
+				currentPartidos = res.partidos;
+				currentSembrados = res.sembrados || {};
 				if(res.is_groups) {
 					renderGroups(res.groups);
 				} else {
-					// Detectar dinámicamente las rondas presentes en los partidos
-					RONDAS = detectarRondas(cat);
-					rondaInicioIdx = getRondaInicio(RONDAS);
-					rondaActivaIdx = rondaInicioIdx;
-
-					// Buscar la ronda más avanzada COMPLETADA (todos sus partidos tienen resultado)
-					var rondaMasAvanzada = rondaInicioIdx;
-					for(var i = RONDAS.length - 1; i >= rondaInicioIdx; i--) {
-						var partidos_ronda = todosPartidos.filter(function(p){ return p.ronda === RONDAS[i]; });
-						if(partidos_ronda.length === 0) continue; // Ronda no existe
-
-						// Verificar si TODOS los partidos tienen resultado (ganador definido)
-						var todos_completados = partidos_ronda.every(function(p){
-							return p.ganador_id != null && p.ganador_id !== undefined;
-						});
-
-						if(todos_completados) {
-							rondaMasAvanzada = i;
-							break; // Salir cuando encuentre la más avanzada completada
-						}
-					}
-
-					rondaActivaIdx = rondaMasAvanzada;
-					renderBracket();
+					renderDraw(res.partidos, res.sembrados || {});
 				}
-				$('#draw-resultado').show();
+				$('#draw-container').show();
 			}
 		});
-	}
-
-	function formatPlayerNamesShort(fullNames) {
-		if(!fullNames) return 'BYE';
-		var names = fullNames.split(' / ');
-		return names.map(function(n) {
-			var apellido = n.split(',')[0].trim();
-			return apellido.charAt(0).toUpperCase() + apellido.slice(1).toLowerCase();
-		}).join('-');
-	}
+	});
 
 	function renderGroups(groups) {
-		$('#draw-nav').hide();
 		var html = '';
 		for(var grupoNombre in groups) {
 			var standings = groups[grupoNombre];
-			html += '<div style="margin-bottom: 20px; background: rgba(0,0,0,0.6); padding: 12px; border-radius: 8px; border: 1px solid rgba(165,208,81,0.3);">';
-			html += '<h5 style="margin-bottom: 10px; color: #a5d051; text-transform: uppercase; letter-spacing: 0.5px; font-size: 12px;">' + grupoNombre + '</h5>';
-			html += '<table class="table table-sm" style="max-width: 420px; margin-bottom: 0; background: rgba(0,0,0,0.5); border-collapse: collapse; font-size: 14px;">';
-			html += '<thead><tr style="background: rgba(0,0,0,0.7); border-bottom: 2px solid rgba(165,208,81,0.4);"><th style="color: #a5d051; padding: 8px; border: 1px solid rgba(165,208,81,0.2); font-weight: 700; width: 30px; font-size: 13px;">Pos</th><th style="color: #a5d051; padding: 8px; border: 1px solid rgba(165,208,81,0.2); font-weight: 700; font-size: 13px;">Apellido</th><th style="color: #a5d051; padding: 8px; border: 1px solid rgba(165,208,81,0.2); font-weight: 700; width: 30px; font-size: 13px;">PJ</th><th style="color: #a5d051; padding: 8px; border: 1px solid rgba(165,208,81,0.2); font-weight: 700; width: 30px; font-size: 13px;">PG</th><th style="color: #a5d051; padding: 8px; border: 1px solid rgba(165,208,81,0.2); font-weight: 700; width: 30px; font-size: 13px;">DS</th><th style="color: #a5d051; padding: 8px; border: 1px solid rgba(165,208,81,0.2); font-weight: 700; width: 30px; font-size: 13px;">DG</th><th style="color: #a5d051; padding: 8px; border: 1px solid rgba(165,208,81,0.2); font-weight: 700; width: 30px; font-size: 13px;">Pts</th></tr></thead>';
+			html += '<div style="margin-bottom: 30px;">';
+			html += '<h5 style="margin-bottom: 15px;">' + grupoNombre + '</h5>';
+			html += '<table class="table table-sm table-bordered" style="max-width: 600px;">';
+			html += '<thead class="table-light"><tr><th>Pos</th><th>Jugador</th><th>PJ</th><th>PG</th><th>PP</th><th>DS</th><th>DG</th><th>Pts</th></tr></thead>';
 			html += '<tbody>';
 			for(var i = 0; i < standings.length; i++) {
 				var s = standings[i];
-				var apellido = s.nombre.split(' / ').map(function(n) { return n.split(',')[0]; }).join(' / ');
-				html += '<tr style="border-bottom: 1px solid rgba(165,208,81,0.15); background: ' + (i % 2 === 0 ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.5)') + ';">';
-				html += '<td style="font-weight: bold; color: #a5d051; padding: 8px; border: 1px solid rgba(165,208,81,0.1); text-align: center; font-size: 14px;">' + (i+1) + '</td>';
-				html += '<td style="color: rgba(255,255,255,0.9); padding: 8px; border: 1px solid rgba(165,208,81,0.1); text-transform: capitalize; font-size: 14px; font-weight: bold;">' + apellido.toLowerCase() + '</td>';
-				html += '<td style="color: rgba(255,255,255,0.8); padding: 8px; border: 1px solid rgba(165,208,81,0.1); text-align: center; font-size: 14px;">' + s.pj + '</td>';
-				html += '<td style="color: rgba(255,255,255,0.8); padding: 8px; border: 1px solid rgba(165,208,81,0.1); text-align: center; font-size: 14px;">' + s.pg + '</td>';
-				html += '<td style="color: rgba(255,255,255,0.8); padding: 8px; border: 1px solid rgba(165,208,81,0.1); text-align: center; font-size: 14px;">' + (s.dg >= 0 ? '+' : '') + s.dg + '</td>';
-				html += '<td style="color: rgba(255,255,255,0.8); padding: 8px; border: 1px solid rgba(165,208,81,0.1); text-align: center; font-size: 14px;">' + (s.dgg >= 0 ? '+' : '') + s.dgg + '</td>';
-				html += '<td style="font-weight: bold; color: #1a1a2e; background: #a5d051; padding: 8px; border: 1px solid rgba(165,208,81,0.5); text-align: center; font-size: 14px;">' + s.pts + '</td>';
+				html += '<tr>';
+				html += '<td style="font-weight: bold;">' + (i+1) + '</td>';
+				html += '<td>' + s.nombre.toLowerCase() + '</td>';
+				html += '<td>' + s.pj + '</td>';
+				html += '<td>' + s.pg + '</td>';
+				html += '<td>' + s.pp + '</td>';
+				html += '<td>' + (s.dg >= 0 ? '+' : '') + s.dg + '</td>';
+				html += '<td>' + (s.dgg >= 0 ? '+' : '') + s.dgg + '</td>';
+				html += '<td style="font-weight: bold; background: #f0fae0;">' + s.pts + '</td>';
 				html += '</tr>';
 			}
 			html += '</tbody></table>';
@@ -498,169 +353,387 @@ $(function(){
 		$('#draw-bracket').html(html);
 	}
 
-	function renderBracket() {
-		var rondasMostrar = [RONDAS[rondaActivaIdx]];
-		if(RONDAS[rondaActivaIdx + 1]) rondasMostrar.push(RONDAS[rondaActivaIdx + 1]);
+	function renderDraw(partidos, sembrados) {
+		sembrados = sembrados || {};
 
-		$('#btn-prev-ronda').prop('disabled', rondaActivaIdx <= rondaInicioIdx);
-		$('#btn-next-ronda').prop('disabled', rondaActivaIdx >= RONDAS.length - 1);
-		$('#draws-ronda-label').text(RONDAS[rondaActivaIdx] + (RONDAS[rondaActivaIdx+1] ? ' + ' + RONDAS[rondaActivaIdx+1] : ''));
-		$('#draw-nav').show();
+		// Detectar la primera ronda real del draw (no asumir '1ra Ronda')
+		var rondaInicioIdx = 0;
+		for(var i = 0; i < RONDAS.length; i++) {
+			if(partidos.some(function(p){ return p.ronda === RONDAS[i]; })) {
+				rondaInicioIdx = i;
+				break;
+			}
+		}
+		var primeraRonda = partidos.filter(function(p){ return p.ronda === RONDAS[rondaInicioIdx]; });
+		var totalPrimera = primeraRonda.length;
+		// Cuántas rondas hay desde la primera real hasta el final
+		var rondasCount = RONDAS.length - rondaInicioIdx;
 
-		var primera = todosPartidos.filter(function(p){ return p.ronda === RONDAS[rondaInicioIdx]; });
-		var totalPrimera = primera.length;
+		// Crear slots para cada ronda
+		var byRonda = {};
+		for(var r = 0; r < rondasCount; r++) {
+			var rondaNombre = RONDAS[rondaInicioIdx + r];
+			if(!rondaNombre) break;
+			var slotCount = Math.max(1, totalPrimera / Math.pow(2, r));
+			byRonda[rondaNombre] = new Array(Math.ceil(slotCount)).fill(null);
+		}
 
-		var html = '<div class="draws-bracket">';
-		rondasMostrar.forEach(function(ronda, idx) {
-			var esActiva = idx === 0;
-			var rondaIdx = RONDAS.indexOf(ronda);
-			var rondaIdxRelativo = rondaIdx - rondaInicioIdx;
-			var slotCount = Math.max(1, totalPrimera / Math.pow(2, rondaIdxRelativo));
-			var slots = new Array(Math.ceil(slotCount)).fill(null);
-			todosPartidos.forEach(function(p) {
-				if(p.ronda === ronda) {
-					var pos = p.bracket_pos !== null && p.bracket_pos !== undefined ? parseInt(p.bracket_pos) : 0;
-					if(pos < slots.length) slots[pos] = p;
+		// Ubicar partidos en su posición correcta
+		partidos.forEach(function(p) {
+			if(byRonda[p.ronda] !== undefined) {
+				var pos = p.bracket_pos !== null && p.bracket_pos !== undefined ? parseInt(p.bracket_pos) : 0;
+				if(pos < byRonda[p.ronda].length) {
+					byRonda[p.ronda][pos] = p;
 				}
-			});
-			html += '<div class="draws-ronda' + (esActiva ? ' activa' : '') + '">';
-			html += '<div class="draws-ronda-titulo">' + ronda + (esActiva ? ' <span style="font-size:9px;background:rgba(165,208,81,0.2);color:#a5d051;padding:1px 6px;border-radius:8px;margin-left:4px">EN JUEGO</span>' : '') + '</div>';
-			html += '<div class="draws-matches">';
-			slots.forEach(function(p) {
+			}
+		});
+
+		// Solo incluir rondas que tienen slots definidos
+		var rondasOrden = Object.keys(byRonda);
+
+		var html = '<div class="draw-bracket">';
+
+		rondasOrden.forEach(function(ronda, idx) {
+			html += '<div class="draw-ronda">';
+			html += '<div class="draw-ronda-titulo">' + ronda + '</div>';
+			html += '<div class="draw-matches">';
+
+			byRonda[ronda].forEach(function(p) {
 				if(!p) {
-					html += '<div class="draws-match">';
-					html += '<div class="draws-player tbd"><span class="draws-player-name">por definir</span></div>';
-					html += '<div class="draws-player tbd"><span class="draws-player-name">por definir</span></div>';
+					// TBD match
+					html += '<div class="draw-match pendiente">';
+					html += '<div class="draw-player tbd"><span class="draw-player-name">Por definir</span></div>';
+					html += '<div class="draw-player tbd"><span class="draw-player-name">Por definir</span></div>';
 					html += '</div>';
 					return;
 				}
+
 				var esBYE = p.score === 'BYE';
 				var jugado = p.ganador_id != null;
-				html += '<div class="draws-match' + (jugado ? ' jugado' : '') + '">';
+				html += '<div class="draw-match ' + (jugado ? 'jugado' : 'pendiente') + '">';
+
+				// Jugador 1
 				var esBYE1 = !p.jugador1_id || p.jugador1_id == 0;
 				var c1 = (!esBYE1 && jugado) ? (p.ganador_id == p.jugador1_id ? 'ganador' : 'perdedor') : '';
-				var seed1 = !esBYE1 && sembradosActivos[p.jugador1_id] ? sembradosActivos[p.jugador1_id] : 0;
-				var esYo1 = !esBYE1 && miPartnerId && p.jugador1_id == miPartnerId;
-				html += '<div class="draws-player ' + c1 + (esBYE1 ? ' tbd' : '') + (esYo1 ? ' yo-player' : '') + '">';
+				var seed1 = !esBYE1 && sembrados[p.jugador1_id] ? sembrados[p.jugador1_id] : 0;
+				html += '<div class="draw-player ' + c1 + (esBYE1 ? ' tbd' : '') + '">';
 				if(seed1) html += '<span style="color:#a5d051;font-weight:800;font-size:10px;margin-right:3px">['+seed1+']</span>';
-				html += '<span class="draws-player-name">' + formatPlayerNamesShort(p.jugador1) + '</span>';
-				if(!esBYE1 && p.ganador_id == p.jugador1_id) html += '<span class="draws-check"><i class="fas fa-check"></i></span>';
+				html += '<span class="draw-player-name">' + (p.jugador1 ? p.jugador1.toLowerCase() : 'BYE') + '</span>';
+				if(!esBYE1 && p.ganador_id == p.jugador1_id) html += '<span class="draw-player-check"><i class="fas fa-check"></i></span>';
 				html += '</div>';
+
+				// Jugador 2
 				var esBYE2 = !p.jugador2_id || p.jugador2_id == 0;
 				var c2 = (!esBYE2 && jugado) ? (p.ganador_id == p.jugador2_id ? 'ganador' : 'perdedor') : '';
-				var seed2 = !esBYE2 && sembradosActivos[p.jugador2_id] ? sembradosActivos[p.jugador2_id] : 0;
-				var esYo2 = !esBYE2 && miPartnerId && p.jugador2_id == miPartnerId;
-				html += '<div class="draws-player ' + c2 + (esBYE2 ? ' tbd' : '') + (esYo2 ? ' yo-player' : '') + '">';
+				var seed2 = !esBYE2 && sembrados[p.jugador2_id] ? sembrados[p.jugador2_id] : 0;
+				html += '<div class="draw-player ' + c2 + (esBYE2 ? ' tbd' : '') + '">';
 				if(seed2) html += '<span style="color:#a5d051;font-weight:800;font-size:10px;margin-right:3px">['+seed2+']</span>';
-				html += '<span class="draws-player-name">' + formatPlayerNamesShort(p.jugador2) + '</span>';
-				if(!esBYE2 && p.ganador_id == p.jugador2_id) html += '<span class="draws-check"><i class="fas fa-check"></i></span>';
+				html += '<span class="draw-player-name">' + (p.jugador2 ? p.jugador2.toLowerCase() : 'BYE') + '</span>';
+				if(!esBYE2 && p.ganador_id == p.jugador2_id) html += '<span class="draw-player-check"><i class="fas fa-check"></i></span>';
 				html += '</div>';
-				if(p.score && p.score !== 'BYE') html += '<div class="draws-score">' + p.score + '</div>';
+
+				if(p.score && p.score !== 'BYE') html += '<div class="draw-score">' + p.score + '</div>';
+
 				html += '</div>';
 			});
+
 			html += '</div></div>';
-			if(idx < rondasMostrar.length - 1) {
-				html += '<div class="draws-connector">';
-				for(var i = 0; i < slots.length; i++) html += '<div class="draws-connector-line"></div>';
+
+			// Conector entre rondas
+			if(idx < rondasOrden.length - 1) {
+				html += '<div class="draw-connector">';
+				var count = byRonda[ronda].length;
+				for(var i = 0; i < count; i++) {
+					html += '<div class="draw-connector-line"></div>';
+				}
 				html += '</div>';
 			}
 		});
+
 		html += '</div>';
 		$('#draw-bracket').html(html);
+
+		// Inicializar clicks para intercambiar parejas
+		setTimeout(function() { initSwapMatches(partidos); }, 100);
 	}
 
-	$('#btn-prev-ronda').on('click', function(){
-		if(rondaActivaIdx > rondaInicioIdx) { rondaActivaIdx--; renderBracket(); }
-	});
-	$('#btn-next-ronda').on('click', function(){
-		if(rondaActivaIdx < RONDAS.length - 1) { rondaActivaIdx++; renderBracket(); }
-	});
+	// Genera HTML del bracket clásico (izquierda→derecha) con inline styles para PDF
+	function renderBracketForPDF(partidos, sembrados) {
+		sembrados = sembrados || {};
 
-	var miCat = '<?=$mi_category?>';
-	var miGen = '<?=$mi_gender?>';
-	var miPartnerId = '<?=$mi_partner_id?>';
-	var disponibles = {};
-	var currentTournament = 'doubles';
+		// Primera letra de cada palabra en mayúscula
+		function tc(str) {
+			if(!str) return 'BYE';
+			return str.toLowerCase().replace(/\b\w/g, function(l){ return l.toUpperCase(); });
+		}
 
-	// Mostrar solo tab de dobles
-	$('.draws-tab[data-tournament="singles"]').hide();
-	$('.draws-tab[data-tournament="doubles"]').addClass('active');
+		var rondaInicioIdx = 0;
+		for(var i = 0; i < RONDAS.length; i++) {
+			if(partidos.some(function(p){ return p.ronda === RONDAS[i]; })) { rondaInicioIdx = i; break; }
+		}
+		var primeraRonda = RONDAS[rondaInicioIdx];
+		var totalPrimera = partidos.filter(function(p){ return p.ronda === primeraRonda; }).length;
+		var rondasCount = RONDAS.length - rondaInicioIdx;
 
-	function cargarDrawsDisponibles() {
-		$.ajax({
-			url: baseurl + 'draws/getDrawsDisponibles',
-			type: 'POST',
-			data: { tournament_type: currentTournament },
-			headers: { 'X-Auth-Token': token },
-			success: function(res) {
-				if(res.draws) {
-					res.draws.forEach(function(d){ disponibles[d.category+'_'+d.gender] = true; });
-				}
-				var initialGen = (miGen && miGen !== '') ? miGen : 'M';
-				$('#draws-gender').val(initialGen);
-				var toLoad = null;
-				// Prioridad 1: Siempre mostrar la categoría del usuario si existe
-				if(miCat !== '' && miGen !== '') {
-					toLoad = { cat: miCat, gen: miGen };
-				} else if(res.draws && res.draws.length) {
-					// Prioridad 2: Si no tiene categoría, mostrar la primera disponible
-					var fallback = (miGen && miGen !== '') ? res.draws.find(function(d){ return d.gender === miGen; }) : null;
-					if(!fallback) fallback = res.draws[0];
-					if(fallback) {
-						toLoad = { cat: fallback.category, gen: fallback.gender };
-						$('#draws-gender').val(toLoad.gen);
-					}
-				}
-				if(toLoad) {
-					$('#draws-category').val(toLoad.cat);
-					cargarDraw(toLoad.cat, toLoad.gen);
-				}
+		var byRonda = {};
+		for(var r = 0; r < rondasCount; r++) {
+			var rn = RONDAS[rondaInicioIdx + r];
+			byRonda[rn] = new Array(Math.ceil(Math.max(1, totalPrimera / Math.pow(2, r)))).fill(null);
+		}
+		partidos.forEach(function(p) {
+			if(byRonda[p.ronda] !== undefined) {
+				var pos = (p.bracket_pos !== null && p.bracket_pos !== undefined) ? parseInt(p.bracket_pos) : 0;
+				if(pos < byRonda[p.ronda].length) byRonda[p.ronda][pos] = p;
 			}
 		});
+
+		var rondasOrden = Object.keys(byRonda);
+		var numRondas = rondasOrden.length;
+		var containerW = 720;
+		var connW = 14;
+		// Primera columna 1.8x más ancha que las siguientes
+		var totalConns = connW * (numRondas - 1);
+		var unitW = Math.floor((containerW - totalConns) / (numRondas + 0.8));
+		var firstColW = Math.floor(unitW * 1.8);
+
+		function colWidth(idx) { return idx === 0 ? firstColW : unitW; }
+		function colFs(idx)    { return idx === 0 ? 11 : 10; }
+
+		var html = '<div style="display:flex;align-items:stretch;background:#fff;font-family:Arial,Helvetica,sans-serif;width:' + containerW + 'px;box-sizing:border-box;">';
+
+		rondasOrden.forEach(function(ronda, idx) {
+			var slots = byRonda[ronda];
+			var cw = colWidth(idx);
+			var fs = colFs(idx);
+			html += '<div style="width:' + cw + 'px;flex-shrink:0;display:flex;flex-direction:column;">';
+			html += '<div style="text-align:center;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;color:#6c757d;padding:5px 4px;background:#f1f3f5;border:1px solid #dee2e6;border-bottom:none;margin:0 3px;">' + ronda + '</div>';
+			html += '<div style="display:flex;flex-direction:column;justify-content:space-around;flex:1;padding:5px 3px;gap:5px;">';
+
+			slots.forEach(function(p) {
+				if(!p) {
+					html += '<div style="border:1px solid #dee2e6;border-radius:4px;overflow:hidden;">';
+					html += '<div style="padding:4px 7px;font-size:' + fs + 'px;color:#ced4da;font-style:italic;min-height:26px;display:flex;align-items:center;">Por definir</div>';
+					html += '<div style="padding:4px 7px;font-size:' + fs + 'px;color:#ced4da;font-style:italic;border-top:1px solid #f0f0f0;min-height:26px;display:flex;align-items:center;">Por definir</div>';
+					html += '</div>';
+					return;
+				}
+				var jugado = p.ganador_id != null;
+				html += '<div style="border:1px solid ' + (jugado ? '#a5d051' : '#dee2e6') + ';border-radius:4px;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,0.05);">';
+				[[p.jugador1_id, p.jugador1, p.ganador_id == p.jugador1_id],
+				 [p.jugador2_id, p.jugador2, p.ganador_id == p.jugador2_id]].forEach(function(pl, pi) {
+					var pid = pl[0], pname = pl[1], isWin = jugado && pl[2];
+					var bg = isWin ? '#f0fae0' : '#fff';
+					var col = !jugado ? '#333' : (isWin ? '#2d6a00' : '#adb5bd');
+					var dec = jugado && !isWin ? 'line-through' : 'none';
+					var fw = isWin ? '700' : 'normal';
+					var seed = sembrados[pid] ? '<span style="color:#a5d051;font-weight:800;font-size:8px;margin-right:2px">[' + sembrados[pid] + ']</span>' : '';
+					var name = tc(pname);
+					var bt = pi === 1 ? 'border-top:1px solid #f0f0f0;' : '';
+					html += '<div style="padding:4px 7px;font-size:' + fs + 'px;background:' + bg + ';color:' + col + ';text-decoration:' + dec + ';font-weight:' + fw + ';min-height:26px;display:flex;align-items:center;' + bt + 'white-space:nowrap;overflow:hidden;">';
+					html += seed + '<span style="overflow:hidden;text-overflow:ellipsis;text-decoration:' + dec + ';">' + name + '</span></div>';
+				});
+				if(p.score && p.score !== 'BYE') {
+					html += '<div style="text-align:center;font-size:8px;color:#6c757d;background:#f8f9fa;padding:2px 5px;border-top:1px solid #f0f0f0;font-weight:600;">' + p.score + '</div>';
+				}
+				html += '</div>';
+			});
+
+			html += '</div></div>';
+
+			// Conector entre rondas
+			if(idx < rondasOrden.length - 1) {
+				var cnt = slots.length;
+				html += '<div style="width:' + connW + 'px;flex-shrink:0;display:flex;flex-direction:column;justify-content:space-around;padding:5px 0;">';
+				for(var ci = 0; ci < cnt; ci++) {
+					html += '<div style="flex:1;border-right:1px solid #dee2e6;margin:1px 0;"></div>';
+				}
+				html += '</div>';
+			}
+		});
+
+		html += '</div>';
+		return html;
 	}
 
-	// Auto-cargar mi categoría si existe
-	if(miCat !== '') {
-		var genToUse = (miGen !== '' && miGen !== null) ? miGen : 'M';
-		$('#draws-category').val(miCat);
-		$('#draws-gender').val(genToUse);
-		cargarDraw(miCat, genToUse);
-	} else {
-		cargarDrawsDisponibles();
-	}
-
-	// Mostrar/ocultar género según el torneo
-	$('#draws-category').on('change', function(){
-		var cat = $('#draws-category').val();
-		var catGender = $('#draws-category option:selected').data('gender');
-
-		// Si es mixta (X), no mostrar select de género
-		if(catGender === 'X') {
-			$('#draws-gender-wrap').hide();
-			$('#draws-gender').val('');
-			if(cat) cargarDraw(cat, 'X');
-		} else if(currentTournament === 'singles') {
-			$('#draws-gender-wrap').show();
-		}
-	});
-
-	$('#draws-gender').on('change', function(){
+	// PDF DOWNLOAD — A4 portrait, alta calidad, bracket clásico izquierda→derecha
+	$('#btn-pdf').on('click', function(){
 		var cat = $('#draws-category').val();
 		var gen = $('#draws-gender').val();
-		if(cat && gen) cargarDraw(cat, gen);
-	});
+		var catNombre = $('#draws-category option:selected').text();
+		var genNombre = gen == 'M' ? 'Caballeros' : 'Damas';
 
-	// Actualizar visibility cuando cambia torneo
-	$('.draws-tab').on('click', function(){
-		currentTournament = $(this).data('tournament');
-		var cat = $('#draws-category').val();
-		var catGender = $('#draws-category option:selected').data('gender');
+		if(!currentPartidos || !currentPartidos.length) { alert('No hay draw cargado.'); return; }
 
-		if(currentTournament === 'doubles' && catGender === 'X') {
-			$('#draws-gender-wrap').hide();
-		} else if(currentTournament === 'singles') {
-			$('#draws-gender-wrap').show();
-		}
+		var $tmp = $('<div>').css({ position: 'fixed', left: '-9999px', top: 0, zIndex: -1, background: '#fff' }).appendTo('body');
+		$tmp.html(renderBracketForPDF(currentPartidos, currentSembrados));
+
+		html2canvas($tmp[0].firstElementChild, {
+			scale: 3,
+			backgroundColor: '#ffffff',
+			useCORS: true,
+			logging: false
+		}).then(function(canvas) {
+			$tmp.remove();
+			var imgData = canvas.toDataURL('image/png');
+			var pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+			var pageW = pdf.internal.pageSize.getWidth();
+			var pageH = pdf.internal.pageSize.getHeight();
+
+			var logoImg = new Image();
+			logoImg.crossOrigin = 'anonymous';
+			logoImg.src = 'https://www.baltc.net/torneo/static/img/logo.png';
+
+			var finalizarPDF = function(conLogo) {
+				var headerH = 32;
+				if(conLogo) {
+					var la = logoImg.naturalWidth / logoImg.naturalHeight;
+					var lh = 20, lw = lh * la;
+					pdf.addImage(logoImg, 'PNG', 6, 5, lw, lh);
+					pdf.setTextColor(26, 26, 46);
+					pdf.setFontSize(13);
+					pdf.setFont('helvetica', 'bold');
+					pdf.text('TORNEO INTERNO DE SINGLES — BALTC', lw + 10, 13);
+					pdf.setFontSize(9);
+					pdf.setFont('helvetica', 'normal');
+					pdf.setTextColor(80, 80, 80);
+					pdf.text('Categoría ' + catNombre + ' — ' + genNombre, lw + 10, 22);
+				} else {
+					pdf.setFontSize(13);
+					pdf.setFont('helvetica', 'bold');
+					pdf.setTextColor(26, 26, 46);
+					pdf.text('TORNEO INTERNO BALTC — ' + catNombre + ' ' + genNombre, pageW/2, 16, { align: 'center' });
+				}
+				pdf.setDrawColor(165, 208, 81);
+				pdf.setLineWidth(1.2);
+				pdf.line(0, headerH, pageW, headerH);
+
+				var availW = pageW - 16;
+				var availH = pageH - headerH - 14;
+				var ratio = canvas.width / canvas.height;
+				var imgW = availW, imgH = imgW / ratio;
+				if(imgH > availH) { imgH = availH; imgW = imgH * ratio; }
+				pdf.addImage(imgData, 'PNG', (pageW - imgW) / 2, headerH + 4, imgW, imgH);
+
+				pdf.setFontSize(7);
+				pdf.setTextColor(150);
+				pdf.text('Buenos Aires Lawn Tennis Club — baltc.net/torneo', pageW/2, pageH - 4, { align: 'center' });
+				pdf.save('Draw_' + catNombre + '_' + genNombre + '_BALTC.pdf');
+			};
+
+			logoImg.onload = function() { finalizarPDF(true); };
+			logoImg.onerror = function() { finalizarPDF(false); };
+		});
 	});
 });
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+// Make jsPDF available
+window.jsPDF = window.jspdf.jsPDF;
+
+// ========== INTERCAMBIAR PAREJAS CON CLICKS ==========
+var selectedMatch = null;
+
+function initSwapMatches(partidos) {
+	document.querySelectorAll('.draw-match').forEach(function(match, idx) {
+		if(partidos && partidos[idx]) {
+			match.dataset.matchId = partidos[idx].id;
+			match.dataset.bracketPos = partidos[idx].bracket_pos;
+			match.dataset.ronda = partidos[idx].ronda;
+			match.dataset.category = partidos[idx].category;
+			match.dataset.gender = partidos[idx].gender;
+
+			match.style.cursor = 'pointer';
+			match.addEventListener('click', function(e) {
+				e.stopPropagation();
+				selectMatch(this, partidos);
+			});
+		}
+	});
+
+	// Deseleccionar al hacer click fuera
+	document.addEventListener('click', function() {
+		if(selectedMatch) {
+			selectedMatch.classList.remove('selected-match');
+			selectedMatch = null;
+		}
+	});
+}
+
+function selectMatch(match, partidos) {
+	if(!selectedMatch) {
+		// Primer click - seleccionar
+		selectedMatch = match;
+		match.classList.add('selected-match');
+		return;
+	}
+
+	if(selectedMatch === match) {
+		// Click en el mismo - deseleccionar
+		match.classList.remove('selected-match');
+		selectedMatch = null;
+		return;
+	}
+
+	// Segundo click - intercambiar
+	swapMatches(selectedMatch, match);
+	selectedMatch.classList.remove('selected-match');
+	selectedMatch = null;
+}
+
+function swapMatches(match1, match2) {
+	var id1 = parseInt(match1.dataset.matchId);
+	var id2 = parseInt(match2.dataset.matchId);
+	var pos1 = parseInt(match1.dataset.bracketPos);
+	var pos2 = parseInt(match2.dataset.bracketPos);
+	var ronda = match1.dataset.ronda;
+	var category = match1.dataset.category;
+	var gender = match1.dataset.gender;
+
+	$.ajax({
+		url: baseurl + 'admin/swapMatchPositions',
+		type: 'POST',
+		data: {
+			match1_id: id1,
+			match2_id: id2,
+			pos1: pos1,
+			pos2: pos2,
+			ronda: ronda,
+			category: category,
+			gender: gender
+		},
+		headers: { 'X-Auth-Token': token },
+		success: function(res) {
+			if(res.action) {
+				loadDrawData();
+			} else {
+				alert('Error: ' + (res.msg || 'Error desconocido'));
+			}
+		},
+		error: function() {
+			alert('Error de conexión');
+		}
+	});
+}
+
+// Estilos para intercambio
+var style = document.createElement('style');
+style.textContent = `
+	.draw-match {
+		cursor: pointer;
+		transition: all 0.2s;
+	}
+	.draw-match:hover {
+		box-shadow: 0 0 6px rgba(165, 208, 81, 0.4);
+		transform: scale(1.02);
+	}
+	.selected-match {
+		box-shadow: 0 0 12px rgba(165, 208, 81, 0.8) !important;
+		border: 2px solid rgba(165, 208, 81, 0.8) !important;
+		background: rgba(165, 208, 81, 0.05);
+	}
+`;
+document.head.appendChild(style);
 </script>
