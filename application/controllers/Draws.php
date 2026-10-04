@@ -48,6 +48,29 @@ class Draws extends CI_Controller {
 	}
 
 	public function getDrawsDisponibles() {
+		// Allow public access
+		$category = intval($this->input->post('category'));
+		$gender = $this->input->post('gender', true);
+
+		$partidos = $this->Partido_model->getByCategoryAndGender($category, $gender);
+		$q = $this->db->where('category', $category)->where('gender', $gender)->order_by('numero ASC')->get('sembrados');
+		$sembrados = array();
+		if($q->num_rows() > 0) {
+			foreach($q->result() as $s) {
+				$sembrados[$s->partner_id] = $s->numero;
+			}
+		}
+
+		header('Content-Type: application/json');
+		echo json_encode(array(
+			'action' => !empty($partidos),
+			'partidos' => $partidos ?: array(),
+			'sembrados' => $sembrados
+		));
+		exit();
+	}
+
+	public function getDrawsDisponibles_old() {
 		$this->protect->setAjax();
 		$this->protect->setRequest('POST');
 		if(!$this->User->isLogged()) $this->protect->ajaxDie(array('action'=>false));
