@@ -6,7 +6,7 @@
 	<div class="card mb-4">
 		<div class="card-body">
 			<div class="form-row align-items-end">
-				<div class="form-group col-md-4 mb-0">
+				<div class="form-group col-md-6 mb-0">
 					<label>Categoría</label>
 					<select id="draws-category" class="form-control">
 						<option value="">Elegir...</option>
@@ -15,23 +15,15 @@
 						<?php endforeach; ?>
 					</select>
 				</div>
-				<div class="form-group col-md-3 mb-0">
-					<label>Género</label>
-					<select id="draws-gender" class="form-control">
-						<option value="">Elegir...</option>
-						<option value="M">Caballeros</option>
-						<option value="F">Damas</option>
-						<option value="X">Mixto</option>
-					</select>
-				</div>
-				<div class="form-group col-md-5 mb-0">
+				<div class="form-group col-md-6 mb-0">
 					<button class="btn btn-primary" id="btn-cargar-draw">
-						<i class="fas fa-eye"></i> Cargar Draw
+						<i class="fas fa-eye"></i> Ver Draw
 					</button>
 				</div>
 			</div>
 		</div>
 	</div>
+	<input type="hidden" id="draws-gender" value="X">
 
 	<div id="draws-content" style="display:none;">
 		<div id="draw-title" class="draw-title"></div>
