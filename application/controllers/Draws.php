@@ -13,7 +13,9 @@ class Draws extends CI_Controller {
 	public function index() {
 		$public = $this->input->get('public');
 		if($public) {
-			echo "OK";
+			$q = $this->db->query("SELECT COUNT(*) as cnt FROM matches");
+			$result = $q->row();
+			echo json_encode(['matches_count' => $result->cnt]);
 			exit();
 		}
 
