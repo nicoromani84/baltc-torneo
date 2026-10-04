@@ -22,8 +22,7 @@ class Draws extends CI_Controller {
 				FROM category c
 				INNER JOIN matches m ON m.category = c.id
 				WHERE c.active = 1
-				GROUP BY c.id, m.gender
-				ORDER BY c.id ASC";
+				ORDER BY c.id, m.gender ASC";
 		$q = $this->db->query($sql);
 		$categories = $q->num_rows() > 0 ? $q->result() : array();
 		$d['categories'] = $categories;
