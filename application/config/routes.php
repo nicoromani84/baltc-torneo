@@ -13,6 +13,7 @@ $route['menu'] = 'menu/index';
 $route['resultados'] = 'menu/resultados';
 $route['programacion'] = 'menu/programacion';
 $route['draws'] = 'draws/index';
+$route['draws/test'] = 'draws/test';
 $route['draws/getData'] = 'draws/getData';
 $route['draws/getDrawsDisponibles'] = 'draws/getDrawsDisponibles';
 $route['drawspublic'] = 'Drawspublic/index';
