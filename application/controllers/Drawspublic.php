@@ -15,8 +15,9 @@ class Drawspublic extends CI_Controller {
 				FROM matches m
 				JOIN category c ON c.id = m.category
 				WHERE c.active = 1
-				ORDER BY m.category, m.gender";
-		$draws = $this->db->query($sql)->result();
+				ORDER BY m.category ASC, m.gender ASC";
+		$q = $this->db->query($sql);
+		$draws = $q->num_rows() > 0 ? $q->result() : array();
 
 		$d['titulo'] = 'Draws';
 		$d['draws'] = $draws;
