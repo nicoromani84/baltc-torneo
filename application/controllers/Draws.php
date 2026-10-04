@@ -17,14 +17,16 @@ class Draws extends CI_Controller {
 		$d['token']      = $this->protect->eToken();
 		$d['user']       = $this->session;
 		$d['classname']  = 'reserva';
-		// Obtener todas las categorías, getData() validará si hay draws
-		$allCats = $this->Reservation->getCategories();
-		// Agregar gender desde matches para cada categoría
-		foreach($allCats as $c) {
-			$q = $this->db->select('gender')->where('category', $c->id)->limit(1)->get('matches');
-			$c->gender = $q->num_rows() > 0 ? $q->row()->gender : '';
-		}
-		$d['categories'] = $allCats;
+		// Obtener categorías que tienen draws sorteados
+		$sql = "SELECT DISTINCT c.id, c.name, m.gender
+				FROM category c
+				INNER JOIN matches m ON m.category = c.id
+				WHERE c.active = 1
+				GROUP BY c.id, m.gender
+				ORDER BY c.id ASC";
+		$q = $this->db->query($sql);
+		$categories = $q->num_rows() > 0 ? $q->result() : array();
+		$d['categories'] = $categories;
 		$d['mi_category'] = $this->Reservation->getCategoryByPlayer($this->session->userdata('id'), 'doubles');
 		$d['mi_gender']   = $this->session->userdata('gender');
 		$d['mi_partner_id'] = $this->session->userdata('id');
