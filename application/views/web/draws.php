@@ -237,6 +237,21 @@ $(function() {
 			}
 		});
 
+		// Compactar las posiciones para que no queden gaps
+		for(var ronda in byRonda) {
+			var compacted = [];
+			for(var i = 0; i < byRonda[ronda].length; i++) {
+				if(byRonda[ronda][i] !== null) {
+					compacted.push(byRonda[ronda][i]);
+				}
+			}
+			// Si no hay ninguno, dejar null para mostrar "Por definir"
+			if(compacted.length === 0) {
+				compacted.push(null);
+			}
+			byRonda[ronda] = compacted;
+		}
+
 		var rondasOrden = Object.keys(byRonda);
 		var html = '<div class="bracket-row">';
 
