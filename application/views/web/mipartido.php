@@ -497,7 +497,7 @@ $(function(){
 			headers: { 'X-Auth-Token': token },
 			success: function(res) {
 				if(res.action) {
-					$('#form-' + id).html('<div style="color:#a5d051; text-align:center; padding:10px"><i class="fas fa-check-circle fa-2x"></i><p style="margin-top:8px">Resultado cargado. ¡Gracias!</p></div>');
+					$('#form-' + id).html('<div style="color:#a5d051; text-align:center; padding:20px"><i class="fas fa-check-circle fa-2x"></i><p style="margin-top:12px; margin-bottom:16px">Resultado cargado. ¡Gracias!</p><a href="' + baseurl + 'menu" class="btn btn-primary" style="display:inline-block">Volver al menú</a></div>');
 				} else {
 					alert(res.msg || 'Error al guardar.');
 					$btn.prop('disabled', false).html('<i class="fas fa-times-circle"></i> Gané por W.O.');
@@ -527,7 +527,7 @@ $(function(){
 			headers: { 'X-Auth-Token': token },
 			success: function(res) {
 				if(res.action) {
-					$('#form-' + id).html('<div style="color:#a5d051; text-align:center; padding:10px"><i class="fas fa-check-circle fa-2x"></i><p style="margin-top:8px">Resultado cargado. ¡Gracias!</p></div>');
+					$('#form-' + id).html('<div style="color:#a5d051; text-align:center; padding:20px"><i class="fas fa-check-circle fa-2x"></i><p style="margin-top:12px; margin-bottom:16px">Resultado cargado. ¡Gracias!</p><a href="' + baseurl + 'menu" class="btn btn-primary" style="display:inline-block">Volver al menú</a></div>');
 				} else {
 					alert(res.msg || 'Error al guardar.');
 					$btn.prop('disabled', false).html('<i class="fas fa-check"></i> Confirmar — Gané yo');
