@@ -289,7 +289,14 @@ $(function() {
 
 	function getApellido(nombre) {
 		if(!nombre) return 'BYE';
-		// Extraer solo el apellido (lo que está antes de la coma)
+		// Si tiene " / " es una pareja: "APELLIDO1, NOMBRE1 / APELLIDO2, NOMBRE2"
+		if(nombre.indexOf(' / ') !== -1) {
+			var pareja = nombre.split(' / ');
+			var ap1 = pareja[0].split(',')[0].trim().toLowerCase();
+			var ap2 = pareja[1].split(',')[0].trim().toLowerCase();
+			return ap1 + ' / ' + ap2;
+		}
+		// Si no, es individual: "APELLIDO, NOMBRE"
 		var partes = nombre.split(',');
 		return partes[0].trim().toLowerCase();
 	}
