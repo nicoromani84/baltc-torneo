@@ -3,27 +3,8 @@
 <div class="draws-container">
 	<h2><i class="fas fa-sitemap"></i> Draws</h2>
 
-	<div class="card mb-4">
-		<div class="card-body">
-			<div class="form-row align-items-end">
-				<div class="form-group col-md-6 mb-0">
-					<label>Categoría</label>
-					<select id="draws-category" class="form-control">
-						<option value="">Elegir...</option>
-						<?php foreach($categories as $c): ?>
-						<option value="<?=$c->id?>"><?=$c->name?></option>
-						<?php endforeach; ?>
-					</select>
-				</div>
-				<div class="form-group col-md-6 mb-0">
-					<button class="btn btn-primary" id="btn-cargar-draw">
-						<i class="fas fa-eye"></i> Ver Draw
-					</button>
-				</div>
-			</div>
-		</div>
-	</div>
-	<input type="hidden" id="draws-gender" value="X">
+	<!-- Categorías como cards -->
+	<div class="categories-grid" id="categories-grid"></div>
 
 	<div id="draws-content" style="display:none;">
 		<div id="draw-title" class="draw-title"></div>
@@ -31,13 +12,44 @@
 	</div>
 
 	<div id="draws-empty" style="display:none;" class="alert alert-info">
-		<i class="fas fa-sitemap"></i> <span id="empty-message">Seleccioná categoría y género para ver el draw</span>
+		<i class="fas fa-sitemap"></i> <span id="empty-message">Seleccioná una categoría</span>
 	</div>
 </div>
 
 <style>
 .draws-container {
 	padding: 20px;
+}
+
+.categories-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+	gap: 12px;
+	margin-bottom: 30px;
+}
+
+.category-card {
+	background: rgba(165,208,81,0.1);
+	border: 2px solid rgba(165,208,81,0.3);
+	border-radius: 8px;
+	padding: 16px;
+	cursor: pointer;
+	transition: all 0.3s;
+	text-align: center;
+	font-weight: 600;
+	color: rgba(255,255,255,0.8);
+}
+
+.category-card:hover {
+	background: rgba(165,208,81,0.2);
+	border-color: rgba(165,208,81,0.6);
+	transform: translateY(-2px);
+}
+
+.category-card.active {
+	background: #a5d051;
+	border-color: #a5d051;
+	color: #1a1a2e;
 }
 
 .draw-title {
@@ -145,32 +157,42 @@
 <script>
 $(function() {
 	var baseUrl = '<?php echo base_url(); ?>';
-	var token = '<?php echo $token; ?>';
+	var categories = <?php echo json_encode($categories); ?>;
+	var currentCategory = null;
 
-	$('#btn-cargar-draw').on('click', function() {
-		var cat = $('#draws-category').val();
-		var gen = $('#draws-gender').val();
+	// Renderizar categorías como cards
+	function renderCategories() {
+		var html = '';
+		categories.forEach(function(cat) {
+			html += '<div class="category-card" data-id="' + cat.id + '">' + cat.name + '</div>';
+		});
+		$('#categories-grid').html(html);
 
-		if (!cat || !gen) {
-			$('#empty-message').text('Seleccioná categoría y género');
-			$('#draws-empty').show();
-			$('#draws-content').hide();
-			return;
-		}
+		$(document).on('click', '.category-card', function() {
+			var catId = $(this).data('id');
+			selectCategory(catId);
+		});
+	}
 
+	function selectCategory(catId) {
+		$('.category-card').removeClass('active');
+		$('.category-card[data-id="' + catId + '"]').addClass('active');
+		currentCategory = catId;
+		loadDraw(catId);
+	}
+
+	function loadDraw(catId) {
 		$.ajax({
 			url: baseUrl + 'draws/getData',
 			type: 'POST',
 			dataType: 'json',
 			data: {
-				category: cat,
-				gender: gen
+				category: catId,
+				gender: 'X'
 			},
 			success: function(res) {
-				console.log('Draw data:', res);
-
 				if (!res.action || !res.partidos || res.partidos.length === 0) {
-					$('#empty-message').text('No hay partidos en este draw');
+					$('#empty-message').text('No hay partidos en esta categoría');
 					$('#draws-empty').show();
 					$('#draws-content').hide();
 					return;
@@ -179,9 +201,8 @@ $(function() {
 				$('#draws-empty').hide();
 				renderBracket(res.partidos, res.sembrados || {});
 
-				var catName = $('#draws-category option:selected').text();
-				var genName = gen === 'M' ? 'Caballeros' : (gen === 'F' ? 'Damas' : 'Mixto');
-				$('#draw-title').text(catName + ' — ' + genName);
+				var catName = $('.category-card.active').text();
+				$('#draw-title').text(catName + ' — Mixto');
 
 				$('#draws-content').show();
 			},
@@ -192,17 +213,11 @@ $(function() {
 				$('#draws-content').hide();
 			}
 		});
-	});
+	}
 
 	function renderBracket(partidos, sembrados) {
 		var RONDAS = ['1ra Ronda','2da Ronda','Cuartos de Final','Semifinal','Final'];
 		sembrados = sembrados || {};
-
-		console.log('=== BRACKET DEBUG ===');
-		console.log('Total partidos:', partidos.length);
-		partidos.forEach(function(p, idx) {
-			console.log('P'+idx, '- Ronda:', p.ronda, '| Pos:', p.bracket_pos, '| J1:', p.jugador1, '| J2:', p.jugador2);
-		});
 
 		// Detectar la primera ronda real del draw
 		var rondaInicioIdx = 0;
@@ -215,8 +230,6 @@ $(function() {
 		var primeraRonda = partidos.filter(function(p){ return p.ronda === RONDAS[rondaInicioIdx]; });
 		var totalPrimera = primeraRonda.length;
 		var rondasCount = RONDAS.length - rondaInicioIdx;
-
-		console.log('Primera ronda:', RONDAS[rondaInicioIdx], 'Total:', totalPrimera, 'Rondas count:', rondasCount);
 
 		// Crear slots para cada ronda
 		var byRonda = {};
@@ -245,21 +258,27 @@ $(function() {
 					compacted.push(byRonda[ronda][i]);
 				}
 			}
-			// Si no hay ninguno, dejar null para mostrar "Por definir"
 			if(compacted.length === 0) {
 				compacted.push(null);
 			}
 			byRonda[ronda] = compacted;
 		}
 
-		// Mostrar solo la primera ronda por ahora
-		var rondaInicial = RONDAS[rondaInicioIdx];
+		// Mostrar la ronda inicial y la siguiente
+		var rondasAMostrar = [RONDAS[rondaInicioIdx]];
+		if(rondaInicioIdx + 1 < RONDAS.length) {
+			rondasAMostrar.push(RONDAS[rondaInicioIdx + 1]);
+		}
+
 		var html = '<div class="bracket-row">';
 
-		html += '<div class="bracket-column">';
-		html += '<div class="column-title">' + rondaInicial + '</div>';
+		rondasAMostrar.forEach(function(ronda) {
+			if(!byRonda[ronda]) return;
 
-		byRonda[rondaInicial].forEach(function(p) {
+			html += '<div class="bracket-column">';
+			html += '<div class="column-title">' + ronda + '</div>';
+
+			byRonda[ronda].forEach(function(p) {
 				if(!p) {
 					html += '<div class="match">';
 					html += '<div class="match-player tbd">Por definir</div>';
@@ -297,8 +316,16 @@ $(function() {
 			});
 
 			html += '</div>';
+		});
+
 		html += '</div>';
 		$('#draw-bracket').html(html);
+	}
+
+	// Inicializar
+	renderCategories();
+	if(categories.length > 0) {
+		selectCategory(categories[0].id);
 	}
 });
 </script>
