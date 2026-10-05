@@ -287,6 +287,13 @@ $(function() {
 	var rondaActivaIdx = 0;
 	var rondaInicioIdx = 0;
 
+	function getApellido(nombre) {
+		if(!nombre) return 'BYE';
+		// Extraer solo el apellido (lo que está antes de la coma)
+		var partes = nombre.split(',');
+		return partes[0].trim().toLowerCase();
+	}
+
 	function getRondaInicio() {
 		for(var i = 0; i < RONDAS.length; i++) {
 			if(todosPartidos.some(function(p){ return p.ronda === RONDAS[i]; })) return i;
@@ -431,7 +438,7 @@ $(function() {
 				var seed1 = !esBYE1 && sembradosActivos[p.jugador1_id] ? sembradosActivos[p.jugador1_id] : 0;
 				html += '<div class="match-player ' + c1 + (esBYE1 ? ' tbd' : '') + '">';
 				if(seed1) html += '<span class="match-seed">['+seed1+']</span>';
-				html += '<span class="match-player-name">' + (p.jugador1 ? p.jugador1.toLowerCase() : 'BYE') + '</span>';
+				html += '<span class="match-player-name">' + getApellido(p.jugador1) + '</span>';
 				if(!esBYE1 && p.ganador_id == p.jugador1_id) html += '<span class="match-check"><i class="fas fa-check"></i></span>';
 				html += '</div>';
 
@@ -441,7 +448,7 @@ $(function() {
 				var seed2 = !esBYE2 && sembradosActivos[p.jugador2_id] ? sembradosActivos[p.jugador2_id] : 0;
 				html += '<div class="match-player ' + c2 + (esBYE2 ? ' tbd' : '') + '">';
 				if(seed2) html += '<span class="match-seed">['+seed2+']</span>';
-				html += '<span class="match-player-name">' + (p.jugador2 ? p.jugador2.toLowerCase() : 'BYE') + '</span>';
+				html += '<span class="match-player-name">' + getApellido(p.jugador2) + '</span>';
 				if(!esBYE2 && p.ganador_id == p.jugador2_id) html += '<span class="match-check"><i class="fas fa-check"></i></span>';
 				html += '</div>';
 
