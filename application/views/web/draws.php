@@ -41,8 +41,26 @@
 </div>
 
 <style>
+.page.reserve-page {
+	background: linear-gradient(135deg, rgba(0,0,0,0.8) 0%, rgba(20,20,35,0.9) 100%);
+	position: relative;
+}
+
+.page.reserve-page::before {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: radial-gradient(ellipse at center, rgba(165,208,81,0.05) 0%, rgba(0,0,0,0.3) 100%);
+	pointer-events: none;
+}
+
 .draws-container {
 	padding: 20px;
+	position: relative;
+	z-index: 1;
 }
 
 .categories-grid {
