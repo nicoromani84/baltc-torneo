@@ -60,6 +60,17 @@
 	color: #1a1a2e;
 }
 
+.category-card.my-category {
+	border-color: #a5d051;
+	background: rgba(165,208,81,0.15);
+}
+
+.my-category-badge {
+	display: inline-block;
+	margin-left: 6px;
+	font-size: 14px;
+}
+
 .draw-title {
 	font-size: 18px;
 	font-weight: bold;
@@ -268,9 +279,25 @@ $(function() {
 	}
 
 	function renderCategories() {
+		var miCat = '<?php echo $mi_category; ?>';
 		var html = '';
+
+		// Ordenar: mi categoría primero
+		var categoriesOrdenadas = [];
+		if(miCat) {
+			var myCat = categories.find(function(c) { return c.id == miCat; });
+			if(myCat) categoriesOrdenadas.push(myCat);
+		}
 		categories.forEach(function(cat) {
-			html += '<div class="category-card" data-id="' + cat.id + '">' + cat.name + '</div>';
+			if(!miCat || cat.id != miCat) categoriesOrdenadas.push(cat);
+		});
+
+		categoriesOrdenadas.forEach(function(cat) {
+			var isMyCat = miCat && cat.id == miCat;
+			html += '<div class="category-card' + (isMyCat ? ' my-category' : '') + '" data-id="' + cat.id + '">';
+			html += cat.name;
+			if(isMyCat) html += ' <span class="my-category-badge">⭐</span>';
+			html += '</div>';
 		});
 		$('#categories-grid').html(html);
 
@@ -429,7 +456,10 @@ $(function() {
 	});
 
 	renderCategories();
-	if(categories.length > 0) {
+	var miCat = '<?php echo $mi_category; ?>';
+	if(miCat && miCat !== '') {
+		selectCategory(parseInt(miCat));
+	} else if(categories.length > 0) {
 		selectCategory(categories[0].id);
 	}
 });
