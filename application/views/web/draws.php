@@ -8,6 +8,14 @@
 
 	<div id="draws-content" style="display:none;">
 		<div id="draw-title" class="draw-title"></div>
+
+		<!-- Navegación entre rondas -->
+		<div id="draw-nav" class="draw-nav" style="display:none">
+			<button class="btn btn-sm btn-outline" id="btn-prev-ronda"><i class="fas fa-chevron-left"></i></button>
+			<span id="draws-ronda-label" class="draws-ronda-label"></span>
+			<button class="btn btn-sm btn-outline" id="btn-next-ronda"><i class="fas fa-chevron-right"></i></button>
+		</div>
+
 		<div id="draw-bracket" class="draw-bracket"></div>
 	</div>
 
@@ -56,27 +64,63 @@
 	font-size: 18px;
 	font-weight: bold;
 	color: #a5d051;
-	margin-bottom: 20px;
+	margin-bottom: 15px;
 	padding-bottom: 10px;
 	border-bottom: 2px solid rgba(165,208,81,0.3);
+	text-align: center;
+}
+
+.draw-nav {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 15px;
+	margin-bottom: 20px;
+}
+
+.draws-ronda-label {
+	color: #fff;
+	font-weight: 700;
+	font-size: 14px;
+	min-width: 180px;
+	text-align: center;
+}
+
+.draw-nav .btn {
+	background: rgba(165,208,81,0.1);
+	border: 1px solid rgba(165,208,81,0.3);
+	color: #a5d051;
+	border-radius: 6px;
+	padding: 6px 12px;
+	transition: all 0.2s;
+}
+
+.draw-nav .btn:hover:not(:disabled) {
+	background: rgba(165,208,81,0.2);
+	border-color: #a5d051;
+}
+
+.draw-nav .btn:disabled {
+	opacity: 0.3;
+	cursor: not-allowed;
 }
 
 .draw-bracket {
 	overflow-x: auto;
+	padding-bottom: 20px;
 }
 
 .bracket-row {
 	display: flex;
-	gap: 20px;
+	gap: 0;
 	min-width: max-content;
-	padding-bottom: 20px;
 }
 
 .bracket-column {
 	flex: 0 0 200px;
 	display: flex;
 	flex-direction: column;
-	gap: 8px;
+	min-width: 160px;
 }
 
 .column-title {
@@ -84,73 +128,123 @@
 	font-size: 11px;
 	font-weight: bold;
 	text-transform: uppercase;
+	color: rgba(255,255,255,0.6);
+	padding: 8px 6px;
+	background: rgba(0,0,0,0.3);
+	border: 1px solid rgba(165,208,81,0.2);
+	margin: 0 4px;
+}
+
+.bracket-column.activa .column-title {
 	color: #a5d051;
-	padding: 8px;
 	background: rgba(165,208,81,0.1);
-	border: 1px solid rgba(165,208,81,0.3);
-	border-radius: 4px;
+	border-color: rgba(165,208,81,0.4);
+}
+
+.bracket-column.activa .column-title::after {
+	content: " EN JUEGO";
+	font-size: 9px;
+	background: rgba(165,208,81,0.2);
+	color: #a5d051;
+	padding: 1px 6px;
+	border-radius: 8px;
+	margin-left: 4px;
+}
+
+.matches {
+	display: flex;
+	flex-direction: column;
+	justify-content: space-around;
+	flex: 1;
+	padding: 8px 4px;
+	gap: 8px;
 }
 
 .match {
 	background: rgba(0,0,0,0.3);
-	border: 1.5px solid rgba(165,208,81,0.4);
-	border-radius: 4px;
+	border: 1px solid rgba(255,255,255,0.1);
+	border-radius: 8px;
 	overflow: hidden;
-	backdrop-filter: blur(10px);
+}
+
+.match.jugado {
+	border-color: rgba(165,208,81,0.4);
 }
 
 .match-player {
-	padding: 8px 10px;
-	border-bottom: 1px solid rgba(165,208,81,0.2);
-	font-size: 12px;
-	color: rgba(255,255,255,0.9);
 	display: flex;
-	justify-content: space-between;
 	align-items: center;
+	padding: 9px 10px;
+	font-size: 13px;
+	border-bottom: 1px solid rgba(255,255,255,0.07);
+	gap: 6px;
+	min-height: 36px;
+	color: rgba(255,255,255,0.85);
+	text-transform: capitalize;
+	font-weight: 600;
 }
 
 .match-player:last-child {
 	border-bottom: none;
 }
 
-.match-player.winner {
-	background: rgba(165,208,81,0.15);
+.match-player.ganador {
 	color: #a5d051;
-	font-weight: bold;
+	font-weight: 800;
 }
 
-.match-player.loser {
-	color: rgba(255,255,255,0.4);
+.match-player.perdedor {
+	color: rgba(255,255,255,0.3);
 	text-decoration: line-through;
+	font-weight: 400;
+}
+
+.match-player.tbd {
+	color: rgba(255,255,255,0.3);
+	font-style: italic;
+	font-weight: 400;
 }
 
 .match-player-name {
 	flex: 1;
+	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
-	white-space: nowrap;
-	text-transform: capitalize;
 }
 
 .match-seed {
 	color: #a5d051;
-	font-weight: bold;
+	font-weight: 800;
 	font-size: 10px;
-	margin-right: 4px;
+	margin-right: 3px;
+}
+
+.match-check {
+	font-size: 11px;
+	color: #a5d051;
 }
 
 .match-score {
 	text-align: center;
-	font-size: 10px;
-	color: rgba(255,255,255,0.5);
-	padding: 4px 8px;
-	background: rgba(0,0,0,0.2);
-	border-top: 1px solid rgba(165,208,81,0.2);
+	font-size: 11px;
+	color: #a5d051;
+	padding: 3px 8px;
+	background: rgba(165,208,81,0.1);
+	font-weight: 700;
 }
 
-.tbd {
-	color: rgba(255,255,255,0.3);
-	font-style: italic;
+.connector {
+	display: flex;
+	flex-direction: column;
+	justify-content: space-around;
+	width: 16px;
+	padding: 8px 0;
+}
+
+.connector-line {
+	flex: 1;
+	border-right: 1px solid rgba(165,208,81,0.3);
+	margin: 2px 0;
 }
 </style>
 
@@ -158,9 +252,21 @@
 $(function() {
 	var baseUrl = '<?php echo base_url(); ?>';
 	var categories = <?php echo json_encode($categories); ?>;
-	var currentCategory = null;
+	var RONDAS = ['1ra Ronda','2da Ronda','Cuartos de Final','Semifinal','Final'];
 
-	// Renderizar categorías como cards
+	var currentCategory = null;
+	var todosPartidos = [];
+	var sembradosActivos = {};
+	var rondaActivaIdx = 0;
+	var rondaInicioIdx = 0;
+
+	function getRondaInicio() {
+		for(var i = 0; i < RONDAS.length; i++) {
+			if(todosPartidos.some(function(p){ return p.ronda === RONDAS[i]; })) return i;
+		}
+		return 0;
+	}
+
 	function renderCategories() {
 		var html = '';
 		categories.forEach(function(cat) {
@@ -191,6 +297,7 @@ $(function() {
 				gender: 'X'
 			},
 			success: function(res) {
+				$('#draw-bracket').html('');
 				if (!res.action || !res.partidos || res.partidos.length === 0) {
 					$('#empty-message').text('No hay partidos en esta categoría');
 					$('#draws-empty').show();
@@ -199,15 +306,31 @@ $(function() {
 				}
 
 				$('#draws-empty').hide();
-				renderBracket(res.partidos, res.sembrados || {});
+				todosPartidos = res.partidos;
+				sembradosActivos = res.sembrados || {};
+
+				// Calcular primera ronda real
+				rondaInicioIdx = getRondaInicio();
+
+				// Determinar ronda activa: primera con pendientes, o última completada
+				rondaActivaIdx = rondaInicioIdx;
+				for(var i = rondaInicioIdx; i < RONDAS.length; i++) {
+					var rp = todosPartidos.filter(function(p){ return p.ronda === RONDAS[i]; });
+					if(rp.length > 0) {
+						var pend = rp.filter(function(p){ return !p.ganador_id; });
+						if(pend.length > 0) { rondaActivaIdx = i; break; }
+						rondaActivaIdx = i;
+					}
+				}
 
 				var catName = $('.category-card.active').text();
 				$('#draw-title').text(catName + ' — Mixto');
 
+				renderBracket();
 				$('#draws-content').show();
 			},
 			error: function(xhr, status, err) {
-				console.error('Error:', err, xhr.responseText);
+				console.error('Error:', err);
 				$('#empty-message').text('Error al cargar el draw');
 				$('#draws-empty').show();
 				$('#draws-content').hide();
@@ -215,99 +338,68 @@ $(function() {
 		});
 	}
 
-	function renderBracket(partidos, sembrados) {
-		var RONDAS = ['1ra Ronda','2da Ronda','Cuartos de Final','Semifinal','Final'];
-		sembrados = sembrados || {};
+	function renderBracket() {
+		var rondasMostrar = [RONDAS[rondaActivaIdx]];
+		if(RONDAS[rondaActivaIdx + 1]) rondasMostrar.push(RONDAS[rondaActivaIdx + 1]);
 
-		// Detectar la primera ronda real del draw
-		var rondaInicioIdx = 0;
-		for(var i = 0; i < RONDAS.length; i++) {
-			if(partidos.some(function(p){ return p.ronda === RONDAS[i]; })) {
-				rondaInicioIdx = i;
-				break;
-			}
-		}
-		var primeraRonda = partidos.filter(function(p){ return p.ronda === RONDAS[rondaInicioIdx]; });
-		var totalPrimera = primeraRonda.length;
-		var rondasCount = RONDAS.length - rondaInicioIdx;
+		$('#btn-prev-ronda').prop('disabled', rondaActivaIdx <= rondaInicioIdx);
+		$('#btn-next-ronda').prop('disabled', rondaActivaIdx >= RONDAS.length - 1);
+		$('#draws-ronda-label').text(RONDAS[rondaActivaIdx] + (RONDAS[rondaActivaIdx+1] ? ' + ' + RONDAS[rondaActivaIdx+1] : ''));
+		$('#draw-nav').show();
 
-		// Crear slots para cada ronda
-		var byRonda = {};
-		for(var r = 0; r < rondasCount; r++) {
-			var rondaNombre = RONDAS[rondaInicioIdx + r];
-			if(!rondaNombre) break;
-			var slotCount = Math.max(1, totalPrimera / Math.pow(2, r));
-			byRonda[rondaNombre] = new Array(Math.ceil(slotCount)).fill(null);
-		}
-
-		// Ubicar partidos en su posición correcta
-		partidos.forEach(function(p) {
-			if(byRonda[p.ronda] !== undefined) {
-				var pos = p.bracket_pos !== null && p.bracket_pos !== undefined ? parseInt(p.bracket_pos) : 0;
-				if(pos < byRonda[p.ronda].length) {
-					byRonda[p.ronda][pos] = p;
-				}
-			}
-		});
-
-		// Compactar las posiciones para que no queden gaps
-		for(var ronda in byRonda) {
-			var compacted = [];
-			for(var i = 0; i < byRonda[ronda].length; i++) {
-				if(byRonda[ronda][i] !== null) {
-					compacted.push(byRonda[ronda][i]);
-				}
-			}
-			if(compacted.length === 0) {
-				compacted.push(null);
-			}
-			byRonda[ronda] = compacted;
-		}
-
-		// Mostrar la ronda inicial y la siguiente
-		var rondasAMostrar = [RONDAS[rondaInicioIdx]];
-		if(rondaInicioIdx + 1 < RONDAS.length) {
-			rondasAMostrar.push(RONDAS[rondaInicioIdx + 1]);
-		}
+		// Slots de la primera ronda real
+		var primera = todosPartidos.filter(function(p){ return p.ronda === RONDAS[rondaInicioIdx]; });
+		var totalPrimera = primera.length;
 
 		var html = '<div class="bracket-row">';
+		rondasMostrar.forEach(function(ronda, idx) {
+			var esActiva = idx === 0;
+			var rondaIdx = RONDAS.indexOf(ronda);
+			var rondaIdxRelativo = rondaIdx - rondaInicioIdx;
+			var slotCount = Math.max(1, totalPrimera / Math.pow(2, rondaIdxRelativo));
+			var slots = new Array(Math.ceil(slotCount)).fill(null);
 
-		rondasAMostrar.forEach(function(ronda) {
-			if(!byRonda[ronda]) return;
+			todosPartidos.forEach(function(p) {
+				if(p.ronda === ronda) {
+					var pos = p.bracket_pos !== null && p.bracket_pos !== undefined ? parseInt(p.bracket_pos) : 0;
+					if(pos < slots.length) slots[pos] = p;
+				}
+			});
 
-			html += '<div class="bracket-column">';
+			html += '<div class="bracket-column' + (esActiva ? ' activa' : '') + '">';
 			html += '<div class="column-title">' + ronda + '</div>';
+			html += '<div class="matches">';
 
-			byRonda[ronda].forEach(function(p) {
+			slots.forEach(function(p) {
 				if(!p) {
 					html += '<div class="match">';
-					html += '<div class="match-player tbd">Por definir</div>';
-					html += '<div class="match-player tbd">Por definir</div>';
+					html += '<div class="match-player tbd"><span class="match-player-name">por definir</span></div>';
+					html += '<div class="match-player tbd"><span class="match-player-name">por definir</span></div>';
 					html += '</div>';
 					return;
 				}
 
 				var jugado = p.ganador_id != null;
-				html += '<div class="match ' + (jugado ? 'jugado' : 'pendiente') + '">';
+				html += '<div class="match' + (jugado ? ' jugado' : '') + '">';
 
 				// Jugador 1
 				var esBYE1 = !p.jugador1_id || p.jugador1_id == 0;
-				var c1 = (!esBYE1 && jugado) ? (p.ganador_id == p.jugador1_id ? 'winner' : 'loser') : '';
-				var seed1 = !esBYE1 && sembrados[p.jugador1_id] ? sembrados[p.jugador1_id] : 0;
+				var c1 = (!esBYE1 && jugado) ? (p.ganador_id == p.jugador1_id ? 'ganador' : 'perdedor') : '';
+				var seed1 = !esBYE1 && sembradosActivos[p.jugador1_id] ? sembradosActivos[p.jugador1_id] : 0;
 				html += '<div class="match-player ' + c1 + (esBYE1 ? ' tbd' : '') + '">';
 				if(seed1) html += '<span class="match-seed">['+seed1+']</span>';
 				html += '<span class="match-player-name">' + (p.jugador1 ? p.jugador1.toLowerCase() : 'BYE') + '</span>';
-				if(!esBYE1 && p.ganador_id == p.jugador1_id) html += '<span style="color:#a5d051;font-weight:bold;margin-left:4px">✓</span>';
+				if(!esBYE1 && p.ganador_id == p.jugador1_id) html += '<span class="match-check"><i class="fas fa-check"></i></span>';
 				html += '</div>';
 
 				// Jugador 2
 				var esBYE2 = !p.jugador2_id || p.jugador2_id == 0;
-				var c2 = (!esBYE2 && jugado) ? (p.ganador_id == p.jugador2_id ? 'winner' : 'loser') : '';
-				var seed2 = !esBYE2 && sembrados[p.jugador2_id] ? sembrados[p.jugador2_id] : 0;
+				var c2 = (!esBYE2 && jugado) ? (p.ganador_id == p.jugador2_id ? 'ganador' : 'perdedor') : '';
+				var seed2 = !esBYE2 && sembradosActivos[p.jugador2_id] ? sembradosActivos[p.jugador2_id] : 0;
 				html += '<div class="match-player ' + c2 + (esBYE2 ? ' tbd' : '') + '">';
 				if(seed2) html += '<span class="match-seed">['+seed2+']</span>';
 				html += '<span class="match-player-name">' + (p.jugador2 ? p.jugador2.toLowerCase() : 'BYE') + '</span>';
-				if(!esBYE2 && p.ganador_id == p.jugador2_id) html += '<span style="color:#a5d051;font-weight:bold;margin-left:4px">✓</span>';
+				if(!esBYE2 && p.ganador_id == p.jugador2_id) html += '<span class="match-check"><i class="fas fa-check"></i></span>';
 				html += '</div>';
 
 				if(p.score && p.score !== 'BYE') html += '<div class="match-score">' + p.score + '</div>';
@@ -315,14 +407,27 @@ $(function() {
 				html += '</div>';
 			});
 
-			html += '</div>';
+			html += '</div></div>';
+
+			// Conector
+			if(idx < rondasMostrar.length - 1) {
+				html += '<div class="connector">';
+				for(var i = 0; i < slots.length; i++) html += '<div class="connector-line"></div>';
+				html += '</div>';
+			}
 		});
 
 		html += '</div>';
 		$('#draw-bracket').html(html);
 	}
 
-	// Inicializar
+	$('#btn-prev-ronda').on('click', function(){
+		if(rondaActivaIdx > rondaInicioIdx) { rondaActivaIdx--; renderBracket(); }
+	});
+	$('#btn-next-ronda').on('click', function(){
+		if(rondaActivaIdx < RONDAS.length - 1) { rondaActivaIdx++; renderBracket(); }
+	});
+
 	renderCategories();
 	if(categories.length > 0) {
 		selectCategory(categories[0].id);
