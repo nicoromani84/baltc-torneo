@@ -1,5 +1,21 @@
 <?php defined('BASEPATH') OR exit('No direct script access allowed'); ?>
 
+<header>
+	<div class="container">
+		<div class="logo">
+			<img src="<?=asset_url('img')?>/logo.png" alt="Logo">
+		</div>
+		<ul class="buttons">
+			<li>
+				<a href="<?=base_url('menu')?>">
+					<span class="icon-logout"><i class="fas fa-arrow-left"></i></span>
+				</a>
+			</li>
+		</ul>
+	</div>
+</header>
+
+<div class="page reserve-page">
 <div class="draws-container">
 	<h2><i class="fas fa-sitemap"></i> Draws</h2>
 
@@ -464,3 +480,5 @@ $(function() {
 	}
 });
 </script>
+</div>
+</div>
