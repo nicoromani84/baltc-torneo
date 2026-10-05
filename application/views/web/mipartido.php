@@ -73,7 +73,7 @@
 						<div class="mipartido-nombre">
 							<?php if(!empty($p->rival_wa)):
 								$partes = explode(',', $p->yo);
-								$apellido = ucfirst(strtolower(trim($partes[0])));
+								$apellido = ucfirst(mb_strtolower(trim($partes[0]), 'UTF-8'));
 								$nombre   = isset($partes[1]) ? ucfirst(strtolower(trim($partes[1]))) : '';
 								$nombre_friendly = $nombre ? $nombre . ' ' . $apellido : $apellido;
 								$wa_msg = 'Hola soy ' . $nombre_friendly . ', cuando podes jugar el partido del torneo interno?';
