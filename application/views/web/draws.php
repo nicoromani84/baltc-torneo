@@ -410,7 +410,7 @@ $(function() {
 					}
 				}
 
-				var catName = $('.category-card.active').text();
+				var catName = $('#category-select option:selected').text().replace(' ⭐', '');
 				$('#draw-title').text(catName + ' — Mixto');
 
 				renderBracket();
