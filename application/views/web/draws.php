@@ -19,8 +19,13 @@
 <div class="draws-container">
 	<h2><i class="fas fa-sitemap"></i> Draws</h2>
 
-	<!-- Categorías como cards -->
-	<div class="categories-grid" id="categories-grid"></div>
+	<!-- Selector de categoría -->
+	<div class="category-selector">
+		<select id="category-select" class="category-select">
+			<option value="">Elegir categoría...</option>
+		</select>
+		<i class="fas fa-chevron-down selector-arrow"></i>
+	</div>
 
 	<div id="draws-content" style="display:none;">
 		<div id="draw-title" class="draw-title"></div>
@@ -63,46 +68,56 @@
 	z-index: 1;
 }
 
-.categories-grid {
-	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-	gap: 12px;
+.category-selector {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	width: 100%;
+	max-width: 400px;
 	margin-bottom: 30px;
 }
 
-.category-card {
+.category-select {
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	appearance: none;
 	background: rgba(165,208,81,0.1);
 	border: 2px solid rgba(165,208,81,0.3);
+	color: rgba(255,255,255,0.9);
 	border-radius: 8px;
-	padding: 16px;
+	padding: 12px 40px 12px 16px;
+	font-size: 15px;
+	width: 100%;
 	cursor: pointer;
 	transition: all 0.3s;
-	text-align: center;
 	font-weight: 600;
-	color: rgba(255,255,255,0.8);
 }
 
-.category-card:hover {
+.category-select:hover {
 	background: rgba(165,208,81,0.2);
 	border-color: rgba(165,208,81,0.6);
-	transform: translateY(-2px);
 }
 
-.category-card.active {
-	background: #a5d051;
+.category-select:focus {
+	outline: none;
+	background: rgba(165,208,81,0.2);
 	border-color: #a5d051;
-	color: #1a1a2e;
+	box-shadow: 0 0 0 3px rgba(165,208,81,0.2);
 }
 
-.category-card.my-category {
-	border-color: #a5d051;
-	background: rgba(165,208,81,0.15);
+.category-select option {
+	background: #1a1a2e;
+	color: #fff;
 }
 
-.my-category-badge {
-	display: inline-block;
-	margin-left: 6px;
-	font-size: 14px;
+.selector-arrow {
+	position: absolute;
+	right: 12px;
+	top: 50%;
+	transform: translateY(-50%);
+	color: #a5d051;
+	font-size: 12px;
+	pointer-events: none;
 }
 
 .draw-title {
@@ -328,7 +343,7 @@ $(function() {
 
 	function renderCategories() {
 		var miCat = '<?php echo $mi_category; ?>';
-		var html = '';
+		var html = '<option value="">Elegir categoría...</option>';
 
 		// Ordenar: mi categoría primero
 		var categoriesOrdenadas = [];
@@ -342,22 +357,19 @@ $(function() {
 
 		categoriesOrdenadas.forEach(function(cat) {
 			var isMyCat = miCat && cat.id == miCat;
-			html += '<div class="category-card' + (isMyCat ? ' my-category' : '') + '" data-id="' + cat.id + '">';
-			html += cat.name;
-			if(isMyCat) html += ' <span class="my-category-badge">⭐</span>';
-			html += '</div>';
+			var label = cat.name + (isMyCat ? ' ⭐' : '');
+			html += '<option value="' + cat.id + '">' + label + '</option>';
 		});
-		$('#categories-grid').html(html);
+		$('#category-select').html(html);
+		if(miCat) $('#category-select').val(miCat);
 
-		$(document).on('click', '.category-card', function() {
-			var catId = $(this).data('id');
-			selectCategory(catId);
+		$(document).on('change', '#category-select', function() {
+			var catId = $(this).val();
+			if(catId) loadDraw(catId);
 		});
 	}
 
 	function selectCategory(catId) {
-		$('.category-card').removeClass('active');
-		$('.category-card[data-id="' + catId + '"]').addClass('active');
 		currentCategory = catId;
 		loadDraw(catId);
 	}
@@ -506,9 +518,7 @@ $(function() {
 	renderCategories();
 	var miCat = '<?php echo $mi_category; ?>';
 	if(miCat && miCat !== '') {
-		selectCategory(parseInt(miCat));
-	} else if(categories.length > 0) {
-		selectCategory(categories[0].id);
+		loadDraw(parseInt(miCat));
 	}
 });
 </script>
